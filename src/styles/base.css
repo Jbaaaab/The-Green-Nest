@@ -133,6 +133,25 @@ button {
   top: var(--contact-step);
 }
 
+/* Zones de clic agrandies sans changer le visuel (cibles tactiles plus confortables). */
+.brand::after,
+.nav-works::after,
+.nav-about::after,
+.contact a::after {
+  content: '';
+  position: absolute;
+  inset: -6px -8px;
+}
+
+.contact a:first-child {
+  position: relative;
+}
+
+/* Instagram et Mail sont empilés à 14 px : agrandissement horizontal seulement. */
+.contact a::after {
+  inset: -1px -8px;
+}
+
 /* ---------- Bio ---------- */
 
 .bio {
@@ -159,12 +178,12 @@ button {
   display: none;
 }
 
-/* ---------- Canvas 3D (bague) : au-dessus de la bio, sous le header et le dock ---------- */
+/* ---------- Canvas 3D (bague, pluie, curseur) : au premier plan, sans bloquer les clics ---------- */
 
 .stage {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 5;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -175,6 +194,12 @@ button {
 
 .stage.is-ready {
   opacity: 1;
+}
+
+/* Curseur 3D chargé : on cache le curseur natif partout. */
+.has-3d-cursor,
+.has-3d-cursor * {
+  cursor: none !important;
 }
 
 /* ---------- Apparitions de projets : en fond, derrière la bio et la bague ---------- */

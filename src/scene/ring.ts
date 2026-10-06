@@ -1,7 +1,9 @@
-import { Box3, Group, Mesh, MeshStandardMaterial, Quaternion, Vector3, type Object3D } from 'three';
+import { Box3, Group, Quaternion, Vector2, Vector3, type Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { config } from '../config';
+import { applyPolishedMetal } from './materials';
+import { createFractalNoise1D } from './noise';
 import type { Updatable, Viewport } from './stage';
 
 const TAU = Math.PI * 2;
@@ -10,11 +12,12 @@ const Z = new Vector3(0, 0, 1);
 const X = new Vector3(1, 0, 0);
 
 /**
- * La bague roule comme une pièce sur une table vue de dessus (l'écran = la table) :
- * - précession : l'axe d'inclinaison tourne autour de l'axe de vue (disque d'Euler) ;
- * - le centre décrit un cercle autour du centre de l'écran, en phase avec la précession
- *   (le point de contact, le bord le plus « bas », est toujours vers l'extérieur) ;
- * - rotation propre par roulement sans glissement le long de ce cercle.
+ * La bague roule comme une pièce sur une table légèrement creuse, vue de dessus (l'écran = la table) :
+ * - précession : l'axe d'inclinaison tourne autour de l'axe de vue (disque d'Euler), plus vite quand elle s'aplatit ;
+ * - roulement : le centre avance perpendiculairement au point de contact (le bord le plus « bas »),
+ *   sur une courbe dont le rayon varie au hasard → des boucles imprévisibles plutôt qu'un cercle parfait ;
+ * - le creux de la table la ramène doucement vers le centre de l'écran ;
+ * - rotation propre par roulement sans glissement.
  *
  * Hiérarchie : root (position) → wobble (orientation) → model (recentré, normalisé, face caméra).
  */
@@ -25,8 +28,13 @@ export class Ring implements Updatable {
   private radius = 1; // rayon de la bague à l'écran, en px
   private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  private phi = 0; // angle de précession (direction du point de contact)
+  private phi = Math.random() * TAU; // angle de précession (direction du point de contact)
   private psi = 0; // rotation propre
+  private pos = new Vector2(); // position du centre, en px depuis le centre de l'écran
+  private started = false;
+
+  private tiltNoise = createFractalNoise1D();
+  private curveNoise = createFractalNoise1D();
 
   private qa = new Quaternion();
   private qb = new Quaternion();
@@ -53,22 +61,41 @@ export class Ring implements Updatable {
   update(time: number, delta: number): void {
     const cfg = config.ring;
     const reduced = this.reduced.matches;
+    const unit = this.viewport.unit;
 
-    // alpha : angle entre la bague et la « table » (l'écran), avec un léger souffle.
-    const tilt = cfg.tiltDeg + (reduced ? 0 : cfg.breathDeg * Math.sin((TAU * time) / cfg.breathPeriod));
-    const alpha = (90 - tilt) * DEG;
+    // alpha : angle entre la bague et la « table » (l'écran). Le souffle varie au hasard.
+    const breath = reduced ? 0 : cfg.breathDeg * this.tiltNoise(time / cfg.breathPeriod);
+    const alpha = (90 - (cfg.tiltDeg + breath)) * DEG;
     const alpha0 = (90 - cfg.tiltDeg) * DEG;
 
+    // Rayon de courbure de la trajectoire, qui change au hasard (réduit sur mobile).
+    const { radiusMin, radiusMax, changeEvery, pull, maxOffset, bigLoopSlowdown, mobileScale } = cfg.orbit;
+    const scale = unit * (this.viewport.mobile ? mobileScale : 1);
+    const wave = 0.5 + 0.5 * this.curveNoise(time / changeEvery);
+    const rho = reduced ? 0 : (radiusMin + (radiusMax - radiusMin) * wave) * scale;
+
     // Précession. Disque d'Euler : la vitesse varie comme 1/√sin(alpha) (plus à plat = plus vite).
+    // Pièce qui roule : sur une grande boucle elle tourne moins vite (~ 1/√rayon).
     const period = reduced ? cfg.reducedMotion.precessionPeriod : cfg.precessionPeriod;
-    const omega = (TAU / period) * Math.sqrt(Math.sin(alpha0) / Math.sin(alpha));
+    const omega =
+      ((TAU / period) * Math.sqrt(Math.sin(alpha0) / Math.sin(alpha))) / Math.sqrt(1 + rho / (bigLoopSlowdown * scale));
     const dPhi = omega * delta;
     this.phi += dPhi;
 
-    // Rayon du cercle décrit par le centre, qui respire lentement (cercles concentriques).
-    const { radiusMin, radiusMax, period: orbitPeriod } = cfg.orbit;
-    const wave = 0.5 - 0.5 * Math.cos((TAU * time) / orbitPeriod);
-    const rho = reduced ? 0 : (radiusMin + (radiusMax - radiusMin) * wave) * this.viewport.unit;
+    // Point de contact dans la direction u = (sin phi, -cos phi). En roulant, le centre avance
+    // perpendiculairement, à la vitesse rho·omega : il décrit une courbe de rayon rho.
+    if (!this.started) {
+      this.pos.set(rho * Math.sin(this.phi), -rho * Math.cos(this.phi)); // premier tour autour du centre
+      this.started = true;
+    }
+    const speed = rho * omega;
+    this.pos.x += Math.cos(this.phi) * speed * delta;
+    this.pos.y += Math.sin(this.phi) * speed * delta;
+
+    // Table légèrement creuse : rappel vers le centre, qui se renforce au-delà de maxOffset.
+    const far = this.pos.length() / (maxOffset * scale);
+    const k = reduced ? 4 : pull * (1 + far * far);
+    this.pos.multiplyScalar(Math.exp(-k * delta));
 
     // Roulement sans glissement : le point de contact parcourt un cercle de rayon rho + r·cos(alpha),
     // la bague tourne sur elle-même d'autant. Rotation visible = phi' + psi'.
@@ -81,16 +108,15 @@ export class Ring implements Updatable {
     this.qb.setFromAxisAngle(X, alpha);
     this.qc.setFromAxisAngle(Z, this.psi);
     this.wobble.quaternion.copy(this.qa).multiply(this.qb).multiply(this.qc);
-
-    // La bague penche vers l'intérieur du cercle : son centre est sur le même rayon que le point
-    // de contact, plus près du centre de l'écran. Il tourne donc en phase avec la précession.
-    this.root.position.set(rho * Math.sin(this.phi), -rho * Math.cos(this.phi), 0);
+    this.root.position.set(this.pos.x, this.pos.y, 0);
   }
 }
 
-// Recentre le modèle sur son centre géométrique, ramène son diamètre à 1
-// et le tourne pour que sa face regarde la caméra (le GLB est posé à plat, normale = +Y).
+// Matériau poli, recentrage sur le centre géométrique, diamètre ramené à 1,
+// face tournée vers la caméra (le GLB est posé à plat, normale = +Y).
 function normalize(scene: Object3D): Object3D {
+  applyPolishedMetal(scene);
+
   const holder = new Group();
   holder.add(scene);
   holder.rotation.x = Math.PI / 2;
@@ -99,18 +125,10 @@ function normalize(scene: Object3D): Object3D {
   const box = new Box3().setFromObject(holder);
   const size = box.getSize(new Vector3());
   const center = box.getCenter(new Vector3());
-  const diameter = Math.max(size.x, size.y);
 
   const wrapper = new Group();
   holder.position.sub(center);
   wrapper.add(holder);
-  wrapper.scale.setScalar(1 / diameter);
-
-  scene.traverse((o) => {
-    if (o instanceof Mesh && o.material instanceof MeshStandardMaterial) {
-      o.material.envMapIntensity = config.ring.material.envIntensity;
-    }
-  });
-
+  wrapper.scale.setScalar(1 / Math.max(size.x, size.y));
   return wrapper;
 }

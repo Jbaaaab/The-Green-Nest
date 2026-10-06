@@ -1,12 +1,4 @@
-import {
-  ACESFilmicToneMapping,
-  PerspectiveCamera,
-  PMREMGenerator,
-  Scene,
-  SRGBColorSpace,
-  WebGLRenderer,
-} from 'three';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { PerspectiveCamera, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
 import { config } from '../config';
 import { readUnit } from '../ui/unit';
 
@@ -14,12 +6,14 @@ export type Viewport = { width: number; height: number; unit: number; mobile: bo
 export type Updatable = { update(time: number, delta: number): void; resize?(vp: Viewport): void };
 
 /**
- * Canvas Three.js plein écran partagé par la bague (et plus tard la pluie Insta).
+ * Canvas Three.js plein écran partagé par la bague, la pluie Insta et le curseur.
  * La caméra est réglée pour que 1 unité 3D = 1 px CSS dans le plan z = 0.
+ * `overlay` est rendu après un effacement de la profondeur : toujours au premier plan (curseur).
  */
 export class Stage {
   readonly renderer: WebGLRenderer;
   readonly scene = new Scene();
+  readonly overlay = new Scene();
   readonly camera: PerspectiveCamera;
   viewport: Viewport;
 
@@ -32,13 +26,9 @@ export class Stage {
   constructor(readonly canvas: HTMLCanvasElement) {
     this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
     this.renderer.outputColorSpace = SRGBColorSpace;
-    this.renderer.toneMapping = ACESFilmicToneMapping;
     this.renderer.setClearColor(0x000000, 0);
+    this.renderer.autoClear = false;
 
-    // Environnement léger généré en code (pas de fichier HDRI à télécharger) pour les reflets.
-    const pmrem = new PMREMGenerator(this.renderer);
-    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    pmrem.dispose();
 
     this.camera = new PerspectiveCamera(config.stage.fov, 1, 1, 10000);
     this.viewport = this.measure();
@@ -70,9 +60,18 @@ export class Stage {
     this.last = now;
     this.elapsed += delta;
     for (const item of this.items) item.update(this.elapsed, delta);
-    this.renderer.render(this.scene, this.camera);
+    this.render();
     if (this.running) this.frame = requestAnimationFrame(this.tick);
   };
+
+  private render(): void {
+    this.renderer.clear();
+    this.renderer.render(this.scene, this.camera);
+    if (this.overlay.children.length) {
+      this.renderer.clearDepth();
+      this.renderer.render(this.overlay, this.camera);
+    }
+  }
 
   private measure(): Viewport {
     return {
@@ -99,7 +98,7 @@ export class Stage {
     this.viewport = this.measure();
     this.applySize();
     for (const item of this.items) item.resize?.(this.viewport);
-    if (!this.running) this.renderer.render(this.scene, this.camera);
+    if (!this.running) this.render();
   };
 
   // Boucle en pause quand l'onglet est masqué.

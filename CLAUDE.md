@@ -99,14 +99,15 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 - `bague.glb` sur un canvas Three.js plein écran, posé au-dessus de la bio, avec `pointer-events: none`.
 - **Physique réaliste de pièce qui roule** (l'écran = la table, vue de dessus), en boucle infinie. La bague est inclinée presque à plat (70-80° par rapport à la verticale), l'axe d'inclinaison tourne (précession, disque d'Euler), et elle ne tombe jamais.
-- **Le centre décrit des cercles concentriques autour du centre de l'écran, en phase avec la précession** : la position dépend de l'angle au sol (le bord qui touche la table est toujours vers l'extérieur). Le rayon du cercle respire lentement. **Pas de balade façon logo DVD** (Lissajous : rejeté par le DA).
-- Rotation propre par roulement sans glissement, bien visible. Précession rapide, qui accélère quand la bague s'aplatit (comme un vrai disque d'Euler).
-- Tous les réglages vont dans `config.ts` : inclinaison, souffle, vitesse de précession, rayons et période des cercles.
+- **Trajectoire imprévisible mais physique** : en roulant, le centre avance perpendiculairement au point de contact (le bord le plus bas), sur une courbe dont le rayon change au hasard (bruit lisse) → des boucles de tailles variées dont le centre se balade. Une « table légèrement creuse » la ramène vers le centre de l'écran. Les grandes boucles tournent moins vite (~1/√rayon), comme une vraie pièce. **Pas de balade façon logo DVD** (Lissajous : rejeté) **ni de cercles trop réguliers** (rejeté aussi).
+- Rotation propre par roulement sans glissement, bien visible. Précession rapide, qui accélère quand la bague s'aplatit (comme un vrai disque d'Euler). Inclinaison qui varie au hasard.
+- **Rendu métal poli très lisse, sans stries** : normales recalculées au build (`npm run assets`, équivalent Weighted Normal + Auto Smooth à 35°), matériau matcap d'un studio photo calculé en JS (`src/scene/environment.ts`, réglages `config.studio`). Pas de PMREM : sa compilation bloquait le mobile > 1 s.
+- Tous les réglages vont dans `config.ts` : inclinaison, souffle, vitesse de précession, trajectoire (`ring.orbit`), studio.
 
 ### Apparitions de projets (desktop uniquement)
 
-- **Pas une traînée** : des vignettes de projets apparaissent **au hasard, en fond** (derrière la bio et la bague), chacune pendant environ 1 seconde, en rétrécissant puis en disparaissant.
-- Taille d'environ 90 à 120 px de large, cadence aléatoire (140-320 ms).
+- **Pas une traînée** : des vignettes de projets apparaissent **au hasard, en fond** (derrière la bio et la bague), chacune pendant environ 2 secondes, en rétrécissant puis en disparaissant.
+- Taille d'environ 90 à 120 px de large, cadence aléatoire (280-640 ms).
 - Les images viennent de `work/music-culture` (vignettes WebP 240 px générées par `npm run assets`), tirées sans remise.
 - Placement : une option `snapToGrid` dans `config.ts`, pour s'aligner ou non sur la grille (8 colonnes). Valeurs de grille mesurées sur le croquis, à confirmer.
 - C'est fait en DOM, avec des `transform` et de l'`opacity` uniquement, pour les perfs.
@@ -123,7 +124,8 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 - Le curseur natif est caché, et un texte 3D (les GLB de `cursors/`) suit la souris en tournant en boucle sur lui-même.
 - Le clic sur l'icône curseur du header passe au curseur suivant. L'ordre : click → great → iluvyou → iwannahire → super → wow, puis on reboucle.
 - Curseur par défaut au chargement : **WOW!**. Au survol d'un élément cliquable (liens, boutons) : **CLICK!**.
-- Rendu dans un petit canvas dédié, ou dans le canvas principal en overlay. Choisis l'option la plus légère et explique pourquoi.
+- **Rendu dans le canvas principal, couche overlay** (dessinée après effacement de la profondeur, donc toujours devant) : pas de second contexte WebGL, et la boucle de rendu tourne déjà pour la bague. Le canvas est donc au premier plan (`z-index` 5, `pointer-events: none`) : la pluie passe aussi par-dessus le header.
+- Juste après un clic sur l'icône du header, le nouveau curseur s'affiche même si la souris est encore dessus (CLICK! reprend au survol suivant).
 - Le suivi de la souris est lissé avec un léger lerp.
 - Tout est désactivé sur les écrans tactiles (`pointer: coarse`).
 
@@ -147,7 +149,8 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 ## Performance et qualité
 
-- Lighthouse mobile : viser 85 ou plus en performance.
+- Lighthouse mobile : viser 85 ou plus en performance. **Mesuré : 95-96** (accessibilité 95, bonnes pratiques 100, SEO 100). Seul point a11y restant : Instagram/Mail empilés à 14 px (cibles tactiles < 24 px), choix de maquette.
+- Démarrage 3D découpé en petites tâches (`yieldToMain`, `compileAsync`) ; rien de lourd calculé dans le navigateur.
 - Le texte s'affiche avant la 3D, et la 3D apparaît en fondu une fois chargée.
 - Pixel ratio plafonné à 2. Mets la boucle de rendu en pause quand l'onglet est masqué.
 - Avec `prefers-reduced-motion`, la bague tourne lentement et la pluie et la traînée sont désactivées.
@@ -167,4 +170,4 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 Tous remplis (croquis, lien Instagram, mail, GLB Instagram, rose, curseur par défaut).
 
-- Question ouverte : avec WOW! par défaut et CLICK! au survol, l'icône curseur du header fait-elle toujours défiler les 6 curseurs ? (Pour l'instant : oui, elle change le curseur « de repos », CLICK! reste celui du survol.)
+- Question ouverte : avec WOW! par défaut et CLICK! au survol, l'icône curseur du header fait-elle toujours défiler les 6 curseurs ? (Implémenté : oui, elle change le curseur « de repos », CLICK! reste celui du survol.)

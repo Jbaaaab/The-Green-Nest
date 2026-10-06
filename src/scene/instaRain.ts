@@ -1,17 +1,9 @@
-import {
-  InstancedMesh,
-  Matrix4,
-  Mesh,
-  MeshStandardMaterial,
-  Quaternion,
-  Vector3,
-  type BufferGeometry,
-  type Material,
-} from 'three';
+import { InstancedMesh, Matrix4, Quaternion, Vector3, type Material } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import type * as Rapier from '@dimforge/rapier3d-compat';
 import { config } from '../config';
+import { firstMesh, polishedMetal } from './materials';
 import type { Stage, Updatable, Viewport } from './stage';
 
 type RapierModule = typeof Rapier;
@@ -137,19 +129,14 @@ export class InstaRain implements Updatable {
       new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(config.rain.url),
     ]);
 
-    let source: Mesh | null = null;
-    gltf.scene.traverse((o) => {
-      if (!source && o instanceof Mesh) source = o;
-    });
-    if (!source) throw new Error('instagram.glb : aucun mesh');
-    const src = source as Mesh<BufferGeometry, Material>;
-
     // Le GLB est posé à plat (normale = +Y, comme la bague) : on le redresse face caméra,
     // on le recentre et on le ramène à 1 de large. Ce calcul est inclus dans chaque matrice d'instance.
+    const src = firstMesh(gltf.scene);
+    const geometry = src.geometry;
     gltf.scene.updateMatrixWorld(true);
     const upright = new Matrix4().makeRotationX(Math.PI / 2).multiply(src.matrixWorld);
-    src.geometry.computeBoundingBox();
-    const box = src.geometry.boundingBox!.clone().applyMatrix4(upright);
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox!.clone().applyMatrix4(upright);
     const size = box.getSize(new Vector3());
     const center = box.getCenter(new Vector3());
     const width = Math.max(size.x, size.y);
@@ -159,10 +146,10 @@ export class InstaRain implements Updatable {
       .multiply(upright);
     this.dims.copy(size).divideScalar(width);
 
-    if (src.material instanceof MeshStandardMaterial) src.material.envMapIntensity = config.rain.envIntensity;
+    const material = polishedMetal(src.material as Material);
 
     const max = config.rain.maxInstances;
-    const mesh = new InstancedMesh(src.geometry, src.material, max);
+    const mesh = new InstancedMesh(geometry, material, max);
     mesh.frustumCulled = false;
     for (let i = 0; i < max; i++) mesh.setMatrixAt(i, this.zero);
     this.slots = Array.from({ length: max }, () => ({ body: null, age: 0, life: 0, width: 0 }));
