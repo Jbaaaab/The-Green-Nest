@@ -62,6 +62,22 @@
   --music-icon-y: 4px;
   --music-label-right: 14px;
   --music-label-y: 5px;
+
+  /* Pages projets (frames 16:5, 25:448, 25:560) */
+  --wnav-x0: 80px; /* cercle du 1er numéro */
+  --wnav-span: calc(100% - 176px); /* du 1er numéro au symbole de fin (8 intervalles égaux) */
+  --wnav-top: 127px; /* numéros : texte à 129 px */
+  --wnav-top-current: 114px; /* numéro courant, relevé et entouré */
+  --wnav-size: 15px;
+  --wnav-font: 14px;
+  --wnav-end: 12px;
+  --wnav-end-top: 128px;
+  --ptext-size: 14px; /* descriptions */
+  --pbtn-left: 60px;
+  --pbtn-bottom: 60px;
+  --pbtn-w: 148px;
+  --pbtn-h: 18px;
+  --pbtn-font: 14px;
 }
 
 @media (max-width: 767px) {
@@ -106,5 +122,21 @@
     --clock-bottom: calc(19 * var(--u));
     --music-right: calc(19.55 * var(--u));
     --music-bottom: calc(20.4 * var(--u));
+
+    /* Pages projets : pas de maquette mobile, mise à l'échelle des valeurs desktop */
+    --wnav-x0: calc(16 * var(--u));
+    --wnav-span: calc(100% - 44 * var(--u));
+    --wnav-top: calc(46 * var(--u));
+    --wnav-top-current: calc(38 * var(--u));
+    --wnav-size: calc(11.7 * var(--u));
+    --wnav-font: calc(10.902 * var(--u));
+    --wnav-end: calc(9.345 * var(--u));
+    --wnav-end-top: calc(46 * var(--u));
+    --ptext-size: calc(10.902 * var(--u));
+    --pbtn-left: calc(10 * var(--u));
+    --pbtn-bottom: calc(46 * var(--u));
+    --pbtn-w: calc(115.3 * var(--u));
+    --pbtn-h: calc(14 * var(--u));
+    --pbtn-font: calc(10.902 * var(--u));
   }
 }

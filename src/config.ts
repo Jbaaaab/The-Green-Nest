@@ -88,6 +88,31 @@ export const config = {
     depth: 120, // profondeur de la « boîte » où s'empilent les logos, en px
   },
 
+  // Pages projets (Works) : on y accède en scrollant depuis l'accueil.
+  works: {
+    wheelPerSection: 700, // px de molette pour passer une section entière
+    touchPerSection: 0.6, // fraction de la hauteur d'écran à glisser au doigt pour une section
+    snapThreshold: 0.12, // en fin de geste, au-delà de cette fraction on passe à la section suivante
+    // Cadre du contenu, en px de maquette depuis les bords (frames 16:5, 25:448, 25:560).
+    box: {
+      desktop: { side: 60, top: 135, bottom: 140 },
+      mobile: { side: 10, top: 66, bottom: 70 }, // hors maquette
+    },
+    follow: 5, // vitesse à laquelle la page suit le geste (plus haut = plus sec)
+    followReduced: 14, // idem en prefers-reduced-motion (simple fondu, plus rapide)
+
+    // Fenêtres volantes sur un cylindre invisible (cf. symbolsofwealth.studio).
+    radiusFactor: 1.1, // rayon du cylindre, en largeurs d'écran
+    maxAngleDeg: 62, // angle de la fenêtre quand elle est hors champ
+    stagger: 0.42, // décalage entre fenêtres (0 = toutes ensemble, 0,6 = très étalées)
+    jitter: 0.12, // part de hasard dans ce décalage
+    fadeStart: 0.45, // phase où la fenêtre commence à disparaître…
+    fadeEnd: 0.9, // …et où elle a disparu (le cercle ne se voit pas)
+
+    digitSpinSeconds: 1.4, // le chiffre entouré tourne sur lui-même quand sa page arrive
+    digitSpinTurns: 1,
+  },
+
   // Apparitions de projets en fond (desktop uniquement) : des vignettes surgissent au hasard
   // sur la page, vivent ~1 s en rétrécissant, puis disparaissent.
   trail: {

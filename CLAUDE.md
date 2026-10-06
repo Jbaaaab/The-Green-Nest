@@ -129,6 +129,19 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 - Le suivi de la souris est lissé avec un léger lerp.
 - Tout est désactivé sur les écrans tactiles (`pointer: coarse`).
 
+### Pages projets (Works)
+
+- Maquettes : LONGTEMPS `16:5`, FORMULA ONE `25:448`, TAKE CARE `25:560` (frames 1440×1024). **Carré rouge sur la maquette = asset à mettre.**
+- **On y accède en scrollant depuis l'accueil** (scroll virtuel `src/nav.ts` : molette/trackpad, tactile, clavier ; la page suit le geste puis se cale). Ancre d'URL par projet (`#longtemps`, `#formula-one`, `#take-care`). Le logo et le symbole en fin de rangée ramènent à l'accueil, « Works » ouvre le projet 1.
+- **Comportement inspiré de symbolsofwealth.studio** : les fenêtres arrivent par le côté en volant sur un grand cylindre invisible, l'une après l'autre (décalage + hasard), mais **on ne voit qu'une page (une vidéo) à la fois** : le cercle ne se voit pas. L'accueil (bio + bague) repart de la même façon. Réglages : `config.works`.
+- Rangée 1-8 + symbole en haut ; **le numéro courant est le chiffre entouré en 3D** (GLB `digit/n`), qui fait un tour sur lui-même quand sa page arrive.
+- Bouton vert « PROJET + » en bas à gauche : UI seulement pour l'instant (action du « + » à définir).
+- LONGTEMPS et FORMULA ONE : un grand cadre vidéo — **placeholders gris** en attendant les vidéos. Les assets F1 sont dans `assets-src/work/formula one/` (pas encore renommés ni utilisés).
+- TAKE CARE : vidéo `case-take-care` au centre, 14 carrés d'assets autour (`PROJECTS.takeCare` dans `scripts/optimize-assets.mjs`). **Une vidéo à la fois** : survoler un carré vidéo le lance et met la centrale en pause.
+- Contenu (textes avec trous, médias) : `src/works/projects.ts`. Médias générés par `npm run assets` (ffmpeg requis) → `public/work/take-care/`, `src/works/media.generated.json`.
+- Mobile (hors maquette) : même structure ; TAKE CARE n'affiche que la vidéo centrale.
+- Perf : pages construites quand le navigateur est inactif, pages lointaines retirées du rendu, médias chargés à l'approche.
+
 ### Horloge
 
 - En bas à droite sur desktop, en bas à gauche sur mobile : "Paris HH:MM" et "Seoul HH:MM", en temps réel.
@@ -165,6 +178,7 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 4. **Pluie Instagram** (avec un placeholder tant que le GLB manque).
 5. **Curseur 3D** (avec un placeholder tant que les GLB ne sont pas ré-exportés).
 6. **Passe perfs et mobile**, puis déploiement de preview.
+7. **Pages projets** : LONGTEMPS (1), FORMULA ONE (2) avec placeholders vidéo, TAKE CARE (3) avec ses assets. Ensuite : vidéos 1 et 2, projets 4 à 8, action du bouton « + ».
 
 ## Trous à remplir par le DA
 

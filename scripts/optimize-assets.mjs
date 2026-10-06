@@ -1,8 +1,10 @@
 // Génère les versions optimisées de assets-src/ dans public/.
 // Les originaux ne sont jamais modifiés. Lancer avec : npm run assets
 
-import { mkdir, readdir, stat, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { dedup, prune, unweld, weld, meshopt } from '@gltf-transform/functions';
@@ -21,6 +23,8 @@ const MODELS = [
     `cursors/glb/${n}.glb`,
     `cursors/${n}.glb`,
   ]),
+  // Chiffres entourés de la rangée des projets (le numéro courant tourne en 3D).
+  ...['1', '2', '3', '4', '5', '6', '7', '8'].map((n) => [`digit/${n}.glb`, `digits/${n}.glb`]),
 ];
 
 const kb = (bytes) => `${(bytes / 1024).toFixed(0)} Ko`;
@@ -155,6 +159,100 @@ async function optimizeThumbs() {
   console.log(`${files.length} vignettes ${THUMBS.from}`.padEnd(28), `${kb(before).padStart(7)} → ${kb(after).padStart(7)}`);
 }
 
+// Médias des pages projets. Vidéos en MP4 H.264 sans son (lecture auto, muette), image d'attente WebP.
+// Nécessite ffmpeg dans le PATH. Écrit src/works/media.generated.json, importé par src/works/projects.ts.
+const PROJECTS = {
+  takeCare: {
+    from: 'work/take-care-beauty',
+    to: 'work/take-care',
+    main: 'case-take-care.mov', // grand rectangle central
+    mainWidth: 720, // ~2x les 371 px affichés
+    sideWidth: 480, // ~2x les 237 px affichés
+    // Les 14 carrés autour, dans l'ordre de lecture de la maquette (ligne par ligne).
+    side: [
+      'airdrop.png', '02.mp4', '05-1.png', 'tickets-v2.mp4', 'mess.png',
+      'kuromi.mp4', '3-1-1.png', 'take-care-saint-valentin-v2.mp4', 'dsc3276-1.png',
+      'stop-mo-trousse.mp4', 'kuromi-1.png', 'whatsinmybag.mp4', 'take-care-de-paques.mp4', 'corporate-guuuurl-v2.mp4',
+    ],
+  },
+};
+
+const run = promisify(execFile);
+const isVideo = (f) => /\.(mp4|mov|webm)$/i.test(f);
+const base = (f) => f.replace(/\.[^.]+$/, '');
+
+async function newer(output, input) {
+  try {
+    return (await stat(output)).mtimeMs >= (await stat(input)).mtimeMs;
+  } catch {
+    return false;
+  }
+}
+
+async function encodeVideo(input, output, width, crf) {
+  if (await newer(output, input)) return;
+  await run('ffmpeg', [
+    '-y', '-loglevel', 'error', '-i', input, '-an',
+    '-vf', `scale=${width}:-2:flags=lanczos,fps=30`,
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+    output,
+  ]);
+}
+
+async function videoStill(input, output, width) {
+  if (await newer(output, input)) return;
+  const tmp = output.replace(/\.webp$/, '.tmp.png');
+  await run('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '0.8', '-i', input, '-frames:v', '1', '-vf', `scale=${width}:-2`, tmp]);
+  await sharp(tmp).webp({ quality: 80 }).toFile(output);
+  await rm(tmp);
+}
+
+async function imageStill(input, output, width) {
+  if (await newer(output, input)) return;
+  await sharp(input).resize({ width, withoutEnlargement: true }).webp({ quality: 80 }).toFile(output);
+}
+
+async function optimizeProjects() {
+  try {
+    await run('ffmpeg', ['-version']);
+  } catch {
+    console.warn('ffmpeg introuvable : médias projets ignorés (installe ffmpeg puis relance npm run assets).');
+    return;
+  }
+
+  const media = {};
+  for (const [key, p] of Object.entries(PROJECTS)) {
+    await mkdir(out(p.to), { recursive: true });
+    const url = (f) => `/${p.to}/${f}`;
+
+    const mainIn = src(`${p.from}/${p.main}`);
+    await encodeVideo(mainIn, out(`${p.to}/${base(p.main)}.mp4`), p.mainWidth, 26);
+    await videoStill(mainIn, out(`${p.to}/${base(p.main)}.webp`), p.mainWidth);
+
+    const side = [];
+    for (const f of p.side) {
+      const input = src(`${p.from}/${f}`);
+      const still = `${base(f)}.webp`;
+      if (isVideo(f)) {
+        await encodeVideo(input, out(`${p.to}/${base(f)}.mp4`), p.sideWidth, 28);
+        await videoStill(input, out(`${p.to}/${still}`), p.sideWidth);
+        side.push({ image: url(still), video: url(`${base(f)}.mp4`) });
+      } else {
+        await imageStill(input, out(`${p.to}/${still}`), p.sideWidth);
+        side.push({ image: url(still) });
+      }
+    }
+
+    media[key] = { main: { video: url(`${base(p.main)}.mp4`), poster: url(`${base(p.main)}.webp`) }, side };
+    const files = await readdir(out(p.to));
+    let total = 0;
+    for (const f of files) total += (await stat(out(`${p.to}/${f}`))).size;
+    console.log(`${p.to}`.padEnd(28), `${files.length} fichiers, ${kb(total)}`);
+  }
+  await writeFile(path.join(root, 'src/works/media.generated.json'), JSON.stringify(media, null, 2) + '\n');
+}
+
 const only = process.argv[2];
 if (!only || only === 'models') await optimizeModels();
 if (!only || only === 'thumbs') await optimizeThumbs();
+if (!only || only === 'projects') await optimizeProjects();

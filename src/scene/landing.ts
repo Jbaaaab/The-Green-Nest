@@ -1,6 +1,9 @@
 import { config } from '../config';
 import { WorkTrail } from '../ui/workTrail';
+import { nav } from '../nav';
+import { PROJECTS } from '../works/projects';
 import { Cursor3D } from './cursor';
+import { Digits3D } from './digits';
 import { InstaRain } from './instaRain';
 import { Ring } from './ring';
 import { Stage, type Viewport } from './stage';
@@ -31,7 +34,8 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
       trail.resize(v);
     },
     update: (time) => {
-      if (!vp.mobile && !coarse.matches && !reduced.matches) trail.update(time);
+      // (seulement sur l'accueil : coupées dès qu'on scrolle vers les projets)
+      if (!vp.mobile && !coarse.matches && !reduced.matches && nav.p < 0.3) trail.update(time);
     },
   });
 
@@ -53,6 +57,11 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
 
   canvas.style.transitionDuration = `${config.stage.fadeInMs}ms`;
   requestAnimationFrame(() => canvas.classList.add('is-ready'));
+
+  // Chiffres entourés 3D de la rangée des projets.
+  Digits3D.load(stage, PROJECTS.map((p) => p.number))
+    .then((digits) => stage.add(digits))
+    .catch((err) => console.error('Chiffres 3D indisponibles :', err));
 
   // Curseur 3D : seulement avec une vraie souris. Le curseur natif n'est caché qu'une fois les GLB chargés.
   if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {

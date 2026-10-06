@@ -1,0 +1,60 @@
+{
+  "takeCare": {
+    "main": {
+      "video": "/work/take-care/case-take-care.mp4",
+      "poster": "/work/take-care/case-take-care.webp"
+    },
+    "side": [
+      {
+        "image": "/work/take-care/airdrop.webp"
+      },
+      {
+        "image": "/work/take-care/02.webp",
+        "video": "/work/take-care/02.mp4"
+      },
+      {
+        "image": "/work/take-care/05-1.webp"
+      },
+      {
+        "image": "/work/take-care/tickets-v2.webp",
+        "video": "/work/take-care/tickets-v2.mp4"
+      },
+      {
+        "image": "/work/take-care/mess.webp"
+      },
+      {
+        "image": "/work/take-care/kuromi.webp",
+        "video": "/work/take-care/kuromi.mp4"
+      },
+      {
+        "image": "/work/take-care/3-1-1.webp"
+      },
+      {
+        "image": "/work/take-care/take-care-saint-valentin-v2.webp",
+        "video": "/work/take-care/take-care-saint-valentin-v2.mp4"
+      },
+      {
+        "image": "/work/take-care/dsc3276-1.webp"
+      },
+      {
+        "image": "/work/take-care/stop-mo-trousse.webp",
+        "video": "/work/take-care/stop-mo-trousse.mp4"
+      },
+      {
+        "image": "/work/take-care/kuromi-1.webp"
+      },
+      {
+        "image": "/work/take-care/whatsinmybag.webp",
+        "video": "/work/take-care/whatsinmybag.mp4"
+      },
+      {
+        "image": "/work/take-care/take-care-de-paques.webp",
+        "video": "/work/take-care/take-care-de-paques.mp4"
+      },
+      {
+        "image": "/work/take-care/corporate-guuuurl-v2.webp",
+        "video": "/work/take-care/corporate-guuuurl-v2.mp4"
+      }
+    ]
+  }
+}

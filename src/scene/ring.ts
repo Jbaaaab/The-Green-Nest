@@ -1,7 +1,9 @@
-import { Box3, Group, Quaternion, Vector2, Vector3, type Object3D } from 'three';
+import { Box3, Group, Mesh, Quaternion, Vector2, Vector3, type Material, type Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { config } from '../config';
+import { nav } from '../nav';
+import { place, windowPhase } from '../works/cylinder';
 import { applyPolishedMetal } from './materials';
 import { createFractalNoise1D } from './noise';
 import type { Updatable, Viewport } from './stage';
@@ -40,9 +42,14 @@ export class Ring implements Updatable {
   private qb = new Quaternion();
   private qc = new Quaternion();
 
+  private materials: Material[] = [];
+
   private constructor(model: Object3D) {
     this.root.add(this.wobble);
     this.wobble.add(model);
+    model.traverse((o) => {
+      if (o instanceof Mesh) this.materials.push(o.material as Material);
+    });
   }
 
   static async load(): Promise<Ring> {
@@ -108,7 +115,16 @@ export class Ring implements Updatable {
     this.qb.setFromAxisAngle(X, alpha);
     this.qc.setFromAxisAngle(Z, this.psi);
     this.wobble.quaternion.copy(this.qa).multiply(this.qb).multiply(this.qc);
-    this.root.position.set(this.pos.x, this.pos.y, 0);
+
+    // Quand on scrolle vers les projets, la bague repart avec l'accueil sur le cylindre des fenêtres.
+    const exit = place(windowPhase(-nav.p, 0.5, 0.5), this.pos.x, this.viewport.width, reduced);
+    this.root.position.set(this.pos.x + exit.dx, this.pos.y, exit.dz);
+    this.root.rotation.y = exit.rotY;
+    this.root.visible = exit.opacity > 0.01;
+    for (const m of this.materials) {
+      m.transparent = exit.opacity < 1;
+      m.opacity = exit.opacity;
+    }
   }
 }
 

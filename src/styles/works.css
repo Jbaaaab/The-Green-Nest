@@ -1,0 +1,163 @@
+/* ---------- Pages projets (Works) ---------- */
+
+/* L'accueil devient une « fenêtre » plein écran qui repart sur le côté. */
+main {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+}
+
+.works {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.works-stage,
+.project {
+  position: absolute;
+  inset: 0;
+}
+
+/* Chaque page a sa perspective centrée sur l'écran (même caméra que la 3D). */
+.project {
+  perspective: var(--persp, 2000px);
+  perspective-origin: 50% 50%;
+}
+
+.project__win {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: auto;
+  visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.project__win img,
+.project__win video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Placeholder tant que la vidéo n'est pas livrée (rouge sur la maquette = asset à venir). */
+.project__main.is-placeholder {
+  background: #ececec;
+}
+
+.project__side {
+  background: #f2f2f2;
+}
+
+.project__side video {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.project__side.is-playing video {
+  opacity: 1;
+}
+
+.project__text {
+  overflow: visible;
+  pointer-events: none;
+  margin: 0;
+  font-size: var(--ptext-size);
+  text-align: center;
+  white-space: pre-wrap;
+}
+
+.project__text span {
+  display: block;
+}
+
+/* Rangée 1-8 */
+.works-nav {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 4;
+  visibility: hidden;
+}
+
+.works-nav__item {
+  position: absolute;
+  left: calc(var(--wnav-x0) + var(--wnav-span) * var(--k) / 8);
+  top: var(--wnav-top);
+  width: var(--wnav-size);
+  height: var(--wnav-size);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: var(--wnav-font);
+  line-height: 1;
+  opacity: 0.5;
+  transition: top 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.45s;
+}
+
+.works-nav__item.is-empty {
+  pointer-events: none;
+}
+
+.works-nav__item.is-current {
+  top: var(--wnav-top-current);
+  opacity: 1;
+}
+
+/* Cercle en CSS tant que le chiffre 3D n'est pas chargé (ou sans WebGL). */
+html:not(.has-3d-digits) .works-nav__item.is-current {
+  box-shadow: inset 0 0 0 1.5px var(--color-text);
+}
+
+.has-3d-digits .works-nav__item.is-current .works-nav__num {
+  visibility: hidden;
+}
+
+.works-nav__end {
+  position: absolute;
+  left: calc(var(--wnav-x0) + 4px + var(--wnav-span));
+  top: var(--wnav-end-top);
+  width: var(--wnav-end);
+  height: var(--wnav-end);
+}
+
+.works-nav__end img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Bouton vert « PROJET + » (composant Figma 16:313) */
+.project-btn {
+  position: absolute;
+  z-index: 4;
+  left: var(--pbtn-left);
+  bottom: var(--pbtn-bottom);
+  width: var(--pbtn-w);
+  height: var(--pbtn-h);
+  background: var(--color-green);
+  font-size: var(--pbtn-font);
+  text-align: left;
+  visibility: hidden;
+}
+
+.project-btn__label {
+  position: absolute;
+  left: 6.76%;
+  top: 16.67%;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.project-btn__plus {
+  position: absolute;
+  right: 6.76%;
+  top: 16.67%;
+  width: 8.11%;
+  height: 66.67%;
+}
