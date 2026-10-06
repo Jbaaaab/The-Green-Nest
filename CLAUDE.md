@@ -21,7 +21,9 @@ Ce fichier est lu automatiquement par Claude Code à chaque session. Il contient
 ## Figma
 
 - Fichier : `WEBSITE-2027`, fileKey `nCrXLpigcjAbPhawgdT8kV`
-- Landing desktop (1440×1024) : https://www.figma.com/design/nCrXLpigcjAbPhawgdT8kV/WEBSITE-2027?node-id=2-3
+- **Landing desktop de référence : MacBook Pro 14" (1512×982)** : https://www.figma.com/design/nCrXLpigcjAbPhawgdT8kV/WEBSITE-2027?node-id=53-586
+  - **Tailles fixes en px** (texte, bio, bague), quelle que soit la largeur d'écran. Positions horizontales en % de la largeur + décalage (contraintes Figma : Works à 25 % + 35 px, About à 37,5 % + 23 px, Instagram/Mail et dock calés sur 87,5 %). Ne pas tout mettre à l'échelle de la largeur : c'était faux.
+- Ancienne landing desktop (1440×1024, remplacée par la précédente) : https://www.figma.com/design/nCrXLpigcjAbPhawgdT8kV/WEBSITE-2027?node-id=2-3
 - Landing mobile (402×874) : https://www.figma.com/design/nCrXLpigcjAbPhawgdT8kV/WEBSITE-2027?node-id=46-410
 - Croquis de la traînée de frames : `assets-src/refs/croquis-trainee.png` (frames sombres en diagonale vers le bas-droite, la plus récente en haut et la plus grande, les plus anciennes rétrécissent et pâlissent ; vignette ≈ 91×96 px)
 
@@ -83,7 +85,7 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 ### Header (desktop)
 
-- **À gauche** : le symbole du logo (`LOGO SYMB.svg`, vert `#41f373`) suivi de "DESIGNER WITH A MONSTERA".
+- **À gauche** : le symbole du logo (noir dans Figma, `src/assets/icons/logo.svg`) suivi de "DESIGNER WITH A MONSTERA". Sous ~1080 px de large (hors maquette), "DWAM" pour ne pas toucher "Works".
 - **Au centre** : les liens Works et About, qui ne mènent nulle part pour l'instant (`#`).
 - **L'icône curseur** : elle change le curseur (voir la section Curseur).
 - **À droite** : Instagram → https://www.instagram.com/designer_with_a_monstera/, et Mail → `mailto:hello@designer-with-a-monstera.art`.
@@ -96,18 +98,18 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 ### Bague (élément central)
 
 - `bague.glb` sur un canvas Three.js plein écran, posé au-dessus de la bio, avec `pointer-events: none`.
-- **Mouvement de disque d'Euler en boucle infinie.** La bague est inclinée presque à plat (entre 70 et 80° par rapport à la verticale, à régler), et c'est l'axe d'inclinaison qui tourne autour de l'axe vertical : c'est une précession, pas une rotation 360° sur elle-même. Elle ne tombe jamais. La vitesse est constante, avec un léger "souffle" sur l'angle.
-- **En plus, la bague se déplace lentement** autour du centre (par exemple en courbe de Lissajous douce) pour révéler la bio petit à petit. Ce déplacement doit être lent et lisible. Si la lisibilité ne marche pas, on changera d'approche.
-- Tous les réglages vont dans `config.ts` : inclinaison, vitesse de précession, amplitude et vitesse du déplacement.
+- **Physique réaliste de pièce qui roule** (l'écran = la table, vue de dessus), en boucle infinie. La bague est inclinée presque à plat (70-80° par rapport à la verticale), l'axe d'inclinaison tourne (précession, disque d'Euler), et elle ne tombe jamais.
+- **Le centre décrit des cercles concentriques autour du centre de l'écran, en phase avec la précession** : la position dépend de l'angle au sol (le bord qui touche la table est toujours vers l'extérieur). Le rayon du cercle respire lentement. **Pas de balade façon logo DVD** (Lissajous : rejeté par le DA).
+- Rotation propre par roulement sans glissement, bien visible. Précession rapide, qui accélère quand la bague s'aplatit (comme un vrai disque d'Euler).
+- Tous les réglages vont dans `config.ts` : inclinaison, souffle, vitesse de précession, rayons et période des cercles.
 
-### Traînée de frames (desktop uniquement)
+### Apparitions de projets (desktop uniquement)
 
-- Des vignettes de projets apparaissent le long du trajet de la bague, comme une traînée (voir le croquis).
-- Chaque frame vit environ 1 seconde. La plus récente est la plus grande et la plus opaque ; en vieillissant, elle rétrécit et disparaît en fondu.
-- Taille d'environ 90 à 120 px dans la maquette, cadence d'apparition à régler (vers 150-250 ms).
-- Les images viennent de `work/music-culture`, en boucle.
-- Placement : une option `snapToGrid` dans `config.ts`, pour s'aligner ou non sur la grille Figma (8 colonnes). On testera les deux.
-- C'est fait en DOM au-dessus du canvas, avec des `transform` et de l'`opacity` uniquement, pour les perfs.
+- **Pas une traînée** : des vignettes de projets apparaissent **au hasard, en fond** (derrière la bio et la bague), chacune pendant environ 1 seconde, en rétrécissant puis en disparaissant.
+- Taille d'environ 90 à 120 px de large, cadence aléatoire (140-320 ms).
+- Les images viennent de `work/music-culture` (vignettes WebP 240 px générées par `npm run assets`), tirées sans remise.
+- Placement : une option `snapToGrid` dans `config.ts`, pour s'aligner ou non sur la grille (8 colonnes). Valeurs de grille mesurées sur le croquis, à confirmer.
+- C'est fait en DOM, avec des `transform` et de l'`opacity` uniquement, pour les perfs.
 
 ### Pluie Instagram
 

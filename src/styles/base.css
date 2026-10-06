@@ -63,7 +63,7 @@ button {
   position: absolute;
   inset: 0 0 auto 0;
   z-index: 4;
-  font-size: calc(var(--nav-size) * var(--u));
+  font-size: var(--nav-size);
   white-space: nowrap;
 }
 
@@ -72,18 +72,18 @@ button {
 }
 
 .brand {
-  left: calc(var(--brand-x) * var(--u));
-  top: calc(var(--header-y) * var(--u));
+  left: var(--brand-x);
+  top: var(--header-y);
   display: block;
-  padding-left: calc(var(--brand-gap) * var(--u));
+  padding-left: var(--brand-gap);
 }
 
 .brand__icon {
   position: absolute;
   left: 0;
   top: 0;
-  width: calc(var(--brand-icon) * var(--u));
-  height: calc(var(--brand-icon) * var(--u));
+  width: var(--brand-icon);
+  height: var(--brand-icon);
 }
 
 .brand__short {
@@ -91,20 +91,20 @@ button {
 }
 
 .nav-works {
-  left: calc(var(--works-x) * var(--u));
-  top: calc(var(--header-y) * var(--u));
+  left: var(--works-x);
+  top: var(--header-y);
 }
 
 .nav-about {
-  left: calc(var(--about-x) * var(--u));
-  top: calc(var(--header-y) * var(--u));
+  left: var(--about-x);
+  top: var(--header-y);
 }
 
 .cursor-btn {
-  left: calc(var(--cursor-btn-x) * var(--u));
-  top: calc(var(--cursor-btn-y) * var(--u));
-  width: calc(var(--cursor-btn-w) * var(--u));
-  height: calc(var(--cursor-btn-h) * var(--u));
+  left: var(--cursor-btn-x);
+  top: var(--cursor-btn-y);
+  width: var(--cursor-btn-w);
+  height: var(--cursor-btn-h);
   transform: rotate(180deg);
 }
 
@@ -117,9 +117,9 @@ button {
 }
 
 .contact {
-  right: calc(var(--contact-right) * var(--u));
-  top: calc(var(--contact-y) * var(--u));
-  font-size: calc(var(--contact-size) * var(--u));
+  right: var(--contact-right);
+  top: var(--contact-y);
+  font-size: var(--contact-size);
   text-align: right;
 }
 
@@ -130,7 +130,7 @@ button {
 .contact a + a {
   position: absolute;
   right: 0;
-  top: calc(var(--contact-step) * var(--u));
+  top: var(--contact-step);
 }
 
 /* ---------- Bio ---------- */
@@ -140,10 +140,10 @@ button {
   z-index: 1;
   left: 50%;
   top: 50%;
-  width: calc(var(--bio-width) * var(--u));
+  width: var(--bio-width);
   margin: 0;
   transform: translate(-50%, -50%);
-  font-size: calc(var(--bio-size) * var(--u));
+  font-size: var(--bio-size);
   font-weight: var(--weight-bold);
   text-align: center;
   white-space: pre-wrap;
@@ -151,7 +151,7 @@ button {
 }
 
 .bio__cool {
-  font-size: calc(var(--bio-cool-size) * var(--u));
+  font-size: var(--bio-cool-size);
   font-weight: var(--weight-extrabold);
 }
 
@@ -177,12 +177,12 @@ button {
   opacity: 1;
 }
 
-/* ---------- Traînée de frames : au-dessus du canvas ---------- */
+/* ---------- Apparitions de projets : en fond, derrière la bio et la bague ---------- */
 
 .trail {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 0;
   pointer-events: none;
   overflow: hidden;
 }
@@ -191,7 +191,9 @@ button {
   position: absolute;
   left: 0;
   top: 0;
+  display: block;
   opacity: 0;
+  object-fit: cover;
   transform-origin: center;
   will-change: transform, opacity;
 }
@@ -207,22 +209,22 @@ button {
 .dock {
   position: absolute;
   z-index: 4;
-  right: calc(var(--dock-right) * var(--u));
-  bottom: calc(var(--dock-bottom) * var(--u));
-  width: calc(var(--music-w) * var(--u));
-  height: calc((var(--clock-offset-y) + var(--music-h)) * var(--u));
-  font-size: calc(var(--dock-size) * var(--u));
+  left: var(--dock-x);
+  top: var(--dock-y);
+  width: var(--music-w);
+  height: calc(var(--music-gap) + var(--music-h));
+  font-size: var(--dock-size);
   white-space: nowrap;
 }
 
 .clock {
   position: absolute;
-  left: calc(var(--clock-offset-x) * var(--u));
+  left: var(--clock-offset-x);
   top: 0;
-  height: calc(var(--clock-h) * var(--u));
+  height: var(--clock-h);
   margin: 0;
-  padding-left: calc(var(--clock-text-x) * var(--u));
-  padding-top: calc(var(--clock-text-y) * var(--u));
+  padding-left: var(--clock-text-x);
+  padding-top: var(--clock-text-y);
 }
 
 .clock__walk,
@@ -233,15 +235,15 @@ button {
 .clock__walk {
   left: 0;
   top: 0;
-  width: calc(var(--clock-icon) * var(--u));
-  height: calc(var(--clock-icon) * var(--u));
+  width: var(--clock-icon);
+  height: var(--clock-icon);
 }
 
 .clock__heart {
-  left: calc(var(--clock-heart-x) * var(--u));
-  top: calc(var(--clock-heart-y) * var(--u));
-  width: calc(var(--clock-heart-w) * var(--u));
-  height: calc(var(--clock-heart-h) * var(--u));
+  left: var(--clock-heart-x);
+  top: var(--clock-heart-y);
+  width: var(--clock-heart-w);
+  height: var(--clock-heart-h);
 }
 
 .clock__line {
@@ -252,28 +254,29 @@ button {
   position: absolute;
   left: 0;
   bottom: 0;
-  width: calc(var(--music-w) * var(--u));
-  height: calc(var(--music-h) * var(--u));
+  width: var(--music-w);
+  height: var(--music-h);
   background: var(--color-green);
 }
 
 .music__icon {
   position: absolute;
-  left: calc(var(--music-icon-x) * var(--u));
-  top: calc(var(--music-icon-y) * var(--u));
-  width: calc(var(--music-icon) * var(--u));
-  height: calc(var(--music-icon) * var(--u));
+  left: var(--music-icon-x);
+  top: var(--music-icon-y);
+  width: var(--music-icon);
+  height: var(--music-icon);
 }
 
 .music__label {
   position: absolute;
-  right: calc(var(--music-label-right) * var(--u));
-  top: calc(var(--music-label-y) * var(--u));
+  right: var(--music-label-right);
+  top: var(--music-label-y);
 }
 
-/* ---------- Mobile (frame 46:410) ---------- */
+/* ---------- Écrans intermédiaires (hors maquette) ----------
+   Sous ~1080 px, le nom complet toucherait "Works" (placé à 25 % + 35 px) : on affiche DWAM. */
 
-@media (max-width: 767px) {
+@media (max-width: 1079px) {
   .brand__full {
     display: none;
   }
@@ -281,7 +284,11 @@ button {
   .brand__short {
     display: inline;
   }
+}
 
+/* ---------- Mobile (frame 46:410) ---------- */
+
+@media (max-width: 767px) {
   .cursor-btn {
     display: none;
   }
@@ -301,15 +308,15 @@ button {
   }
 
   .clock {
-    left: calc(var(--clock-left) * var(--u));
+    left: var(--clock-left);
     top: auto;
-    bottom: calc(var(--clock-bottom) * var(--u));
+    bottom: var(--clock-bottom);
   }
 
   .music {
     left: auto;
-    right: calc(var(--music-right) * var(--u));
-    bottom: calc(var(--music-bottom) * var(--u));
+    right: var(--music-right);
+    bottom: var(--music-bottom);
   }
 }
 

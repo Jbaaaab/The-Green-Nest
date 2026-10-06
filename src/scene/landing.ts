@@ -14,7 +14,7 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
   // Traînée : desktop à la souris uniquement, coupée en prefers-reduced-motion.
   const coarse = window.matchMedia('(pointer: coarse)');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const trail = new WorkTrail(canvas.parentElement!, () => document.querySelector('.bio--desktop'));
+  const trail = new WorkTrail(canvas.parentElement!);
   let vp: Viewport = stage.viewport;
   stage.add({
     resize: (v) => {

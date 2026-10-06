@@ -14,31 +14,33 @@ export const config = {
   ring: {
     url: '/models/bague.glb',
 
-    // Diamètre à l'écran, en px de maquette (mesuré sur le rendu Figma).
-    diameter: { desktop: 260, mobile: 200 },
+    // Diamètre à l'écran, en px de maquette (mesuré sur le rendu Figma 1512 et ta capture 1920).
+    diameter: { desktop: 264, mobile: 200 },
 
-    // Disque d'Euler. L'angle se mesure entre le plan de la bague et la verticale,
-    // la verticale étant l'axe de vue (on regarde la bague « posée sur l'écran », vue de dessus).
-    // 90 = parfaitement à plat face à nous ; 70-80 = légère inclinaison.
+    // La bague roule comme une pièce sur une table, vue de dessus (l'écran est la table).
+    // tiltDeg : angle entre le plan de la bague et la verticale. 90 = à plat, 70-80 = légèrement penchée.
     tiltDeg: 75,
-    breathDeg: 3, // amplitude du « souffle » sur l'inclinaison
-    breathPeriod: 6, // secondes pour un souffle complet
-    precessionPeriod: 2.4, // secondes pour un tour complet de l'axe d'inclinaison
-    // Rotation propre de la bague due au roulement (1 = physique, 0 = aucune).
-    rollFactor: 1,
+    breathDeg: 3, // « souffle » sur l'inclinaison
+    breathPeriod: 7, // secondes pour un souffle complet
 
-    // Déplacement lent autour du centre (courbe de Lissajous).
-    // Amplitudes en fraction de la largeur / hauteur de l'écran.
-    drift: {
-      amplitudeX: 0.22,
-      amplitudeY: 0.16,
-      periodX: 34, // secondes
-      periodY: 23, // secondes
+    // Un tour de précession (l'axe d'inclinaison fait le tour) à l'inclinaison de référence.
+    // Comme un vrai disque d'Euler, ça accélère quand la bague s'aplatit et ralentit quand elle se redresse.
+    precessionPeriod: 1.3,
+
+    // Le centre de la bague décrit des cercles autour du centre de l'écran, en phase avec l'inclinaison
+    // (le bord qui touche la « table » est toujours vers l'extérieur). Le rayon varie lentement → cercles concentriques.
+    orbit: {
+      radiusMin: 15, // px de maquette
+      radiusMax: 70, // px de maquette
+      period: 18, // secondes pour passer du petit au grand cercle et revenir
     },
 
-    // prefers-reduced-motion : précession ralentie, pas de déplacement.
+    // Rotation propre due au roulement sans glissement (1 = physique, 0 = aucune).
+    rollFactor: 1,
+
+    // prefers-reduced-motion : précession lente, sur place.
     reducedMotion: {
-      precessionPeriod: 12,
+      precessionPeriod: 10,
     },
 
     material: {
@@ -62,20 +64,16 @@ export const config = {
     envIntensity: 1, // reflets sur le métal rose
   },
 
-  // Traînée de frames (desktop uniquement). Elle tourne sur sa propre orbite autour de la bio.
+  // Apparitions de projets en fond (desktop uniquement) : des vignettes surgissent au hasard
+  // sur la page, vivent ~1 s en rétrécissant, puis disparaissent.
   trail: {
-    orbit: {
-      period: 6, // secondes pour un tour complet
-      direction: 1, // 1 = sens horaire, -1 = anti-horaire
-      padX: 40, // px de maquette ajoutés de chaque côté de la bio
-      padY: 90, // px de maquette ajoutés au-dessus et en dessous
-    },
-    intervalMs: 200, // cadence d'apparition (150-250)
-    lifeMs: 1000, // durée de vie d'une frame
+    manifest: '/work/thumbs/manifest.json', // généré par npm run assets
+    interval: { min: 140, max: 320 }, // ms entre deux apparitions, tiré au hasard
+    lifeMs: 1000, // durée de vie d'une vignette
     size: { min: 90, max: 120 }, // largeur en px de maquette, tirée au hasard
-    endScale: 0.6, // taille relative en fin de vie
-    // Placeholders tant que les images ne sont pas branchées (couleur et ratio du croquis).
-    placeholder: { color: '#330000', aspect: 120 / 125 },
+    endScale: 0.8, // taille relative en fin de vie
+    // Zones évitées, en px de maquette depuis les bords (header en haut, dock en bas).
+    safe: { top: 100, bottom: 130, side: 61 },
 
     // Alignement sur la grille Figma (8 colonnes). Valeurs mesurées sur le croquis, à confirmer.
     snapToGrid: false,

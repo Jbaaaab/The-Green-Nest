@@ -1,9 +1,8 @@
 /*
  * Tokens issus de Figma (fichier WEBSITE-2027).
- * Desktop : frame "Land" 2:3 (1440×1024). Mobile : frame "Landing mobile" 46:410 (402×874).
- *
- * --u = 1 px de la maquette, mis à l'échelle de la largeur d'écran.
- * Toutes les valeurs de position et de taille sont écrites en px Figma × var(--u).
+ * Desktop : frame "MacBook Pro 14' - 1" 53:586 (1512×982).
+ *   Tailles fixes en px ; positions horizontales en % de la largeur + décalage, comme les contraintes Figma.
+ * Mobile : frame "Landing mobile" 46:410 (402×874), mis à l'échelle de la largeur d'écran via --u.
  */
 
 :root {
@@ -17,97 +16,95 @@
   --weight-bold: 700;
   --weight-extrabold: 800;
 
-  /* Unité : 1 px Figma desktop. Plancher pour les écrans entre tablette et petit laptop. */
-  --u: max(calc(100vw / 1440), 0.75px);
+  /* 1 px de maquette. Desktop : 1px fixe. Mobile : redéfini plus bas. */
+  --u: 1px;
 
-  /* Header (desktop) */
-  --header-y: 54;
-  --brand-x: 61;
-  --brand-icon: 12;
-  --brand-gap: 16; /* du bord gauche du logo au début du texte */
-  --nav-size: 14;
-  --works-x: 395;
-  --about-x: 563;
-  --cursor-btn-x: 730;
-  --cursor-btn-y: 51;
-  --cursor-btn-w: 13;
-  --cursor-btn-h: 14;
-  --contact-right: 59;
-  --contact-y: 56;
-  --contact-size: 12;
-  --contact-step: 14; /* écart vertical Instagram → Mail */
+  /* Header */
+  --header-y: 49px;
+  --brand-x: 61px;
+  --brand-icon: 12px;
+  --brand-gap: 16px; /* du bord gauche du logo au début du texte */
+  --nav-size: 14px;
+  --works-x: calc(25% + 35px);
+  --about-x: calc(37.5% + 23px);
+  --cursor-btn-x: calc(50% + 10px);
+  --cursor-btn-y: 44px;
+  --cursor-btn-w: 15px;
+  --cursor-btn-h: 16px;
+  --contact-right: calc(12.5% - 129px); /* bord droit aligné sur 87,5 % + 129 px */
+  --contact-y: 51px;
+  --contact-size: 12px;
+  --contact-step: 14px; /* écart vertical Instagram → Mail */
 
-  /* Bio */
-  --bio-width: 839;
-  --bio-size: 17.677;
-  --bio-cool-size: 22.65;
+  /* Bio : rétrécit proportionnellement si l'écran est trop étroit (pour garder les mêmes retours à la ligne) */
+  --bio-width: min(919px, calc(100vw - 122px));
+  --bio-size: min(19.362px, calc((100vw - 122px) * 19.362 / 919));
+  --bio-cool-size: min(24.81px, calc((100vw - 122px) * 24.81 / 919));
 
-  /* Horloge + music player (desktop : groupe 120×50, en bas à droite) */
-  --dock-size: 12;
-  --clock-icon: 14;
-  --clock-heart-x: 2;
-  --clock-heart-y: 15;
-  --clock-heart-w: 10;
-  --clock-heart-h: 9;
-  --clock-text-x: 20;
-  --clock-text-y: 3;
-  --clock-h: 27;
-  --music-w: 120;
-  --music-h: 20;
-  --music-icon: 11;
-  --music-icon-x: 9;
-  --music-icon-y: 4;
-  --music-label-right: 14;
-  --music-label-y: 5;
-
-  /* Placement du dock desktop */
-  --dock-right: 60;
-  --dock-bottom: 57;
-  --clock-offset-x: 8; /* horloge décalée de 8 px par rapport au bouton */
-  --clock-offset-y: 30; /* le bouton est 30 px sous le haut de l'horloge */
+  /* Horloge + music player (groupe 120×50) */
+  --dock-x: calc(87.5% + 9px);
+  --dock-y: calc(83.333% + 53.67px);
+  --dock-size: 12px;
+  --clock-offset-x: 8px; /* l'horloge est décalée de 8 px par rapport au bouton */
+  --clock-icon: 14px;
+  --clock-heart-x: 2px;
+  --clock-heart-y: 15px;
+  --clock-heart-w: 10px;
+  --clock-heart-h: 9px;
+  --clock-text-x: 20px;
+  --clock-text-y: 3px;
+  --clock-h: 27px;
+  --music-w: 120px;
+  --music-h: 20px;
+  --music-gap: 30px; /* du haut de l'horloge au haut du bouton */
+  --music-icon: 11px;
+  --music-icon-x: 9px;
+  --music-icon-y: 4px;
+  --music-label-right: 14px;
+  --music-label-y: 5px;
 }
 
 @media (max-width: 767px) {
   :root {
     --u: calc(100vw / 402);
 
-    --header-y: 11.34;
-    --brand-x: 10;
-    --brand-icon: 9.345;
-    --brand-gap: 12.46;
-    --nav-size: 10.902;
-    --works-x: 95;
-    --about-x: 170;
-    --contact-right: 10;
-    --contact-y: 10;
-    --contact-size: 9.345;
-    --contact-step: 10.9;
+    --header-y: calc(11.34 * var(--u));
+    --brand-x: calc(10 * var(--u));
+    --brand-icon: calc(9.345 * var(--u));
+    --brand-gap: calc(12.46 * var(--u));
+    --nav-size: calc(10.902 * var(--u));
+    --works-x: calc(95 * var(--u));
+    --about-x: calc(170 * var(--u));
+    --contact-right: calc(10 * var(--u));
+    --contact-y: calc(10 * var(--u));
+    --contact-size: calc(9.345 * var(--u));
+    --contact-step: calc(10.9 * var(--u));
 
-    --bio-width: 353;
-    --bio-size: 19.318;
-    --bio-cool-size: 24.754;
+    --bio-width: calc(353 * var(--u));
+    --bio-size: calc(19.318 * var(--u));
+    --bio-cool-size: calc(24.754 * var(--u));
 
-    --dock-size: 9.345;
-    --clock-icon: 10.902;
-    --clock-heart-x: 1.56;
-    --clock-heart-y: 11.68;
-    --clock-heart-w: 7.79;
-    --clock-heart-h: 7.01;
-    --clock-text-x: 15.57;
-    --clock-text-y: 2.34;
-    --clock-h: 21.03;
-    --music-w: 93.449;
-    --music-h: 15.575;
-    --music-icon: 8.566;
-    --music-icon-x: 7.01;
-    --music-icon-y: 3.11;
-    --music-label-right: 10.9;
-    --music-label-y: 2.89;
+    --dock-size: calc(9.345 * var(--u));
+    --clock-icon: calc(10.902 * var(--u));
+    --clock-heart-x: calc(1.56 * var(--u));
+    --clock-heart-y: calc(11.68 * var(--u));
+    --clock-heart-w: calc(7.79 * var(--u));
+    --clock-heart-h: calc(7.01 * var(--u));
+    --clock-text-x: calc(15.57 * var(--u));
+    --clock-text-y: calc(2.34 * var(--u));
+    --clock-h: calc(21.03 * var(--u));
+    --music-w: calc(93.449 * var(--u));
+    --music-h: calc(15.575 * var(--u));
+    --music-icon: calc(8.566 * var(--u));
+    --music-icon-x: calc(7.01 * var(--u));
+    --music-icon-y: calc(3.11 * var(--u));
+    --music-label-right: calc(10.9 * var(--u));
+    --music-label-y: calc(2.89 * var(--u));
 
-    /* Mobile : horloge en bas à gauche, music player en bas à droite */
-    --clock-left: 20;
-    --clock-bottom: 19;
-    --music-right: 19.55;
-    --music-bottom: 20.4;
+    /* Horloge en bas à gauche, music player en bas à droite */
+    --clock-left: calc(20 * var(--u));
+    --clock-bottom: calc(19 * var(--u));
+    --music-right: calc(19.55 * var(--u));
+    --music-bottom: calc(20.4 * var(--u));
   }
 }
