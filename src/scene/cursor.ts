@@ -1,8 +1,8 @@
-import { Box3, Group, Vector2, Vector3 } from 'three';
+import { Box3, Group, Mesh, MeshMatcapMaterial, Vector2, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { config } from '../config';
-import { applyPolishedMetal } from './materials';
+import { neonMatcap } from './environment';
 import type { Stage, Updatable, Viewport } from './stage';
 
 export const CURSORS = ['click', 'great', 'iluvyou', 'iwannahire', 'super', 'wow'] as const;
@@ -126,9 +126,11 @@ export class Cursor3D implements Updatable {
 }
 
 // Mot redressé face caméra (le GLB est posé à plat, normale = +Y), centré,
-// hauteur des lettres ramenée à 1, matériau métal poli.
+// hauteur des lettres ramenée à 1, chrome qui reflète un HDRI de néons irréalistes.
 function normalize(scene: Group): Group {
-  applyPolishedMetal(scene);
+  scene.traverse((o) => {
+    if (o instanceof Mesh) o.material = new MeshMatcapMaterial({ matcap: neonMatcap() });
+  });
   const holder = new Group();
   holder.add(scene);
   holder.rotation.x = Math.PI / 2;

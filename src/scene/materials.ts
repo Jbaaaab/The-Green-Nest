@@ -11,13 +11,6 @@ export function polishedMetal(source: Material): MeshMatcapMaterial {
   return new MeshMatcapMaterial({ color, matcap: studioMatcap(), side: source.side });
 }
 
-// Remplace le matériau de tous les meshes d'un GLB par du métal poli.
-export function applyPolishedMetal(root: Object3D): void {
-  root.traverse((o) => {
-    if (o instanceof Mesh) o.material = polishedMetal(o.material as Material);
-  });
-}
-
 // Premier mesh d'un GLB.
 export function firstMesh(root: Object3D): Mesh {
   let found: Mesh | null = null;

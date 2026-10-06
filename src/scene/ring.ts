@@ -1,9 +1,10 @@
-import { Box3, DoubleSide, Group, Mesh, MeshMatcapMaterial, Quaternion, Vector2, Vector3, type Material, type Object3D } from 'three';
+import { Box3, BufferAttribute, DoubleSide, Group, Mesh, MeshMatcapMaterial, Quaternion, Vector2, Vector3, type BufferGeometry, type Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { config } from '../config';
 import { nav } from '../nav';
-import { place, windowPhase } from '../works/cylinder';
+import { drum } from '../works/scrollFx';
+import { asperityNormalMap } from './environment';
 import { ringMatcap } from './ringMatcap';
 import { createFractalNoise1D } from './noise';
 import type { Updatable, Viewport } from './stage';
@@ -42,14 +43,9 @@ export class Ring implements Updatable {
   private qb = new Quaternion();
   private qc = new Quaternion();
 
-  private materials: Material[] = [];
-
   private constructor(model: Object3D) {
     this.root.add(this.wobble);
     this.wobble.add(model);
-    model.traverse((o) => {
-      if (o instanceof Mesh) this.materials.push(o.material as Material);
-    });
   }
 
   static async load(): Promise<Ring> {
@@ -116,15 +112,12 @@ export class Ring implements Updatable {
     this.qc.setFromAxisAngle(Z, this.psi);
     this.wobble.quaternion.copy(this.qa).multiply(this.qb).multiply(this.qc);
 
-    // Quand on scrolle vers les projets, la bague repart avec l'accueil sur le cylindre des fenêtres.
-    const exit = place(windowPhase(-nav.p, 0.5, 0.5), this.pos.x, this.viewport.width, reduced);
-    this.root.position.set(this.pos.x + exit.dx, this.pos.y, exit.dz);
-    this.root.rotation.y = exit.rotY;
-    this.root.visible = exit.opacity > 0.01;
-    for (const m of this.materials) {
-      m.transparent = exit.opacity < 1;
-      m.opacity = exit.opacity;
-    }
+    // Quand on scrolle, la bague monte avec l'accueil (parallaxe) et se courbe avec le twist de la page.
+    const y = this.pos.y + nav.scroll * config.works.parallax.ring; // 3D : y vers le haut
+    const fx = reduced ? { rotX: 0, z: 0 } : drum(-y, this.viewport.height, nav.velocity);
+    this.root.position.set(this.pos.x, y, fx.z);
+    this.root.rotation.x = -fx.rotX; // rotateX CSS et rotation.x Three.js sont de sens opposés
+    this.root.visible = y - this.radius < this.viewport.height / 2 + 50;
   }
 }
 
@@ -132,7 +125,24 @@ export class Ring implements Updatable {
 // face tournée vers la caméra (le GLB est posé à plat, normale = +Y).
 function normalize(scene: Object3D): Object3D {
   scene.traverse((o) => {
-    if (o instanceof Mesh) o.material = new MeshMatcapMaterial({ matcap: ringMatcap(), side: DoubleSide });
+    if (!(o instanceof Mesh)) return;
+    // UV par projection plane (le GLB n'en a pas) pour poser le micro-relief des aspérités.
+    const geo = o.geometry as BufferGeometry;
+    const pos = geo.getAttribute('position');
+    const uv = new Float32Array(pos.count * 2);
+    const rep = config.ring.look.asperityRepeat;
+    for (let i = 0; i < pos.count; i++) {
+      uv[i * 2] = (pos.getX(i) * 0.5 + 0.5) * rep;
+      uv[i * 2 + 1] = (pos.getZ(i) * 0.5 + 0.5) * rep;
+    }
+    geo.setAttribute('uv', new BufferAttribute(uv, 2));
+    const a = config.ring.look.asperity;
+    o.material = new MeshMatcapMaterial({
+      matcap: ringMatcap(),
+      side: DoubleSide,
+      normalMap: asperityNormalMap(128),
+      normalScale: new Vector2(a, a),
+    });
   });
 
   const holder = new Group();

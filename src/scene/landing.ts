@@ -35,7 +35,7 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
     },
     update: (time) => {
       // (seulement sur l'accueil : coupées dès qu'on scrolle vers les projets)
-      if (!vp.mobile && !coarse.matches && !reduced.matches && nav.p < 0.3) trail.update(time);
+      if (!vp.mobile && !coarse.matches && !reduced.matches && nav.scroll < nav.sectionHeight * 0.3) trail.update(time);
     },
   });
 

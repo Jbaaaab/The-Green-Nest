@@ -17,6 +17,7 @@ initMusicPlayer(document.querySelector<HTMLElement>('.music'));
 // Pages projets : on y accède en scrollant depuis l'accueil. Construites tout de suite si on arrive
 // par un lien direct (#take-care…), sinon dès que le navigateur a fini d'afficher l'accueil.
 nav.init();
+if (import.meta.env.DEV) Object.assign(window, { __nav: nav }); // pour les tests
 const buildWorks = () => new WorksView(document.querySelector('main')!, () => document.querySelector('.trail'));
 if (nav.section > 0) buildWorks();
 else if ('requestIdleCallback' in window) requestIdleCallback(buildWorks, { timeout: 1500 });

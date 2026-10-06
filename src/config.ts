@@ -17,17 +17,55 @@ export const config = {
     fadeInMs: 900, // fondu d'apparition de la 3D une fois chargée
   },
 
-  // Studio photo virtuel qui se reflète dans le métal poli (bague, logos Insta, curseurs).
-  // dir : direction de la lumière vue depuis l'objet (x droite, y haut, z vers la caméra).
-  // size / softness en radians (taille de la softbox et largeur du fondu de son bord).
-  studio: {
-    size: 256, // résolution de l'image de reflets (matcap), en px
-    exposure: 2, // plus haut = reflets plus clairs (les hautes lumières saturent en douceur)
-    floor: 0.02, // luminosité du fond, en bas
-    ceiling: 0.22, // luminosité du fond, en haut
-    key: { dir: [-0.45, 0.55, 1], size: 0.35, softness: 0.55, intensity: 1.3 }, // grande softbox principale
-    fill: { dir: [0.7, -0.35, 0.6], size: 0.25, softness: 0.6, intensity: 0.45 }, // contre-jour doux
-    rim: { dir: [0.9, 0.5, -0.2], size: 0.2, softness: 0.4, intensity: 1.2 }, // liseré sur les bords
+  // Environnements qui se reflètent dans le métal poli (voir src/scene/environment.ts).
+  // Couleurs en RGB linéaire 0-1 (au-delà de 1 = lumière très forte).
+  // dir : direction de la lumière vue depuis l'objet (x droite, y haut, z vers la caméra) ;
+  // size / softness en radians (taille de la source et largeur du fondu de son bord).
+  ambiences: {
+    // Studio photo neutre : pluie Instagram.
+    studio: {
+      exposure: 2,
+      floor: [0.02, 0.02, 0.02],
+      horizon: [0.1, 0.1, 0.1],
+      sky: [0.22, 0.22, 0.22],
+      lights: [
+        { dir: [-0.45, 0.55, 1], size: 0.35, softness: 0.55, color: [1, 1, 1], intensity: 1.3 },
+        { dir: [0.7, -0.35, 0.6], size: 0.25, softness: 0.6, color: [1, 1, 1], intensity: 0.45 },
+        { dir: [0.9, 0.5, -0.2], size: 0.2, softness: 0.4, color: [1, 1, 1], intensity: 1.2 },
+      ],
+    },
+    // HDRI délirant façon rendu Blender : néons de couleur irréalistes + horizon net (curseur).
+    neon: {
+      exposure: 1.8,
+      floor: [0.03, 0.0, 0.06],
+      horizon: [0.25, 0.05, 0.35],
+      sky: [0.02, 0.05, 0.18],
+      horizonLine: { color: [1, 0.85, 0.95], width: 0.16, intensity: 1.4 },
+      // Néons placés le long de la bande horizontale : c'est ce que les lettres reflètent en tournant.
+      lights: [
+        { dir: [-0.7, 0.15, 0.7], size: 0.22, softness: 0.25, color: [0.1, 1, 1], intensity: 2.8 }, // cyan
+        { dir: [0.65, 0.2, 0.75], size: 0.2, softness: 0.22, color: [1, 0.1, 0.75], intensity: 3 }, // magenta
+        { dir: [0.15, -0.35, 0.95], size: 0.16, softness: 0.2, color: [1, 0.6, 0.05], intensity: 2.6 }, // orange
+        { dir: [-0.35, -0.25, 0.9], size: 0.08, softness: 0.1, color: [0.45, 1, 0.15], intensity: 3.2 }, // vert acide
+        { dir: [0.05, 0.5, 0.85], size: 0.07, softness: 0.08, color: [1, 1, 1], intensity: 5 }, // point blanc
+        { dir: [0.9, -0.1, 0.2], size: 0.25, softness: 0.3, color: [0.2, 0.3, 1], intensity: 2 }, // bleu électrique
+        // Juste derrière la caméra : ce que les lettres reflètent quand elles sont de face.
+        { dir: [-0.08, 0.14, 1], size: 0.1, softness: 0.24, color: [1, 0.3, 0.55], intensity: 2.4 }, // rose chaud
+        { dir: [0.2, 0.0, 1], size: 0.05, softness: 0.12, color: [1, 0.85, 0.2], intensity: 2.6 }, // éclat jaune
+      ],
+    },
+    // Chrome froid façon écran de chargement PS3 : dégradé bleu nuit → blanc, horizon lumineux (chiffres).
+    ps3: {
+      exposure: 2.2,
+      floor: [0.0, 0.01, 0.04],
+      horizon: [0.12, 0.2, 0.42],
+      sky: [0.5, 0.62, 0.85],
+      horizonLine: { color: [0.85, 0.92, 1], width: 0.05, intensity: 2.5 },
+      lights: [
+        { dir: [-0.3, 0.8, 0.6], size: 0.3, softness: 0.4, color: [1, 1, 1], intensity: 1.6 },
+        { dir: [0.8, 0.1, 0.5], size: 0.12, softness: 0.2, color: [0.6, 0.8, 1], intensity: 2.2 },
+      ],
+    },
   },
 
   ring: {
@@ -67,7 +105,7 @@ export const config = {
 
     // Rendu, calibré sur le rendu Blender de la maquette (couleurs sRGB relevées sur l'image).
     look: {
-      size: 512, // résolution de la matcap
+      size: 256, // résolution de la matcap (256 suffit pour une bague de ~264 px, et se calcule 4x plus vite)
       light: [-0.3, 0.5, 1], // direction de la lumière principale (haut-gauche, devant)
       faceDark: [6, 97, 64], // #066140 face côté ombre
       face: [8, 110, 72], // #086E48 face (teinte dominante)
@@ -79,6 +117,13 @@ export const config = {
       sideDark: [29, 71, 17], // #1D4711 flanc
       sideLight: [104, 170, 48], // reflets vert-jaune des flancs
       mottleCount: 9, // nombre de marbrures autour de la bague
+      // Reflet brillant qui traverse la face quand elle s'incline vers la lumière.
+      sheen: { dir: [-0.28, 0.32, 1], size: 0.05, softness: 0.16, strength: 0.55 },
+      // Éclats sur les arêtes (angles autour de la bague, en degrés ; 90 = en haut).
+      glints: { angles: [128, 32, 230, 300], width: 0.16, strength: 1.1, color: [214, 255, 170] },
+      grain: 0.22, // aspérités : grain sur les arêtes et les flancs (0 = lisse)
+      asperity: 0.1, // micro-relief sur les faces (carte de normales ; 0 = miroir parfait)
+      asperityRepeat: 9, // taille du grain de la carte de normales (plus haut = plus fin)
     },
   },
 
@@ -110,28 +155,39 @@ export const config = {
     depth: 120, // profondeur de la « boîte » où s'empilent les logos, en px
   },
 
-  // Pages projets (Works) : on y accède en scrollant depuis l'accueil.
+  // Scroll vertical (accueil puis projets empilés) et pages projets.
   works: {
-    duration: 1.5, // secondes pour passer d'une page à la voisine
-    durationPerExtra: 0.35, // secondes ajoutées par page sautée (ex. retour à l'accueil depuis la 3)
-    durationReduced: 0.45, // prefers-reduced-motion : simple fondu, court
-    wheelThreshold: 40, // px de molette / trackpad pour déclencher le passage à la page voisine
-    wheelQuietMs: 220, // silence de molette qui marque la fin d'un geste (ignore l'inertie du trackpad)
-    swipeThreshold: 40, // px de glissé au doigt pour changer de page
-    // Cadre du contenu, en px de maquette depuis les bords (frames 16:5, 25:448, 25:560).
-    box: {
-      desktop: { side: 60, top: 135, bottom: 140 },
-      mobile: { side: 10, top: 66, bottom: 70 }, // hors maquette
-    },
-    // Fenêtres sur un anneau invisible qui tourne (cf. symbolsofwealth.studio), une page à la fois.
-    radiusFactor: 1.3, // rayon de l'anneau, en largeurs d'écran
-    maxAngleDeg: 40, // rotation d'une fenêtre quand elle quitte le champ
-    stagger: 0.16, // léger décalage de gauche à droite entre fenêtres (0 = toutes ensemble)
-    fadeStart: 0.55, // phase où la fenêtre commence à disparaître…
-    fadeEnd: 0.95, // …et où elle a disparu (l'anneau ne se voit pas)
+    // Scroll fluide avec inertie (pas d'aimant), arrêt quand le texte d'un projet arrive au milieu.
+    spacing: 1.15, // distance entre deux arrêts, en hauteurs d'écran (un peu d'air entre les pages)
+    smooth: 6.5, // inertie du scroll : plus bas = plus glissé, plus haut = plus sec
+    wheelMultiplier: 1, // sensibilité molette / trackpad
+    touchMultiplier: 1.6, // sensibilité au doigt
+    touchMomentum: 260, // élan après un glissé au doigt
+    gestureQuietMs: 220, // silence qui marque la fin d'un geste (l'inertie du trackpad ne passe pas un arrêt)
 
-    digitSpinSeconds: 1.4, // le chiffre entouré tourne sur lui-même quand sa page arrive
-    digitSpinTurns: 1,
+    // Parallaxe : vitesse de défilement relative (1 = suit le scroll, plus = plus rapide).
+    parallax: {
+      text: 0.72, // textes des projets et bio de l'accueil : plus lents, comme le nom sur perappelgren.de
+      ring: 0.85, // la bague de l'accueil
+      windows: [1, 1.32], // fenêtres : vitesse tirée dans cette plage (déterministe, par position)
+    },
+
+    // Twist façon perappelgren.de : pendant le scroll, la page se courbe comme sur un tambour,
+    // d'autant plus que le scroll est rapide ; au repos tout est plat.
+    twist: {
+      perSpeed: 0.00038, // radians de courbure par px/s de vitesse
+      max: 0.6, // courbure maximale (radians, en bord d'écran)
+      depth: 0.22, // recul en profondeur des fenêtres courbées (fraction de la hauteur d'écran)
+    },
+
+    // Cadre du contenu mobile, en px de maquette depuis les bords (hors maquette).
+    box: {
+      mobile: { side: 10, top: 66, bottom: 70 },
+    },
+
+    // Chiffre entouré de la page courante : rotation continue, façon écran de chargement PS3.
+    digitSpinPeriod: 3.2, // secondes par tour
+    digitBob: 0.08, // léger balancement (fraction de la taille)
   },
 
   // Apparitions de projets en fond (desktop uniquement) : des vignettes surgissent au hasard

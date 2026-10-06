@@ -28,7 +28,9 @@ export function ringMatcap(): Texture {
   const look = config.ring.look;
   const size = look.size;
   const L = look.light.map((v, _, a) => v / Math.hypot(...a)) as [number, number, number];
+  const S = look.sheen.dir.map((v, _, a) => v / Math.hypot(...a)) as [number, number, number];
   const mottle = createNoise1D();
+  const grainNoise = createNoise1D();
 
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
@@ -66,10 +68,30 @@ export function ringMatcap(): Texture {
       const sideColor = mix(look.sideDark, look.sideLight, Math.pow(m, 1.6) * (0.5 + 0.5 * toLight));
       c = mix(c, sideColor, side);
 
+      // Reflet brillant sur la face : quand la bague s'incline vers la lumière, la face s'illumine.
+      const sh = look.sheen;
+      const toSheen = Math.acos(Math.min(1, nx * S[0] + ny * S[1] + nz * S[2]));
+      const sheen = sh.strength * (1 - smooth(sh.size, sh.size + sh.softness, toSheen));
+      c = mix(c, look.highlightPeak, sheen);
+
+      // Éclats sur les arêtes, à quelques angles fixes : ils glissent sur la bague quand elle tourne.
+      const edge = smooth(b0, b1, angle) * (1 - smooth(b2 + 4, 90, angle));
+      let glint = 0;
+      for (const a of look.glints.angles) {
+        let d = phi - (a * Math.PI) / 180;
+        d = Math.atan2(Math.sin(d), Math.cos(d));
+        glint += Math.exp(-(d * d) / (2 * look.glints.width * look.glints.width));
+      }
+      c = mix(c, look.glints.color, clamp01(glint * edge * look.glints.strength));
+
+      // Aspérités : grain fin sur les arêtes et les flancs (le métal n'est pas parfaitement lisse).
+      const grain = 1 + look.grain * grainNoise(phi * 60 + angle * 0.9) * edge;
+      c = [c[0] * grain, c[1] * grain, c[2] * grain];
+
       const o = (j * size + i) * 4;
-      img.data[o] = c[0];
-      img.data[o + 1] = c[1];
-      img.data[o + 2] = c[2];
+      img.data[o] = Math.min(255, c[0]);
+      img.data[o + 1] = Math.min(255, c[1]);
+      img.data[o + 2] = Math.min(255, c[2]);
       img.data[o + 3] = 255;
     }
   }
