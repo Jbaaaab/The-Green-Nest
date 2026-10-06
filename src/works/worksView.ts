@@ -4,7 +4,7 @@ import { config } from '../config';
 import { nav } from '../nav';
 import { readUnit } from '../ui/unit';
 import { perspectiveFor, place, windowPhase } from './cylinder';
-import { MOSAIC, PROJECTS, type Project } from './projects';
+import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, resolve, type Project } from './projects';
 
 type Win = {
   el: HTMLElement;
@@ -169,8 +169,7 @@ export class WorksView {
     }
 
     const text = win('project__text');
-    text.innerHTML = project.lines.map((l) => `<span>${l}</span>`).join('');
-    text.style.setProperty('--text-width', String(project.textWidth));
+    text.innerHTML = `<p class="project__lines">${project.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
 
     el.style.display = 'none';
     return { index: project.number, project, wins, video, images, loaded: false, el };
@@ -217,14 +216,12 @@ export class WorksView {
     this.width = W;
     this.stage.style.setProperty('--persp', `${perspectiveFor(H)}px`);
 
-    const set = (win: Win, x: number, y: number, w: number, h: number) => {
-      Object.assign(win.el.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px` });
+    const set = (win: Win, x: number, y: number, w: number, h: number | null) => {
+      Object.assign(win.el.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: h === null ? 'auto' : `${h}px` });
       win.ox = x + w / 2 - W / 2;
-      const xn = Math.min(1, Math.max(0, (x + w / 2) / W));
-      const j = () => (Math.random() - 0.5) * config.works.jitter;
-      // Arrivée par la droite : la fenêtre la plus à gauche arrive en premier ; départ : idem.
-      win.rankIn = Math.min(1, Math.max(0, xn + j()));
-      win.rankOut = Math.min(1, Math.max(0, xn + j()));
+      // Les fenêtres bougent ensemble comme un anneau qui tourne, avec un léger décalage
+      // de gauche à droite (la plus à gauche part / arrive en premier).
+      win.rankIn = win.rankOut = Math.min(1, Math.max(0, (x + w / 2) / W));
     };
 
     for (const section of this.sections) {
@@ -234,40 +231,41 @@ export class WorksView {
       const text = wins[wins.length - 1];
       const main = wins.find((w) => w.el.classList.contains('project__main'))!;
       const sides = wins.filter((w) => w.el.classList.contains('project__side'));
+      const tw = mobile ? Math.min(project.textWidth * u, bw - 20 * u) : project.textWidth;
+      text.el.classList.toggle('is-centered', mobile);
 
-      if (project.layout === 'mosaic' && !mobile) {
-        const s = Math.min(bw / MOSAIC.width, bh / MOSAIC.height);
-        const ox = bx + (bw - MOSAIC.width * s) / 2;
-        const oy = by + (bh - MOSAIC.height * s) / 2;
+      if (!mobile && project.layout === 'mosaic') {
+        // Contraintes Figma de la frame TAKE CARE, telles quelles.
         sides.forEach((w, i) => {
           const [c, r] = MOSAIC.cells[i];
-          set(w, ox + MOSAIC.columns[c] * s, oy + MOSAIC.rows[r] * s, MOSAIC.square.w * s, MOSAIC.square.h * s);
+          set(w, resolve(MOSAIC.columns[c], W), resolve(MOSAIC.rows[r], H), MOSAIC.square.w, MOSAIC.square.h);
           w.el.hidden = false;
         });
         const m = MOSAIC.center;
-        set(main, ox + m.x * s, oy + m.y * s, m.w * s, m.h * s);
-      } else if (project.layout === 'mosaic') {
-        // Mobile (hors maquette) : seulement la vidéo centrale, à la hauteur du cadre.
-        sides.forEach((w) => (w.el.hidden = true));
-        const h = bh;
-        const w = Math.min(bw, (h * MOSAIC.center.w) / MOSAIC.center.h);
-        set(main, (W - w) / 2, by, w, h);
+        set(main, resolve(m.left, W), resolve(m.top, H), m.w, m.h);
+        set(text, W / 2 + 0.5 - tw / 2, resolve(MOSAIC.text.top, H), tw, null);
+      } else if (!mobile) {
+        // Contraintes Figma des frames LONGTEMPS / FORMULA ONE.
+        const f = SINGLE.frame;
+        set(main, W / 2 - f.w / 2, resolve(f.centerY, H) - f.h / 2, f.w, f.h);
+        set(text, W / 2 + 0.5 - tw / 2, resolve(SINGLE.text.top, H), tw, null);
       } else {
-        set(main, bx, by, bw, bh);
+        // Mobile (hors maquette) : la vidéo seule, à la hauteur du cadre ; texte centré dessus.
+        sides.forEach((w) => (w.el.hidden = true));
+        const w = project.layout === 'mosaic' ? Math.min(bw, (bh * MOSAIC.center.w) / MOSAIC.center.h) : bw;
+        set(main, (W - w) / 2, by, w, bh);
+        set(text, (W - tw) / 2, by + bh / 2, tw, null);
       }
-
-      // Texte centré sur la fenêtre principale.
-      const mw = parseFloat(main.el.style.width);
-      const mh = parseFloat(main.el.style.height);
-      const ml = parseFloat(main.el.style.left);
-      const mt = parseFloat(main.el.style.top);
-      const tw = Math.min(project.textWidth * u, bw - 20 * u);
-      set(text, ml + (mw - tw) / 2, mt + mh / 2, tw, 0);
-      text.el.style.height = 'auto';
-      text.el.style.transformOrigin = '50% 0';
       text.rankIn = main.rankIn;
       text.rankOut = main.rankOut;
     }
+
+    // Rangée 1-8 : positions de la maquette (desktop) ; répartition régulière sur mobile (CSS).
+    this.navItems.forEach((item, i) => {
+      const left = NAV_ROW.numbers[i];
+      item.style.setProperty('--left', `calc(${left.pct * 100}% + ${left.px + NAV_ROW.circleOffset}px)`);
+    });
+    this.navEl.style.setProperty('--end-left', `${NAV_ROW.end.pct * 100}%`);
     this.update(nav.p);
   }
 
@@ -286,12 +284,9 @@ export class WorksView {
         const phi = reduced ? Math.max(-1, Math.min(1, d)) : windowPhase(d, win.rankIn, win.rankOut);
         const { dx, dz, rotY, opacity } = place(phi, win.ox, this.width, reduced);
         const isLanding = section.index === 0;
-        const isText = win.el.classList.contains('project__text');
         const persp = isLanding ? `perspective(${perspectiveFor(window.innerHeight)}px) ` : '';
-        const center = isText ? 'translateY(-50%)' : '';
         // En place : pas de transformation 3D (évite un calque graphique inutile).
-        win.el.style.transform =
-          phi === 0 ? center : `${persp}translate3d(${dx}px, 0, ${dz}px) rotateY(${rotY}rad) ${center}`;
+        win.el.style.transform = phi === 0 ? '' : `${persp}translate3d(${dx}px, 0, ${dz}px) rotateY(${rotY}rad)`;
         win.el.style.opacity = String(opacity);
         win.el.style.visibility = far || opacity < 0.01 ? 'hidden' : 'visible';
       }

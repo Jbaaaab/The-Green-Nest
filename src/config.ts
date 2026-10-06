@@ -5,6 +5,12 @@ export const config = {
     locale: 'fr-FR',
   },
 
+  music: {
+    volume: 0.8, // volume de lecture (0 à 1)
+    fadeInMs: 700, // montée du son au lancement d'un morceau
+    fadeOutMs: 400, // descente du son à l'arrêt
+  },
+
   stage: {
     maxPixelRatio: 2,
     fov: 25, // degrés ; plus bas = plus "plat", plus haut = plus de perspective
@@ -58,6 +64,22 @@ export const config = {
     reducedMotion: {
       precessionPeriod: 10,
     },
+
+    // Rendu, calibré sur le rendu Blender de la maquette (couleurs sRGB relevées sur l'image).
+    look: {
+      size: 512, // résolution de la matcap
+      light: [-0.3, 0.5, 1], // direction de la lumière principale (haut-gauche, devant)
+      faceDark: [6, 97, 64], // #066140 face côté ombre
+      face: [8, 110, 72], // #086E48 face (teinte dominante)
+      faceLight: [19, 124, 74], // #137C4A face côté lumière
+      faceLitRange: [0.72, 0.99], // plage d'éclairage qui va de faceDark à faceLight
+      highlight: [80, 168, 107], // #50A86B liseré des arêtes
+      highlightPeak: [158, 212, 128], // liseré côté lumière, entre #91CC9E et le vert citron des arêtes
+      bevelAngles: [28, 50, 72], // degrés : début, pic et fin du liseré (0° = face, 90° = flanc)
+      sideDark: [29, 71, 17], // #1D4711 flanc
+      sideLight: [104, 170, 48], // reflets vert-jaune des flancs
+      mottleCount: 9, // nombre de marbrures autour de la bague
+    },
   },
 
   // Curseur 3D (souris uniquement, désactivé sur écran tactile).
@@ -65,7 +87,7 @@ export const config = {
     dir: '/cursors', // GLB optimisés par npm run assets
     default: 'wow', // curseur au chargement ; l'icône du header fait défiler click → great → iluvyou → iwannahire → super → wow
     hover: 'click', // au survol d'un lien ou d'un bouton
-    height: 30, // hauteur des lettres, en px de maquette
+    height: 18, // hauteur des lettres, en px de maquette
     offset: { x: 0, y: 0 }, // décalage du mot par rapport à la pointe de la souris, en px de maquette
     follow: 18, // vitesse de suivi (plus haut = colle plus à la souris)
     spinPeriod: 2.4, // secondes pour un tour sur lui-même
@@ -90,24 +112,23 @@ export const config = {
 
   // Pages projets (Works) : on y accède en scrollant depuis l'accueil.
   works: {
-    wheelPerSection: 700, // px de molette pour passer une section entière
-    touchPerSection: 0.6, // fraction de la hauteur d'écran à glisser au doigt pour une section
-    snapThreshold: 0.12, // en fin de geste, au-delà de cette fraction on passe à la section suivante
+    duration: 1.5, // secondes pour passer d'une page à la voisine
+    durationPerExtra: 0.35, // secondes ajoutées par page sautée (ex. retour à l'accueil depuis la 3)
+    durationReduced: 0.45, // prefers-reduced-motion : simple fondu, court
+    wheelThreshold: 40, // px de molette / trackpad pour déclencher le passage à la page voisine
+    wheelQuietMs: 220, // silence de molette qui marque la fin d'un geste (ignore l'inertie du trackpad)
+    swipeThreshold: 40, // px de glissé au doigt pour changer de page
     // Cadre du contenu, en px de maquette depuis les bords (frames 16:5, 25:448, 25:560).
     box: {
       desktop: { side: 60, top: 135, bottom: 140 },
       mobile: { side: 10, top: 66, bottom: 70 }, // hors maquette
     },
-    follow: 5, // vitesse à laquelle la page suit le geste (plus haut = plus sec)
-    followReduced: 14, // idem en prefers-reduced-motion (simple fondu, plus rapide)
-
-    // Fenêtres volantes sur un cylindre invisible (cf. symbolsofwealth.studio).
-    radiusFactor: 1.1, // rayon du cylindre, en largeurs d'écran
-    maxAngleDeg: 62, // angle de la fenêtre quand elle est hors champ
-    stagger: 0.42, // décalage entre fenêtres (0 = toutes ensemble, 0,6 = très étalées)
-    jitter: 0.12, // part de hasard dans ce décalage
-    fadeStart: 0.45, // phase où la fenêtre commence à disparaître…
-    fadeEnd: 0.9, // …et où elle a disparu (le cercle ne se voit pas)
+    // Fenêtres sur un anneau invisible qui tourne (cf. symbolsofwealth.studio), une page à la fois.
+    radiusFactor: 1.3, // rayon de l'anneau, en largeurs d'écran
+    maxAngleDeg: 40, // rotation d'une fenêtre quand elle quitte le champ
+    stagger: 0.16, // léger décalage de gauche à droite entre fenêtres (0 = toutes ensemble)
+    fadeStart: 0.55, // phase où la fenêtre commence à disparaître…
+    fadeEnd: 0.95, // …et où elle a disparu (l'anneau ne se voit pas)
 
     digitSpinSeconds: 1.4, // le chiffre entouré tourne sur lui-même quand sa page arrive
     digitSpinTurns: 1,

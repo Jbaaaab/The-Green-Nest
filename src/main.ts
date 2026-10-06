@@ -12,7 +12,7 @@ import { WorksView } from './works/worksView';
 
 initHeader();
 initClock();
-initMusicPlayer(document.querySelector<HTMLButtonElement>('.music'));
+initMusicPlayer(document.querySelector<HTMLElement>('.music'));
 
 // Pages projets : on y accède en scrollant depuis l'accueil. Construites tout de suite si on arrive
 // par un lien direct (#take-care…), sinon dès que le navigateur a fini d'afficher l'accueil.

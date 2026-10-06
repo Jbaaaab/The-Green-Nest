@@ -66,18 +66,38 @@ export const PROJECTS: Project[] = [
   },
 ];
 
-// Mosaïque TAKE CARE : positions dans un cadre de 1321×749 px de maquette (frame 25:630).
+/**
+ * Mise en page desktop = contraintes Figma des frames 1440×1024, telles quelles :
+ * tailles fixes en px, positions en « % de l'écran + px ». `at(pct, px)` = calc(pct + px).
+ */
+export type At = { pct: number; px: number };
+const at = (pct: number, px: number): At => ({ pct, px });
+export const resolve = (a: At, size: number) => a.pct * size + a.px;
+
+// TAKE CARE (frame 25:560)
 export const MOSAIC = {
-  width: 1321,
-  height: 749,
   square: { w: 237, h: 233 },
-  columns: [0, 271, 542, 813, 1084],
-  rows: [0, 258, 516],
+  columns: [at(0, 60), at(0.125, 151), at(0.375, 62), at(0.5, 153), at(0.75, 64)],
+  rows: [at(0, 135), at(1 / 3, 51.67), at(0.5, 139)],
   // Cases occupées par les carrés (la case centrale de la 2e ligne est sous le grand rectangle).
   cells: [
     [0, 0], [1, 0], [2, 0], [3, 0], [4, 0],
     [0, 1], [1, 1], [3, 1], [4, 1],
     [0, 2], [1, 2], [2, 2], [3, 2], [4, 2],
   ] as [number, number][],
-  center: { x: 475, y: 101, w: 371, h: 547 },
+  center: { left: at(0.25, 175), top: at(1 / 6, 65.33), w: 371, h: 547 },
+  text: { top: at(0.5, -41) },
+};
+
+// LONGTEMPS (16:5) et FORMULA ONE (25:448) : grand cadre centré + texte centré.
+export const SINGLE = {
+  frame: { w: 1320, h: 749, centerY: at(0.5, 0.5) },
+  text: { top: at(0.5, -27) },
+};
+
+// Rangée 1-8 (groupe 25:375) : position gauche de chaque numéro, et du symbole de fin.
+export const NAV_ROW = {
+  numbers: [at(0, 84), at(0.125, 62), at(0.25, 40), at(0.375, 18), at(0.5, -4), at(0.5, 154), at(0.625, 132), at(0.75, 110)],
+  end: at(0.9361, 0),
+  circleOffset: -3.5, // le cercle (15 px) est légèrement à gauche du numéro (10 px)
 };

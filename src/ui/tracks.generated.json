@@ -1,0 +1,30 @@
+{
+  "intro": "/music/chaewon-lock-in.m4a",
+  "tracks": [
+    {
+      "src": "/music/childish-gambino-redbone.m4a",
+      "title": "Redbone",
+      "artist": "Childish Gambino"
+    },
+    {
+      "src": "/music/aespa-supernova.m4a",
+      "title": "Supernova",
+      "artist": "aespa"
+    },
+    {
+      "src": "/music/laylow-megatron.m4a",
+      "title": "MEGATRON",
+      "artist": "Laylow"
+    },
+    {
+      "src": "/music/mf-doom-doomsday.m4a",
+      "title": "Doomsday",
+      "artist": "MF DOOM"
+    },
+    {
+      "src": "/music/cortis-redred.m4a",
+      "title": "REDRED",
+      "artist": "CORTIS"
+    }
+  ]
+}

@@ -73,8 +73,17 @@ main {
   white-space: pre-wrap;
 }
 
+.project__lines {
+  margin: 0;
+}
+
 .project__text span {
   display: block;
+}
+
+/* Mobile : texte centré verticalement sur la vidéo (le haut du bloc est au milieu du cadre). */
+.project__text.is-centered .project__lines {
+  transform: translateY(-50%);
 }
 
 /* Rangée 1-8 */
@@ -87,7 +96,7 @@ main {
 
 .works-nav__item {
   position: absolute;
-  left: calc(var(--wnav-x0) + var(--wnav-span) * var(--k) / 8);
+  left: var(--left);
   top: var(--wnav-top);
   width: var(--wnav-size);
   height: var(--wnav-size);
@@ -120,7 +129,7 @@ html:not(.has-3d-digits) .works-nav__item.is-current {
 
 .works-nav__end {
   position: absolute;
-  left: calc(var(--wnav-x0) + 4px + var(--wnav-span));
+  left: var(--end-left);
   top: var(--wnav-end-top);
   width: var(--wnav-end);
   height: var(--wnav-end);
@@ -130,6 +139,17 @@ html:not(.has-3d-digits) .works-nav__item.is-current {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* Mobile (hors maquette) : numéros répartis régulièrement sur la largeur. */
+@media (max-width: 767px) {
+  .works-nav__item {
+    left: calc(var(--wnav-x0) + var(--wnav-span) * var(--k) / 8);
+  }
+
+  .works-nav__end {
+    left: calc(var(--wnav-x0) + 4px + var(--wnav-span));
+  }
 }
 
 /* Bouton vert « PROJET + » (composant Figma 16:313) */

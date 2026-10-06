@@ -101,7 +101,7 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 - **Physique réaliste de pièce qui roule** (l'écran = la table, vue de dessus), en boucle infinie. La bague est inclinée presque à plat (70-80° par rapport à la verticale), l'axe d'inclinaison tourne (précession, disque d'Euler), et elle ne tombe jamais.
 - **Trajectoire imprévisible mais physique** : en roulant, le centre avance perpendiculairement au point de contact (le bord le plus bas), sur une courbe dont le rayon change au hasard (bruit lisse) → des boucles de tailles variées dont le centre se balade. Une « table légèrement creuse » la ramène vers le centre de l'écran. Les grandes boucles tournent moins vite (~1/√rayon), comme une vraie pièce. **Pas de balade façon logo DVD** (Lissajous : rejeté) **ni de cercles trop réguliers** (rejeté aussi).
 - Rotation propre par roulement sans glissement, bien visible. Précession rapide, qui accélère quand la bague s'aplatit (comme un vrai disque d'Euler). Inclinaison qui varie au hasard.
-- **Rendu métal poli très lisse, sans stries** : normales recalculées au build (`npm run assets`, équivalent Weighted Normal + Auto Smooth à 35°), matériau matcap d'un studio photo calculé en JS (`src/scene/environment.ts`, réglages `config.studio`). Pas de PMREM : sa compilation bloquait le mobile > 1 s.
+- **Rendu calqué sur le rendu Blender de la maquette** (Figma « bague 1 ») : faces émeraude `#086E48`, liseré clair sur les arêtes, flancs olive marbrés de vert-jaune. Matcap en couleur calculée en JS (`src/scene/ringMatcap.ts`, couleurs relevées sur l'image dans `config.ring.look`). Normales recalculées au build (`npm run assets`, équivalent Weighted Normal + Auto Smooth à 35°) : pas de stries. Pas de PMREM : sa compilation bloquait le mobile > 1 s.
 - Tous les réglages vont dans `config.ts` : inclinaison, souffle, vitesse de précession, trajectoire (`ring.orbit`), studio.
 
 ### Apparitions de projets (desktop uniquement)
@@ -133,7 +133,8 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 - Maquettes : LONGTEMPS `16:5`, FORMULA ONE `25:448`, TAKE CARE `25:560` (frames 1440×1024). **Carré rouge sur la maquette = asset à mettre.**
 - **On y accède en scrollant depuis l'accueil** (scroll virtuel `src/nav.ts` : molette/trackpad, tactile, clavier ; la page suit le geste puis se cale). Ancre d'URL par projet (`#longtemps`, `#formula-one`, `#take-care`). Le logo et le symbole en fin de rangée ramènent à l'accueil, « Works » ouvre le projet 1.
-- **Comportement inspiré de symbolsofwealth.studio** : les fenêtres arrivent par le côté en volant sur un grand cylindre invisible, l'une après l'autre (décalage + hasard), mais **on ne voit qu'une page (une vidéo) à la fois** : le cercle ne se voit pas. L'accueil (bio + bague) repart de la même façon. Réglages : `config.works`.
+- **Comportement inspiré de symbolsofwealth.studio** : les fenêtres tournent ensemble sur un grand anneau invisible (léger décalage de gauche à droite, **sans hasard**, rotation modérée), et **on ne voit qu'une page (une vidéo) à la fois**. Un geste déclenche une transition complète et maîtrisée (1,5 s, accélération/décélération douces), l'inertie du trackpad est ignorée. L'accueil (bio + bague) repart de la même façon. Réglages : `config.works`. (Version précédente, fenêtres éparpillées au hasard : jugée « goofy » par le DA.)
+- **Proportions = contraintes Figma des frames 1440×1024, telles quelles** (tailles fixes en px, positions en % + px), dans `src/works/projects.ts` (`MOSAIC`, `SINGLE`, `NAV_ROW`). Vérifié par superposition avec la maquette.
 - Rangée 1-8 + symbole en haut ; **le numéro courant est le chiffre entouré en 3D** (GLB `digit/n`), qui fait un tour sur lui-même quand sa page arrive.
 - Bouton vert « PROJET + » en bas à gauche : UI seulement pour l'instant (action du « + » à définir).
 - LONGTEMPS et FORMULA ONE : un grand cadre vidéo — **placeholders gris** en attendant les vidéos. Les assets F1 sont dans `assets-src/work/formula one/` (pas encore renommés ni utilisés).
@@ -150,8 +151,9 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 ### Music player
 
-- Le bouton vert "Music player" est en UI seulement pour l'instant : pas d'audio.
-- Prépare le module `musicPlayer.ts` : plus tard, chaque clic jouera un morceau.
+- Le rectangle vert garde le look de la maquette, avec deux zones : **l'icône** lance / arrête (égaliseur animé pendant la lecture), **le texte** passe au morceau suivant (« chaque clic joue un morceau ») et affiche le titre en cours (défilement s'il est trop long).
+- Au tout premier lancement : courte intro `chaewon-lock-in`, puis morceaux tirés au hasard sans remise, enchaînés automatiquement. Fondu à l'entrée et à l'arrêt.
+- Sources : `assets-src/music/`. `npm run assets` les convertit en AAC 128 kbit/s avec volume harmonisé (-16 LUFS) → `public/music/`, liste et titres dans `scripts/optimize-assets.mjs` (`MUSIC`) → `src/ui/tracks.generated.json`. Un morceau ne se télécharge qu'au moment où il est lancé.
 
 ### Mobile (frame 46-410)
 

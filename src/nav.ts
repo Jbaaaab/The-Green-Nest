@@ -1,52 +1,47 @@
 import { config } from './config';
 
 /**
- * Navigation par « scroll virtuel » entre les sections : 0 = accueil, puis un projet par section.
- * La progression `p` est continue (les transitions suivent le geste) puis se cale sur une section entière.
- * Molette / trackpad, tactile, clavier et liens (#id) la pilotent.
+ * Navigation entre les sections : 0 = accueil, puis un projet par section.
+ * Un geste (molette / trackpad, glissé au doigt, flèches du clavier) déclenche une transition
+ * complète et maîtrisée vers la section voisine ; l'inertie du trackpad est ignorée.
+ * La progression `p` (continue) pilote toutes les animations.
  */
 export const SECTION_IDS = ['', 'longtemps', 'formula-one', 'take-care'] as const;
 
 type Listener = (p: number) => void;
 
+// Accélération et décélération douces (équivalent cubic-bezier(0.65, 0, 0.35, 1)).
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
 class Nav {
-  /** Progression affichée (lissée). */
+  /** Progression affichée. */
   p = 0;
-  /** Progression visée. */
-  target = 0;
-  /** Section sur laquelle on est calé (ou vers laquelle on va). */
+  /** Section visée (ou atteinte). */
   section = 0;
   readonly count = SECTION_IDS.length;
 
   private listeners: Listener[] = [];
   private sectionListeners: ((s: number) => void)[] = [];
+  private anim: { from: number; to: number; start: number; duration: number } | null = null;
   private frame = 0;
-  private last = 0;
 
-  // Geste molette en cours
-  private wheelTimer = 0;
-  private locked = false;
-  private lockTimer = 0;
-
-  // Geste tactile en cours
+  // Molette : cumul du geste, et verrou tant que le trackpad envoie son inertie.
+  private wheelSum = 0;
+  private lastWheel = 0;
   private touchY: number | null = null;
-  private touchT = 0;
 
   private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   init(): void {
-    const fromHash = SECTION_IDS.indexOf(location.hash.slice(1) as (typeof SECTION_IDS)[number]);
-    if (fromHash > 0) this.p = this.target = this.section = fromHash;
+    const fromHash = this.indexOf(location.hash.slice(1));
+    if (fromHash > 0) this.p = this.section = fromHash;
 
     window.addEventListener('wheel', this.onWheel, { passive: false });
     window.addEventListener('touchstart', this.onTouchStart, { passive: true });
     window.addEventListener('touchmove', this.onTouchMove, { passive: false });
     window.addEventListener('touchend', this.onTouchEnd);
     window.addEventListener('keydown', this.onKey);
-    window.addEventListener('hashchange', () => {
-      const i = SECTION_IDS.indexOf(location.hash.slice(1) as (typeof SECTION_IDS)[number]);
-      this.goTo(Math.max(0, i));
-    });
+    window.addEventListener('hashchange', () => this.goTo(Math.max(0, this.indexOf(location.hash.slice(1)))));
     this.emit();
   }
 
@@ -60,11 +55,23 @@ class Nav {
     fn(this.section);
   }
 
+  get busy(): boolean {
+    return this.anim !== null;
+  }
+
   goTo(section: number): void {
     const s = Math.min(this.count - 1, Math.max(0, Math.round(section)));
-    this.target = s;
+    if (s === this.section && !this.anim) return;
+    const { duration, durationPerExtra, durationReduced } = config.works;
+    const distance = Math.abs(s - this.p);
+    this.anim = {
+      from: this.p,
+      to: s,
+      start: performance.now(),
+      duration: 1000 * (this.reduced.matches ? durationReduced : duration + durationPerExtra * Math.max(0, distance - 1)),
+    };
     this.setSection(s);
-    this.animate();
+    if (!this.frame) this.frame = requestAnimationFrame(this.tick);
   }
 
   next(): void {
@@ -75,6 +82,10 @@ class Nav {
     this.goTo(this.section - 1);
   }
 
+  private indexOf(id: string): number {
+    return SECTION_IDS.indexOf(id as (typeof SECTION_IDS)[number]);
+  }
+
   private setSection(s: number): void {
     if (s === this.section) return;
     this.section = s;
@@ -83,61 +94,37 @@ class Nav {
     for (const fn of this.sectionListeners) fn(s);
   }
 
-  // Pendant un geste, la cible suit le geste mais reste à ±1 section de la section courante.
-  private nudge(delta: number): void {
-    this.target = Math.min(this.section + 1, Math.max(this.section - 1, this.target + delta));
-    this.target = Math.min(this.count - 1, Math.max(0, this.target));
-    this.animate();
-  }
-
-  // Fin de geste : on se cale sur la section suivante / précédente si on a assez poussé.
-  private snap(velocity = 0): void {
-    const { snapThreshold } = config.works;
-    const diff = this.target - this.section;
-    let s = this.section;
-    if (diff > snapThreshold || velocity > 0.6) s += 1;
-    else if (diff < -snapThreshold || velocity < -0.6) s -= 1;
-    this.goTo(s);
-  }
-
   private onWheel = (e: WheelEvent) => {
     e.preventDefault();
-    // Après un calage, on ignore la fin d'inertie du trackpad tant que les événements continuent.
-    if (this.locked) {
-      clearTimeout(this.lockTimer);
-      this.lockTimer = window.setTimeout(() => (this.locked = false), 180);
-      return;
+    const now = performance.now();
+    const quiet = now - this.lastWheel > config.works.wheelQuietMs;
+    this.lastWheel = now;
+    // Pendant une transition, et tant que l'inertie qui a suivi continue : on ignore.
+    if (this.anim || (!quiet && this.wheelSum === Infinity)) return;
+    if (quiet) this.wheelSum = 0;
+    this.wheelSum += e.deltaMode === 1 ? e.deltaY * 32 : e.deltaY;
+    if (Math.abs(this.wheelSum) >= config.works.wheelThreshold) {
+      if (this.wheelSum > 0) this.next();
+      else this.prev();
+      this.wheelSum = Infinity; // verrou jusqu'au prochain geste (après un silence)
     }
-    const px = e.deltaMode === 1 ? e.deltaY * 32 : e.deltaY;
-    this.nudge(px / config.works.wheelPerSection);
-    clearTimeout(this.wheelTimer);
-    this.wheelTimer = window.setTimeout(() => {
-      this.snap();
-      this.locked = true;
-      clearTimeout(this.lockTimer);
-      this.lockTimer = window.setTimeout(() => (this.locked = false), 180);
-    }, 140);
   };
 
   private onTouchStart = (e: TouchEvent) => {
     this.touchY = e.touches[0].clientY;
-    this.touchT = performance.now();
   };
 
   private onTouchMove = (e: TouchEvent) => {
-    if (this.touchY === null) return;
-    e.preventDefault();
-    const y = e.touches[0].clientY;
-    this.nudge((this.touchY - y) / (window.innerHeight * config.works.touchPerSection));
-    this.touchY = y;
+    if (this.touchY !== null) e.preventDefault();
   };
 
-  private onTouchEnd = () => {
-    if (this.touchY === null) return;
-    const dt = Math.max(1, performance.now() - this.touchT);
-    const velocity = ((this.target - this.section) / dt) * 1000; // sections / s sur tout le geste
+  private onTouchEnd = (e: TouchEvent) => {
+    if (this.touchY === null || this.anim) return;
+    const dy = this.touchY - e.changedTouches[0].clientY;
     this.touchY = null;
-    this.snap(velocity);
+    if (Math.abs(dy) < config.works.swipeThreshold) return;
+    if (dy > 0) this.next();
+    else this.prev();
   };
 
   private onKey = (e: KeyboardEvent) => {
@@ -157,24 +144,23 @@ class Nav {
     const action = map[e.key];
     if (!action) return;
     e.preventDefault();
-    action();
+    if (!this.anim) action();
   };
 
-  // Boucle d'animation, active seulement tant que p n'a pas rejoint la cible.
-  private animate(): void {
-    if (this.frame) return;
-    this.last = performance.now();
-    this.frame = requestAnimationFrame(this.tick);
-  }
-
   private tick = (now: number) => {
-    const dt = Math.min((now - this.last) / 1000, 0.1);
-    this.last = now;
-    const speed = this.reduced.matches ? config.works.followReduced : config.works.follow;
-    this.p += (this.target - this.p) * (1 - Math.exp(-speed * dt));
-    if (Math.abs(this.target - this.p) < 0.0005) this.p = this.target;
+    const a = this.anim;
+    if (!a) {
+      this.frame = 0;
+      return;
+    }
+    const t = Math.min(1, (now - a.start) / a.duration);
+    this.p = a.from + (a.to - a.from) * easeInOutCubic(t);
+    if (t >= 1) {
+      this.p = a.to;
+      this.anim = null;
+    }
     this.emit();
-    this.frame = this.p === this.target ? 0 : requestAnimationFrame(this.tick);
+    this.frame = this.anim ? requestAnimationFrame(this.tick) : 0;
   };
 
   private emit(): void {

@@ -252,7 +252,57 @@ async function optimizeProjects() {
   await writeFile(path.join(root, 'src/works/media.generated.json'), JSON.stringify(media, null, 2) + '\n');
 }
 
+// Music player : AAC 128 kbit/s (lu partout, Safari compris), volume harmonisé (-16 LUFS).
+// Écrit src/ui/tracks.generated.json, lu par src/ui/musicPlayer.ts.
+const MUSIC = {
+  from: 'music',
+  to: 'music',
+  intro: { file: 'chaewon-lock-in.mp3' }, // petite phrase jouée une fois, au tout premier clic
+  tracks: [
+    { file: 'childish-gambino-redbone.mp3', title: 'Redbone', artist: 'Childish Gambino' },
+    { file: 'aespa-supernova.mp3', title: 'Supernova', artist: 'aespa' },
+    { file: 'laylow-megatron.mp3', title: 'MEGATRON', artist: 'Laylow' },
+    { file: 'mf-doom-doomsday.mp3', title: 'Doomsday', artist: 'MF DOOM' },
+    { file: 'cortis-redred.mp3', title: 'REDRED', artist: 'CORTIS' },
+  ],
+};
+
+async function encodeAudio(input, output) {
+  if (await newer(output, input)) return;
+  await run('ffmpeg', [
+    '-y', '-loglevel', 'error', '-i', input, '-vn',
+    '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ar', '44100',
+    '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart',
+    output,
+  ]);
+}
+
+async function optimizeMusic() {
+  try {
+    await run('ffmpeg', ['-version']);
+  } catch {
+    console.warn('ffmpeg introuvable : musique ignorée.');
+    return;
+  }
+  await mkdir(out(MUSIC.to), { recursive: true });
+  const url = (f) => `/${MUSIC.to}/${base(f)}.m4a`;
+  const encode = (f) => encodeAudio(src(`${MUSIC.from}/${f}`), out(`${MUSIC.to}/${base(f)}.m4a`));
+
+  await encode(MUSIC.intro.file);
+  for (const t of MUSIC.tracks) await encode(t.file);
+
+  const manifest = {
+    intro: url(MUSIC.intro.file),
+    tracks: MUSIC.tracks.map((t) => ({ src: url(t.file), title: t.title, artist: t.artist })),
+  };
+  await writeFile(path.join(root, 'src/ui/tracks.generated.json'), JSON.stringify(manifest, null, 2) + '\n');
+  let total = 0;
+  for (const f of await readdir(out(MUSIC.to))) total += (await stat(out(`${MUSIC.to}/${f}`))).size;
+  console.log(`${MUSIC.to}`.padEnd(28), `${MUSIC.tracks.length + 1} fichiers, ${kb(total)}`);
+}
+
 const only = process.argv[2];
 if (!only || only === 'models') await optimizeModels();
 if (!only || only === 'thumbs') await optimizeThumbs();
 if (!only || only === 'projects') await optimizeProjects();
+if (!only || only === 'music') await optimizeMusic();

@@ -1,10 +1,10 @@
-import { Box3, Group, Mesh, Quaternion, Vector2, Vector3, type Material, type Object3D } from 'three';
+import { Box3, DoubleSide, Group, Mesh, MeshMatcapMaterial, Quaternion, Vector2, Vector3, type Material, type Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { config } from '../config';
 import { nav } from '../nav';
 import { place, windowPhase } from '../works/cylinder';
-import { applyPolishedMetal } from './materials';
+import { ringMatcap } from './ringMatcap';
 import { createFractalNoise1D } from './noise';
 import type { Updatable, Viewport } from './stage';
 
@@ -128,10 +128,12 @@ export class Ring implements Updatable {
   }
 }
 
-// Matériau poli, recentrage sur le centre géométrique, diamètre ramené à 1,
+// Matériau calibré sur la maquette, recentrage sur le centre géométrique, diamètre ramené à 1,
 // face tournée vers la caméra (le GLB est posé à plat, normale = +Y).
 function normalize(scene: Object3D): Object3D {
-  applyPolishedMetal(scene);
+  scene.traverse((o) => {
+    if (o instanceof Mesh) o.material = new MeshMatcapMaterial({ matcap: ringMatcap(), side: DoubleSide });
+  });
 
   const holder = new Group();
   holder.add(scene);

@@ -45,10 +45,15 @@
           <span class="clock__line">Paris <time data-tz="Europe/Paris">--:--</time></span>
           <span class="clock__line">Seoul <time data-tz="Asia/Seoul">--:--</time></span>
         </p>
-        <button class="music" type="button" aria-label="Music player">
-          <img class="music__icon" src="/src/assets/icons/play.svg" alt="" width="11" height="11" />
-          <span class="music__label">Music player</span>
-        </button>
+        <div class="music" role="group" aria-label="Music player">
+          <button class="music__toggle" type="button" aria-label="Lancer la musique" aria-pressed="false">
+            <img class="music__icon" src="/src/assets/icons/play.svg" alt="" width="11" height="11" />
+            <span class="music__eq" aria-hidden="true"><i></i><i></i><i></i></span>
+          </button>
+          <button class="music__next" type="button" title="Morceau suivant">
+            <span class="music__label"><span class="music__title">Music player</span></span>
+          </button>
+        </div>
       </footer>
     </div>
     <script type="module" src="/src/main.ts"></script>

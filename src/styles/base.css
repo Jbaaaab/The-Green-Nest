@@ -284,7 +284,26 @@ button {
   background: var(--color-green);
 }
 
-.music__icon {
+/* Deux zones dans le même rectangle : l'icône (lecture / stop) et le texte (morceau suivant). */
+.music__toggle,
+.music__next {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.music__toggle {
+  left: 0;
+  width: calc(var(--music-icon-x) * 2 + var(--music-icon));
+}
+
+.music__next {
+  left: calc(var(--music-icon-x) * 2 + var(--music-icon));
+  right: 0;
+}
+
+.music__icon,
+.music__eq {
   position: absolute;
   left: var(--music-icon-x);
   top: var(--music-icon-y);
@@ -292,10 +311,91 @@ button {
   height: var(--music-icon);
 }
 
+/* Égaliseur animé pendant la lecture (remplace l'icône play). */
+.music__eq {
+  display: none;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 1px 1px 1px;
+}
+
+.music__eq i {
+  display: block;
+  width: 22%;
+  height: 100%;
+  background: var(--color-text);
+  transform-origin: 50% 100%;
+  animation: music-eq 0.9s ease-in-out infinite;
+}
+
+.music__eq i:nth-child(2) {
+  animation-delay: -0.3s;
+  animation-duration: 0.7s;
+}
+
+.music__eq i:nth-child(3) {
+  animation-delay: -0.55s;
+  animation-duration: 1.1s;
+}
+
+@keyframes music-eq {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.music.is-playing .music__icon {
+  display: none;
+}
+
+.music.is-playing .music__eq {
+  display: flex;
+}
+
 .music__label {
   position: absolute;
   right: var(--music-label-right);
   top: var(--music-label-y);
+  /* Le texte peut déborder un peu vers l'icône (comme sur la maquette, où il fait 78 px). */
+  max-width: calc(100% - var(--music-label-right) + 6px);
+  overflow: hidden;
+  white-space: nowrap;
+  line-height: normal;
+}
+
+.music__title {
+  display: inline-block;
+}
+
+/* Titre trop long : il défile doucement d'un bout à l'autre. */
+.music__label.is-scrolling .music__title {
+  animation: music-marquee var(--marquee-duration, 6s) linear infinite alternate;
+}
+
+@keyframes music-marquee {
+  0%,
+  15% {
+    transform: translateX(0);
+  }
+  85%,
+  100% {
+    transform: translateX(var(--marquee-shift, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .music__eq i,
+  .music__label.is-scrolling .music__title {
+    animation: none;
+  }
+
+  .music__label {
+    text-overflow: ellipsis;
+  }
 }
 
 /* ---------- Écrans intermédiaires (hors maquette) ----------
