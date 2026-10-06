@@ -62,7 +62,7 @@ button {
 .header {
   position: absolute;
   inset: 0 0 auto 0;
-  z-index: 3;
+  z-index: 4;
   font-size: calc(var(--nav-size) * var(--u));
   white-space: nowrap;
 }
@@ -159,11 +159,54 @@ button {
   display: none;
 }
 
+/* ---------- Canvas 3D (bague) : au-dessus de la bio, sous le header et le dock ---------- */
+
+.stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition-property: opacity;
+  transition-timing-function: ease-out;
+}
+
+.stage.is-ready {
+  opacity: 1;
+}
+
+/* ---------- Traînée de frames : au-dessus du canvas ---------- */
+
+.trail {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.trail__frame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@media (max-width: 767px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .trail {
+    display: none;
+  }
+}
+
 /* ---------- Dock : horloge + music player ---------- */
 
 .dock {
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   right: calc(var(--dock-right) * var(--u));
   bottom: calc(var(--dock-bottom) * var(--u));
   width: calc(var(--music-w) * var(--u));
