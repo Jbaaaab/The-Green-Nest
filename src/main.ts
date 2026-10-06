@@ -1,5 +1,12 @@
+import '@fontsource/epilogue/latin-700.css';
+import '@fontsource/epilogue/latin-800.css';
+import './styles/tokens.css';
 import './styles/base.css';
 
-// Étape 0 : squelette. Le layout arrive à l'étape 1.
-const app = document.querySelector<HTMLDivElement>('#app')!;
-app.textContent = 'The Green Nest — setup OK';
+import { initHeader } from './ui/header';
+import { initClock } from './ui/clock';
+import { initMusicPlayer } from './ui/musicPlayer';
+
+initHeader();
+initClock();
+initMusicPlayer(document.querySelector<HTMLButtonElement>('.music'));

@@ -9,3 +9,270 @@ body {
   margin: 0;
   height: 100%;
 }
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font);
+  font-weight: var(--weight-bold);
+  line-height: normal;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.page {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* ---------- Header ---------- */
+
+.header {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 3;
+  font-size: calc(var(--nav-size) * var(--u));
+  white-space: nowrap;
+}
+
+.header > * {
+  position: absolute;
+}
+
+.brand {
+  left: calc(var(--brand-x) * var(--u));
+  top: calc(var(--header-y) * var(--u));
+  display: block;
+  padding-left: calc(var(--brand-gap) * var(--u));
+}
+
+.brand__icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--brand-icon) * var(--u));
+  height: calc(var(--brand-icon) * var(--u));
+}
+
+.brand__short {
+  display: none;
+}
+
+.nav-works {
+  left: calc(var(--works-x) * var(--u));
+  top: calc(var(--header-y) * var(--u));
+}
+
+.nav-about {
+  left: calc(var(--about-x) * var(--u));
+  top: calc(var(--header-y) * var(--u));
+}
+
+.cursor-btn {
+  left: calc(var(--cursor-btn-x) * var(--u));
+  top: calc(var(--cursor-btn-y) * var(--u));
+  width: calc(var(--cursor-btn-w) * var(--u));
+  height: calc(var(--cursor-btn-h) * var(--u));
+  transform: rotate(180deg);
+}
+
+.cursor-btn img {
+  position: absolute;
+  left: 9.47%;
+  top: 0;
+  width: 88.76%;
+  height: 96.73%;
+}
+
+.contact {
+  right: calc(var(--contact-right) * var(--u));
+  top: calc(var(--contact-y) * var(--u));
+  font-size: calc(var(--contact-size) * var(--u));
+  text-align: right;
+}
+
+.contact a {
+  display: block;
+}
+
+.contact a + a {
+  position: absolute;
+  right: 0;
+  top: calc(var(--contact-step) * var(--u));
+}
+
+/* ---------- Bio ---------- */
+
+.bio {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--bio-width) * var(--u));
+  margin: 0;
+  transform: translate(-50%, -50%);
+  font-size: calc(var(--bio-size) * var(--u));
+  font-weight: var(--weight-bold);
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.bio__cool {
+  font-size: calc(var(--bio-cool-size) * var(--u));
+  font-weight: var(--weight-extrabold);
+}
+
+.bio--mobile {
+  display: none;
+}
+
+/* ---------- Dock : horloge + music player ---------- */
+
+.dock {
+  position: absolute;
+  z-index: 3;
+  right: calc(var(--dock-right) * var(--u));
+  bottom: calc(var(--dock-bottom) * var(--u));
+  width: calc(var(--music-w) * var(--u));
+  height: calc((var(--clock-offset-y) + var(--music-h)) * var(--u));
+  font-size: calc(var(--dock-size) * var(--u));
+  white-space: nowrap;
+}
+
+.clock {
+  position: absolute;
+  left: calc(var(--clock-offset-x) * var(--u));
+  top: 0;
+  height: calc(var(--clock-h) * var(--u));
+  margin: 0;
+  padding-left: calc(var(--clock-text-x) * var(--u));
+  padding-top: calc(var(--clock-text-y) * var(--u));
+}
+
+.clock__walk,
+.clock__heart {
+  position: absolute;
+}
+
+.clock__walk {
+  left: 0;
+  top: 0;
+  width: calc(var(--clock-icon) * var(--u));
+  height: calc(var(--clock-icon) * var(--u));
+}
+
+.clock__heart {
+  left: calc(var(--clock-heart-x) * var(--u));
+  top: calc(var(--clock-heart-y) * var(--u));
+  width: calc(var(--clock-heart-w) * var(--u));
+  height: calc(var(--clock-heart-h) * var(--u));
+}
+
+.clock__line {
+  display: block;
+}
+
+.music {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: calc(var(--music-w) * var(--u));
+  height: calc(var(--music-h) * var(--u));
+  background: var(--color-green);
+}
+
+.music__icon {
+  position: absolute;
+  left: calc(var(--music-icon-x) * var(--u));
+  top: calc(var(--music-icon-y) * var(--u));
+  width: calc(var(--music-icon) * var(--u));
+  height: calc(var(--music-icon) * var(--u));
+}
+
+.music__label {
+  position: absolute;
+  right: calc(var(--music-label-right) * var(--u));
+  top: calc(var(--music-label-y) * var(--u));
+}
+
+/* ---------- Mobile (frame 46:410) ---------- */
+
+@media (max-width: 767px) {
+  .brand__full {
+    display: none;
+  }
+
+  .brand__short {
+    display: inline;
+  }
+
+  .cursor-btn {
+    display: none;
+  }
+
+  .bio--desktop {
+    display: none;
+  }
+
+  .bio--mobile {
+    display: block;
+  }
+
+  .dock {
+    inset: auto 0 0 0;
+    width: auto;
+    height: 0;
+  }
+
+  .clock {
+    left: calc(var(--clock-left) * var(--u));
+    top: auto;
+    bottom: calc(var(--clock-bottom) * var(--u));
+  }
+
+  .music {
+    left: auto;
+    right: calc(var(--music-right) * var(--u));
+    bottom: calc(var(--music-bottom) * var(--u));
+  }
+}
+
+/* Pas de curseur 3D sur écran tactile : le bouton qui le change disparaît aussi. */
+@media (pointer: coarse) {
+  .cursor-btn {
+    display: none;
+  }
+}

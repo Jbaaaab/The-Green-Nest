@@ -1,0 +1,113 @@
+/*
+ * Tokens issus de Figma (fichier WEBSITE-2027).
+ * Desktop : frame "Land" 2:3 (1440×1024). Mobile : frame "Landing mobile" 46:410 (402×874).
+ *
+ * --u = 1 px de la maquette, mis à l'échelle de la largeur d'écran.
+ * Toutes les valeurs de position et de taille sont écrites en px Figma × var(--u).
+ */
+
+:root {
+  /* Couleurs */
+  --color-bg: #ffffff;
+  --color-text: #000000;
+  --color-green: #41f373;
+
+  /* Typo */
+  --font: 'Epilogue', system-ui, sans-serif;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* Unité : 1 px Figma desktop. Plancher pour les écrans entre tablette et petit laptop. */
+  --u: max(calc(100vw / 1440), 0.75px);
+
+  /* Header (desktop) */
+  --header-y: 54;
+  --brand-x: 61;
+  --brand-icon: 12;
+  --brand-gap: 16; /* du bord gauche du logo au début du texte */
+  --nav-size: 14;
+  --works-x: 395;
+  --about-x: 563;
+  --cursor-btn-x: 730;
+  --cursor-btn-y: 51;
+  --cursor-btn-w: 13;
+  --cursor-btn-h: 14;
+  --contact-right: 59;
+  --contact-y: 56;
+  --contact-size: 12;
+  --contact-step: 14; /* écart vertical Instagram → Mail */
+
+  /* Bio */
+  --bio-width: 839;
+  --bio-size: 17.677;
+  --bio-cool-size: 22.65;
+
+  /* Horloge + music player (desktop : groupe 120×50, en bas à droite) */
+  --dock-size: 12;
+  --clock-icon: 14;
+  --clock-heart-x: 2;
+  --clock-heart-y: 15;
+  --clock-heart-w: 10;
+  --clock-heart-h: 9;
+  --clock-text-x: 20;
+  --clock-text-y: 3;
+  --clock-h: 27;
+  --music-w: 120;
+  --music-h: 20;
+  --music-icon: 11;
+  --music-icon-x: 9;
+  --music-icon-y: 4;
+  --music-label-right: 14;
+  --music-label-y: 5;
+
+  /* Placement du dock desktop */
+  --dock-right: 60;
+  --dock-bottom: 57;
+  --clock-offset-x: 8; /* horloge décalée de 8 px par rapport au bouton */
+  --clock-offset-y: 30; /* le bouton est 30 px sous le haut de l'horloge */
+}
+
+@media (max-width: 767px) {
+  :root {
+    --u: calc(100vw / 402);
+
+    --header-y: 11.34;
+    --brand-x: 10;
+    --brand-icon: 9.345;
+    --brand-gap: 12.46;
+    --nav-size: 10.902;
+    --works-x: 95;
+    --about-x: 170;
+    --contact-right: 10;
+    --contact-y: 10;
+    --contact-size: 9.345;
+    --contact-step: 10.9;
+
+    --bio-width: 353;
+    --bio-size: 19.318;
+    --bio-cool-size: 24.754;
+
+    --dock-size: 9.345;
+    --clock-icon: 10.902;
+    --clock-heart-x: 1.56;
+    --clock-heart-y: 11.68;
+    --clock-heart-w: 7.79;
+    --clock-heart-h: 7.01;
+    --clock-text-x: 15.57;
+    --clock-text-y: 2.34;
+    --clock-h: 21.03;
+    --music-w: 93.449;
+    --music-h: 15.575;
+    --music-icon: 8.566;
+    --music-icon-x: 7.01;
+    --music-icon-y: 3.11;
+    --music-label-right: 10.9;
+    --music-label-y: 2.89;
+
+    /* Mobile : horloge en bas à gauche, music player en bas à droite */
+    --clock-left: 20;
+    --clock-bottom: 19;
+    --music-right: 19.55;
+    --music-bottom: 20.4;
+  }
+}

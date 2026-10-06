@@ -1,13 +1,49 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Designer With A Monstera</title>
-    <meta name="description" content="Designer With A Monstera — directeur artistique et designer basé à Paris. Musique, mode, publicité." />
+    <meta name="description" content="Designer With A Monstera is an art director and designer based in Paris, working 360 in music, fashion, and advertising." />
   </head>
   <body>
-    <div id="app"></div>
+    <div class="page">
+      <header class="header">
+        <a class="brand" href="/" aria-label="Designer With A Monstera — accueil">
+          <img class="brand__icon" src="/src/assets/icons/logo.svg" alt="" width="12" height="12" />
+          <span class="brand__full">DESIGNER WITH A MONSTERA</span><span class="brand__short">DWAM</span>
+        </a>
+        <a class="nav-works" href="#">Works</a>
+        <a class="nav-about" href="#">About</a>
+        <button class="cursor-btn" type="button" aria-label="Changer de curseur">
+          <img src="/src/assets/icons/cursor-hand.png" alt="" />
+        </button>
+        <nav class="contact" aria-label="Contact">
+          <a class="contact__insta" href="https://www.instagram.com/designer_with_a_monstera/" target="_blank" rel="noopener">Instagram</a>
+          <a class="contact__mail" href="mailto:hello@designer-with-a-monstera.art">Mail</a>
+        </nav>
+      </header>
+
+      <main>
+        <h1 class="sr-only">Designer With A Monstera</h1>
+        <!-- Les trous entre les mots sont voulus (maquette Figma) : ne pas les retirer. -->
+        <p class="bio bio--desktop">DESIGNER WITH A MONSTERA IS AN ART DIRECTOR                    AND DESIGNER BASED IN PARIS, WORKING 360                      IN MUSIC, FASHION, AND ADVERTISING.                       HIS WORK FOCUSES ON MAKING THINGS LOOK <strong class="bio__cool">COOL</strong> FOR PEOPLE AND BRANDS.</p>
+        <p class="bio bio--mobile">DESIGNER WITH A MONSTERA <br />IS AN ART DIRECTOR                    AND DESIGNER       BASED IN PARIS, <br />WORKING 360                      IN MUSIC, <br />FASHION, AND ADVERTISING.                       HIS WORK FOCUSES ON MAKING THINGS LOOK <strong class="bio__cool">COOL</strong> FOR PEOPLE AND BRANDS.</p>
+      </main>
+
+      <footer class="dock">
+        <p class="clock">
+          <img class="clock__walk" src="/src/assets/icons/walking.svg" alt="" width="14" height="14" />
+          <img class="clock__heart" src="/src/assets/icons/heart.svg" alt="" width="10" height="9" />
+          <span class="clock__line">Paris <time data-tz="Europe/Paris">--:--</time></span>
+          <span class="clock__line">Seoul <time data-tz="Asia/Seoul">--:--</time></span>
+        </p>
+        <button class="music" type="button" aria-label="Music player">
+          <img class="music__icon" src="/src/assets/icons/play.svg" alt="" width="11" height="11" />
+          <span class="music__label">Music player</span>
+        </button>
+      </footer>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
