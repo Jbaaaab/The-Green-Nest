@@ -21,8 +21,9 @@ export const config = {
   // Couleurs en RGB linéaire 0-1 (au-delà de 1 = lumière très forte).
   // dir : direction de la lumière vue depuis l'objet (x droite, y haut, z vers la caméra) ;
   // size / softness en radians (taille de la source et largeur du fondu de son bord).
+  // Au choix pour les curseurs (cursor.ambience), les chiffres (works.digitAmbience) et la pluie (rain.look.ambience).
   ambiences: {
-    // Studio photo neutre : pluie Instagram.
+    // Studio photo neutre.
     studio: {
       exposure: 2,
       floor: [0.02, 0.02, 0.02],
@@ -34,7 +35,7 @@ export const config = {
         { dir: [0.9, 0.5, -0.2], size: 0.2, softness: 0.4, color: [1, 1, 1], intensity: 1.2 },
       ],
     },
-    // HDRI délirant façon rendu Blender : néons de couleur irréalistes + horizon net (curseur).
+    // HDRI délirant façon rendu Blender : néons de couleur irréalistes + horizon net.
     neon: {
       exposure: 1.8,
       floor: [0.03, 0.0, 0.06],
@@ -54,7 +55,29 @@ export const config = {
         { dir: [0.2, 0.0, 1], size: 0.05, softness: 0.12, color: [1, 0.85, 0.2], intensity: 2.6 }, // éclat jaune
       ],
     },
-    // Chrome froid façon écran de chargement PS3 : dégradé bleu nuit → blanc, horizon lumineux (chiffres).
+    // Chrome vert-bleu intense : curseurs, chiffres, et reflets des logos Instagram.
+    // Ciel bleu électrique, sol vert profond, horizon aqua très lumineux, grandes sources émeraude et bleues.
+    chrome: {
+      exposure: 2.2,
+      floor: [0.0, 0.035, 0.012], // vert presque noir
+      horizon: [0.0, 0.5, 0.34], // émeraude lumineux
+      sky: [0.0, 0.02, 0.24], // bleu nuit
+      horizonLine: { color: [0.6, 1, 0.95], width: 0.05, intensity: 3 },
+      lights: [
+        { dir: [-0.55, 0.5, 0.65], size: 0.2, softness: 0.12, color: [0.0, 1, 0.4], intensity: 3.2 }, // émeraude, haut gauche
+        { dir: [0.6, 0.35, 0.7], size: 0.18, softness: 0.1, color: [0.0, 0.3, 1], intensity: 3.6 }, // bleu électrique, haut droite
+        { dir: [0.35, -0.4, 0.85], size: 0.14, softness: 0.1, color: [0.0, 0.95, 1], intensity: 3 }, // cyan, bas droite
+        { dir: [-0.45, -0.35, 0.82], size: 0.08, softness: 0.06, color: [0.35, 1, 0.1], intensity: 3.5 }, // vert acide
+        { dir: [0.1, 0.55, 0.83], size: 0.05, softness: 0.05, color: [1, 1, 1], intensity: 6 }, // point blanc
+        // Juste derrière la caméra : ce que les lettres reflètent quand elles sont de face.
+        { dir: [-0.15, 0.12, 1], size: 0.09, softness: 0.1, color: [0.0, 0.9, 0.5], intensity: 2.6 }, // vert
+        { dir: [0.15, -0.1, 1], size: 0.09, softness: 0.1, color: [0.0, 0.45, 1], intensity: 2.6 }, // bleu
+        // Sur les côtés : ce que reflètent les tranches des lettres quand elles tournent.
+        { dir: [0.95, -0.1, 0.15], size: 0.25, softness: 0.2, color: [0.0, 0.15, 0.9], intensity: 2.2 }, // bleu profond
+        { dir: [-0.95, 0.1, 0.15], size: 0.25, softness: 0.2, color: [0.0, 0.8, 0.35], intensity: 2 }, // émeraude
+      ],
+    },
+    // Chrome froid façon écran de chargement PS3 : dégradé bleu nuit → blanc, horizon lumineux.
     ps3: {
       exposure: 2.2,
       floor: [0.0, 0.01, 0.04],
@@ -73,23 +96,26 @@ export const config = {
 
     // Diamètre à l'écran, en px de maquette (mesuré sur le rendu Figma 1512 et ta capture 1920).
     diameter: { desktop: 264, mobile: 200 },
+    // Centre du « creux de la table » (position de repos), en px de maquette depuis le centre de l'écran.
+    // Maquette desktop : la bague est 33 px sous le centre (la bio passe dans son tiers haut).
+    center: { desktop: [0, 33], mobile: [0, 0] },
 
     // La bague roule comme une pièce sur une table légèrement creuse, vue de dessus (l'écran est la table).
     // tiltDeg : angle entre le plan de la bague et la verticale. 90 = à plat, 70-80 = légèrement penchée.
     tiltDeg: 75,
-    breathDeg: 4, // variation aléatoire de l'inclinaison, ± degrés
-    breathPeriod: 4, // secondes : échelle de temps de cette variation
+    breathDeg: 6, // variation aléatoire de l'inclinaison, ± degrés (plus = plus chancelant)
+    breathPeriod: 2.2, // secondes : échelle de temps de cette variation (plus bas = plus nerveux)
 
     // Un tour de précession (l'axe d'inclinaison fait le tour) à l'inclinaison de référence.
     // Comme un vrai disque d'Euler, ça accélère quand la bague s'aplatit et ralentit quand elle se redresse.
-    precessionPeriod: 1.3,
+    precessionPeriod: 0.8,
 
     // Trajectoire : en roulant, la bague décrit des boucles dont le rayon change au hasard.
     orbit: {
       radiusMin: 8, // px de maquette : petites boucles serrées
-      radiusMax: 220, // px de maquette : grandes boucles qui emmènent la bague plus loin
-      changeEvery: 1.8, // secondes : vitesse à laquelle le rayon change (plus bas = plus nerveux)
-      pull: 0.25, // rappel vers le centre de l'écran (creux de la table) ; 0 = aucun
+      radiusMax: 170, // px de maquette : grandes boucles qui emmènent la bague plus loin
+      changeEvery: 1.4, // secondes : vitesse à laquelle le rayon change (plus bas = plus nerveux)
+      pull: 0.25, // rappel vers le creux de la table (ring.center) ; 0 = aucun
       maxOffset: 230, // px de maquette : au-delà, le rappel se renforce nettement
       bigLoopSlowdown: 60, // px de maquette : plus bas = les grandes boucles ralentissent davantage
       mobileScale: 0.35, // sur mobile, boucles et écart max réduits (l'écran fait ~400 px de large)
@@ -121,15 +147,16 @@ export const config = {
       sheen: { dir: [-0.28, 0.32, 1], size: 0.05, softness: 0.16, strength: 0.55 },
       // Éclats sur les arêtes (angles autour de la bague, en degrés ; 90 = en haut).
       glints: { angles: [128, 32, 230, 300], width: 0.16, strength: 1.1, color: [214, 255, 170] },
-      grain: 0.22, // aspérités : grain sur les arêtes et les flancs (0 = lisse)
-      asperity: 0.1, // micro-relief sur les faces (carte de normales ; 0 = miroir parfait)
+      grain: 0, // aspérités : grain sur les arêtes et les flancs (0 = lisse, « shade smooth »)
+      asperity: 0, // micro-relief sur les faces (carte de normales ; 0 = miroir parfait, pas de carte)
       asperityRepeat: 9, // taille du grain de la carte de normales (plus haut = plus fin)
     },
   },
 
-  // Curseur 3D (souris uniquement, désactivé sur écran tactile).
+  // Curseur 3D (souris uniquement, désactivé sur écran tactile). Chrome : ambiences.chrome.
   cursor: {
     dir: '/cursors', // GLB optimisés par npm run assets
+    ambience: 'chrome', // reflets (voir ambiences)
     default: 'wow', // curseur au chargement ; l'icône du header fait défiler click → great → iluvyou → iwannahire → super → wow
     hover: 'click', // au survol d'un lien ou d'un bouton
     height: 18, // hauteur des lettres, en px de maquette
@@ -146,13 +173,22 @@ export const config = {
     maxInstances: 60,
     spawnPerSecond: 20,
     minEmitSeconds: 0.6, // émission minimale après un survol, même très bref
-    width: { min: 140, max: 200 }, // largeur du logo en px de maquette, tirée au hasard
+    width: { min: 70, max: 100 }, // largeur du logo en px de maquette, tirée au hasard
     lifeSeconds: { min: 4, max: 5.5 }, // durée avant disparition
     fadeOutSeconds: 0.35, // durée du rétrécissement final
     gravity: 2800, // px/s²
     restitution: 0.35, // rebond (0 = aucun, 1 = parfait)
     friction: 0.6,
     depth: 120, // profondeur de la « boîte » où s'empilent les logos, en px
+    // Laque rose (couleur du GLB) éclairée par le même HDRI que les curseurs (ambiences.chrome) :
+    // le rose reste lisible, les reflets vert-bleu glissent dessus.
+    look: {
+      ambience: 'chrome', // HDRI des reflets (le même que les curseurs)
+      key: [-0.4, 0.6, 1], // direction de la lumière qui éclaire le rose
+      ambient: 0.35, // part du rose dans l'ombre (0 = noir, 1 = pas d'ombre)
+      f0: 0.3, // reflet de face (vernis) ; monte vers 1 sur les bords (Fresnel)
+      reflection: 3, // force des reflets de l'HDRI (au-delà de 1 : les sources se reflètent en couleur franche)
+    },
   },
 
   // Scroll vertical (accueil puis projets empilés) et pages projets.
@@ -185,7 +221,15 @@ export const config = {
       mobile: { side: 10, top: 66, bottom: 70 },
     },
 
-    // Chiffre entouré de la page courante : rotation continue, façon écran de chargement PS3.
+    // Carrés de Take Care : leurs vidéos tournent au ralenti, à vitesse normale sous la souris,
+    // et le carré survolé grandit un tout petit peu.
+    hover: {
+      sideRate: 0.5, // vitesse des vidéos des carrés (1 = normale)
+      scale: 1.04, // taille du carré survolé
+    },
+
+    // Chiffre entouré de la page courante (chrome : ambiences.chrome) : rotation continue, façon écran de chargement PS3.
+    digitAmbience: 'chrome', // reflets du chiffre (voir ambiences)
     digitSpinPeriod: 3.2, // secondes par tour
     digitBob: 0.08, // léger balancement (fraction de la taille)
   },

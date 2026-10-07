@@ -4,7 +4,7 @@ import { config } from '../config';
 import { nav } from '../nav';
 import { readUnit } from '../ui/unit';
 import { drum, perspectiveFor } from './scrollFx';
-import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, resolve, type Project } from './projects';
+import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, boxRect, type Project } from './projects';
 
 type Win = {
   el: HTMLElement;
@@ -17,7 +17,8 @@ type Section = {
   index: number;
   project: Project | null; // null = accueil
   wins: Win[];
-  video: HTMLVideoElement | null;
+  main: HTMLVideoElement | null; // grande vidéo : en boucle, vitesse normale
+  sideVideos: HTMLVideoElement[]; // vidéos des carrés (Take Care) : ralenties, vitesse normale au survol
   images: HTMLImageElement[]; // chargées seulement à l'approche de la section
   loaded: boolean;
   el: HTMLElement | null; // l'article de la page (retiré du rendu quand elle est loin)
@@ -34,9 +35,23 @@ const hash = (n: number) => {
   return x - Math.floor(x);
 };
 
+// Vidéo muette en boucle, chargée seulement à l'approche de sa page (data-src → src).
+function lazyVideo(src: string, poster: string, rate: number): HTMLVideoElement {
+  const v = document.createElement('video');
+  v.muted = true;
+  v.loop = true;
+  v.playsInline = true;
+  v.preload = 'none';
+  v.defaultPlaybackRate = rate;
+  v.playbackRate = rate;
+  v.dataset.src = src;
+  v.dataset.poster = poster;
+  return v;
+}
+
 /**
  * Accueil puis pages projets empilées verticalement (scroll fluide, voir nav.ts).
- * Chaque page est à ses proportions Figma quand elle est à l'arrêt (texte au milieu de l'écran).
+ * Chaque page est à ses proportions de maquette quand elle est à l'arrêt (texte au milieu de l'écran).
  * Pendant le scroll : parallaxe (fenêtres à des vitesses différentes, textes plus lents)
  * et twist façon perappelgren.de (la page se courbe comme un tambour, selon la vitesse).
  */
@@ -50,7 +65,6 @@ export class WorksView {
   private sections: Section[] = [];
   private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   private mobileQuery = window.matchMedia('(max-width: 767px)');
-  private hoverVideo: HTMLVideoElement | null = null;
   private current = -1;
   private H = window.innerHeight;
   private persp = 0;
@@ -59,6 +73,7 @@ export class WorksView {
     this.root = document.createElement('section');
     this.root.className = 'works';
     this.root.setAttribute('aria-label', 'Works');
+    this.root.style.setProperty('--hover-scale', String(config.works.hover.scale));
     this.stage = document.createElement('div');
     this.stage.className = 'works-stage';
     this.root.appendChild(this.stage);
@@ -68,14 +83,15 @@ export class WorksView {
       index: 0,
       project: null,
       wins: [{ el: landing, cy: 0, h: 0, speed: config.works.parallax.text }],
-      video: null,
+      main: null,
+      sideVideos: [],
       images: [],
       loaded: true,
       el: null,
     });
     for (const project of PROJECTS) this.sections.push(this.buildProject(project));
 
-    // Rangée 1-8 + symbole (retour à l'accueil).
+    // Rangée 1-8 + symbole (retour à l'accueil), derrière les vidéos des pages.
     this.navEl = document.createElement('nav');
     this.navEl.className = 'works-nav';
     this.navEl.setAttribute('aria-label', 'Projets');
@@ -138,78 +154,52 @@ export class WorksView {
       return w;
     };
 
-    let video: HTMLVideoElement | null = null;
     const images: HTMLImageElement[] = [];
-    const addMain = () => {
-      const w = win('project__main');
-      if (project.main.kind === 'video') {
-        video = document.createElement('video');
-        video.muted = true;
-        video.loop = true;
-        video.playsInline = true;
-        video.preload = 'none';
-        video.dataset.poster = project.main.poster;
-        video.dataset.src = project.main.video;
-        video.setAttribute('aria-label', project.title);
-        w.appendChild(video);
-      } else {
-        w.classList.add('is-placeholder');
-      }
-    };
+    const sideVideos: HTMLVideoElement[] = [];
+    const { sideRate } = config.works.hover;
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-    if (project.layout === 'mosaic') {
-      // Même ordre d'empilement que la maquette : le grand rectangle vient après les 7 premiers carrés.
-      project.side.forEach((media, i) => {
-        if (i === 7) addMain();
-        const w = win('project__side');
+    // Carrés (Take Care) : les vidéos tournent au ralenti, à vitesse normale sous la souris.
+    for (const media of project.side) {
+      const w = win('project__side');
+      if (media.video) {
+        const v = lazyVideo(media.video, media.image, sideRate);
+        v.setAttribute('aria-hidden', 'true');
+        sideVideos.push(v);
+        w.appendChild(v);
+        if (canHover) {
+          w.addEventListener('pointerenter', () => (v.playbackRate = 1));
+          w.addEventListener('pointerleave', () => (v.playbackRate = sideRate));
+        }
+      } else {
         const img = document.createElement('img');
         img.dataset.src = media.image;
         img.alt = '';
         img.decoding = 'async';
         images.push(img);
         w.appendChild(img);
-        if (media.video) this.hoverToPlay(w, media.video, () => video);
-      });
-      if (project.side.length <= 7) addMain();
+      }
+    }
+
+    // Grande vidéo (ou placeholder), au premier plan, devant les carrés.
+    const mainWin = win('project__main');
+    let main: HTMLVideoElement | null = null;
+    if (project.main.kind === 'video') {
+      main = lazyVideo(project.main.video, project.main.poster, 1);
+      main.setAttribute('aria-label', project.title);
+      mainWin.appendChild(main);
     } else {
-      addMain();
+      mainWin.classList.add('is-placeholder');
     }
 
     const text = win('project__text');
     text.innerHTML = `<p class="project__lines">${project.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
 
     el.style.display = 'none';
-    return { index: project.number, project, wins, video, images, loaded: false, el };
+    return { index: project.number, project, wins, main, sideVideos, images, loaded: false, el };
   }
 
-  // Une vidéo à la fois : survoler un carré vidéo met la vidéo centrale en pause.
-  private hoverToPlay(win: HTMLElement, src: string, main: () => HTMLVideoElement | null): void {
-    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    let v: HTMLVideoElement | null = null;
-    win.addEventListener('pointerenter', () => {
-      if (!v) {
-        v = document.createElement('video');
-        v.muted = true;
-        v.loop = true;
-        v.playsInline = true;
-        v.src = src;
-        win.appendChild(v);
-      }
-      main()?.pause();
-      this.hoverVideo = v;
-      win.classList.add('is-playing');
-      v.currentTime = 0;
-      v.play().catch(() => undefined);
-    });
-    win.addEventListener('pointerleave', () => {
-      win.classList.remove('is-playing');
-      v?.pause();
-      this.hoverVideo = null;
-      this.syncVideos(nav.scroll);
-    });
-  }
-
-  // Place les fenêtres de chaque page telles qu'elles sont à l'arrêt (proportions Figma).
+  // Place les fenêtres de chaque page telles qu'elles sont à l'arrêt (proportions de la maquette).
   private layout(): void {
     const W = window.innerWidth;
     const H = (this.H = window.innerHeight);
@@ -238,27 +228,28 @@ export class WorksView {
       const text = wins[wins.length - 1];
       const main = wins.find((w) => w.el.classList.contains('project__main'))!;
       const sides = wins.filter((w) => w.el.classList.contains('project__side'));
-      const tw = mobile ? Math.min(project.textWidth * u, W - 40 * u) : project.textWidth;
+      const tw = mobile ? Math.min(project.textWidth * u, W - 40 * u) : project.textWidth * u;
       const textSpeed = config.works.parallax.text;
       text.el.classList.toggle('is-centered', mobile);
       const sideSpeed = (i: number) => vMin + (vMax - vMin) * hash(section.index * 31 + i);
 
       if (!mobile && project.layout === 'mosaic') {
-        // Contraintes Figma de la frame TAKE CARE, telles quelles.
+        // Composition de la frame TAKE CARE, à l'identique, dans son cadre centré.
+        const b = boxRect(MOSAIC.box, W, H, u);
+        const { square, columns, rows, cells, center } = MOSAIC;
         sides.forEach((w, i) => {
-          const [c, r] = MOSAIC.cells[i];
-          set(w, resolve(MOSAIC.columns[c], W), resolve(MOSAIC.rows[r], H), MOSAIC.square.w, MOSAIC.square.h, sideSpeed(i));
+          const [c, r] = cells[i];
+          set(w, b.left + columns[c] * u, b.top + rows[r] * u, square.w * u, square.h * u, sideSpeed(i));
           w.el.hidden = false;
         });
-        const m = MOSAIC.center;
-        set(main, resolve(m.left, W), resolve(m.top, H), m.w, m.h, 1);
-        set(text, W / 2 + 0.5 - tw / 2, resolve(MOSAIC.text.top, H), tw, null, textSpeed);
+        set(main, b.left + center.x * u, b.top + center.y * u, center.w * u, center.h * u, 1);
+        set(text, W / 2 + MOSAIC.box.dx * u - tw / 2, b.top + MOSAIC.textTop * u, tw, null, textSpeed);
         text.cy = H / 2;
       } else if (!mobile) {
-        // Contraintes Figma des frames LONGTEMPS / FORMULA ONE.
-        const f = SINGLE.frame;
-        set(main, W / 2 - f.w / 2, resolve(f.centerY, H) - f.h / 2, f.w, f.h, 1);
-        set(text, W / 2 + 0.5 - tw / 2, resolve(SINGLE.text.top, H), tw, null, textSpeed);
+        // LONGTEMPS / FORMULA ONE : grand cadre centré, texte centré dessus.
+        const b = boxRect(SINGLE.box, W, H, u);
+        set(main, b.left, b.top, b.width, b.height, 1);
+        set(text, W / 2 + SINGLE.textDx * u - tw / 2, b.top + SINGLE.textTop * u, tw, null, textSpeed);
         text.cy = H / 2;
       } else {
         // Mobile (hors maquette) : la vidéo seule, à la hauteur du cadre ; texte centré dessus.
@@ -274,12 +265,12 @@ export class WorksView {
       }
     }
 
-    // Rangée 1-8 : positions de la maquette (desktop) ; répartition régulière sur mobile (CSS).
-    this.navItems.forEach((item, i) => {
-      const left = NAV_ROW.numbers[i];
-      item.style.setProperty('--left', `calc(${left.pct * 100}% + ${left.px + NAV_ROW.circleOffset}px)`);
-    });
-    this.navEl.style.setProperty('--end-left', `${NAV_ROW.end.pct * 100}%`);
+    // Rangée 1-8 (desktop) : calée sur le cadre des pages ; répartition régulière sur mobile (CSS).
+    const row = boxRect(SINGLE.box, W, H, u);
+    this.navItems.forEach((item, i) => item.style.setProperty('--cx', `${row.left + NAV_ROW.numbers[i] * u}px`));
+    this.navEl.style.setProperty('--end-cx', `${row.left + NAV_ROW.end * u}px`);
+    this.navEl.style.setProperty('--row-y', `${row.top + NAV_ROW.y * u}px`);
+    this.navEl.style.setProperty('--row-y-current', `${row.top + NAV_ROW.currentY * u}px`);
     this.update(nav.scroll, nav.velocity);
   }
 
@@ -337,25 +328,36 @@ export class WorksView {
     this.syncVideos(scroll);
   }
 
-  // Charge les médias des sections proches ; ne joue que la vidéo de la section affichée.
+  // Charge les médias des sections proches ; les vidéos de la section affichée tournent toutes
+  // (grande vidéo à vitesse normale, carrés au ralenti), les autres sont en pause.
   private syncVideos(scroll: number): void {
     const D = nav.sectionHeight;
+    const mobile = this.mobileQuery.matches;
     for (const section of this.sections) {
       const d = Math.abs(scroll - nav.stopOf(section.index)) / D;
-      const v = section.video;
-      if (d < 1.3 && !section.loaded) {
-        section.loaded = true;
-        for (const img of section.images) img.src = img.dataset.src!;
-        if (v) {
+      // Sur mobile, les carrés sont masqués : leurs vidéos ne sont ni chargées ni jouées.
+      const videos = section.main ? [section.main] : [];
+      if (!mobile) videos.push(...section.sideVideos);
+
+      if (d < 1.3) {
+        if (!section.loaded) {
+          section.loaded = true;
+          for (const img of section.images) img.src = img.dataset.src!;
+        }
+        for (const v of videos) {
+          if (v.src) continue;
           v.poster = v.dataset.poster!;
           v.src = v.dataset.src!;
           v.preload = 'auto';
         }
       }
-      if (!v) continue;
-      const active = d < 0.5 && !document.hidden && !this.hoverVideo;
-      if (active && v.paused) v.play().catch(() => undefined);
-      if (!active && !v.paused) v.pause();
+
+      const active = d < 0.5 && !document.hidden;
+      for (const v of videos) {
+        if (active && v.paused && v.src) v.play().catch(() => undefined);
+        if (!active && !v.paused) v.pause();
+      }
+      if (mobile) for (const v of section.sideVideos) if (!v.paused) v.pause();
     }
   }
 }

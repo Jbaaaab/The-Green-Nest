@@ -158,7 +158,7 @@ button {
   position: absolute;
   z-index: 1;
   left: 50%;
-  top: 50%;
+  top: calc(50% + var(--bio-dy));
   width: var(--bio-width);
   margin: 0;
   transform: translate(-50%, -50%);
@@ -235,7 +235,7 @@ button {
   position: absolute;
   z-index: 4;
   left: var(--dock-x);
-  top: var(--dock-y);
+  bottom: var(--dock-bottom);
   width: var(--music-w);
   height: calc(var(--music-gap) + var(--music-h));
   font-size: var(--dock-size);
@@ -398,10 +398,9 @@ button {
   }
 }
 
-/* ---------- Écrans intermédiaires (hors maquette) ----------
-   Sous ~1080 px, le nom complet toucherait "Works" (placé à 25 % + 35 px) : on affiche DWAM. */
+/* ---------- Mobile (frame 46:410) ---------- */
 
-@media (max-width: 1079px) {
+@media (max-width: 767px) {
   .brand__full {
     display: none;
   }
@@ -409,11 +408,7 @@ button {
   .brand__short {
     display: inline;
   }
-}
 
-/* ---------- Mobile (frame 46:410) ---------- */
-
-@media (max-width: 767px) {
   .cursor-btn {
     display: none;
   }

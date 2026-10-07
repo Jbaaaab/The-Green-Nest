@@ -67,37 +67,53 @@ export const PROJECTS: Project[] = [
 ];
 
 /**
- * Mise en page desktop = contraintes Figma des frames 1440×1024, telles quelles :
- * tailles fixes en px, positions en « % de l'écran + px ». `at(pct, px)` = calc(pct + px).
+ * Mise en page desktop, en px de maquette (multipliés par --u, voir tokens.css).
+ * Chaque page est une composition posée dans un cadre centré à l'écran : à l'échelle 1 (écran 1512×949),
+ * c'est exactement la maquette ; si la fenêtre est plus petite, tout rétrécit avec les mêmes rapports.
+ * Cadre : { w, h } et décalage de son centre par rapport au centre de l'écran { dx, dy }.
  */
-export type At = { pct: number; px: number };
-const at = (pct: number, px: number): At => ({ pct, px });
-export const resolve = (a: At, size: number) => a.pct * size + a.px;
+export type Box = { w: number; h: number; dx: number; dy: number };
 
-// TAKE CARE (frame 25:560)
+// LONGTEMPS (16:5) et FORMULA ONE (25:448) : grand cadre vidéo 1320×749 centré, texte centré dessus.
+// Mesuré sur la maquette Longtemps 1512×949 (capture 1:1).
+export const SINGLE = {
+  box: { w: 1320, h: 749, dx: 0, dy: 0.5 } as Box,
+  textTop: 347, // haut du texte, depuis le haut du cadre
+  textDx: 0.5, // le texte est centré 0,5 px à droite du centre de l'écran
+};
+
+// TAKE CARE (frame 25:560, 1440×1024) : la composition de la frame, à l'identique, dans son cadre.
+// Grille régulière : 5 colonnes (237 px, 34 px d'écart), 3 rangées (233 px, 25 px d'écart).
 export const MOSAIC = {
+  box: { w: 1321, h: 749, dx: 0.5, dy: -2.5 } as Box,
   square: { w: 237, h: 233 },
-  columns: [at(0, 60), at(0.125, 151), at(0.375, 62), at(0.5, 153), at(0.75, 64)],
-  rows: [at(0, 135), at(1 / 3, 51.67), at(0.5, 139)],
+  columns: [0, 271, 542, 813, 1084],
+  rows: [0, 258, 516],
   // Cases occupées par les carrés (la case centrale de la 2e ligne est sous le grand rectangle).
   cells: [
     [0, 0], [1, 0], [2, 0], [3, 0], [4, 0],
     [0, 1], [1, 1], [3, 1], [4, 1],
     [0, 2], [1, 2], [2, 2], [3, 2], [4, 2],
   ] as [number, number][],
-  center: { left: at(0.25, 175), top: at(1 / 6, 65.33), w: 371, h: 547 },
-  text: { top: at(0.5, -41) },
+  center: { x: 475, y: 101, w: 371, h: 547 }, // grande vidéo, au premier plan
+  textTop: 336,
 };
 
-// LONGTEMPS (16:5) et FORMULA ONE (25:448) : grand cadre centré + texte centré.
-export const SINGLE = {
-  frame: { w: 1320, h: 749, centerY: at(0.5, 0.5) },
-  text: { top: at(0.5, -27) },
-};
-
-// Rangée 1-8 (groupe 25:375) : position gauche de chaque numéro, et du symbole de fin.
+// Rangée 1-8 + symbole de fin, calée sur le cadre SINGLE (centres, en px depuis son coin haut-gauche).
+// Derrière les vidéos : sur Longtemps seuls le 1 et le symbole dépassent, de part et d'autre du cadre.
 export const NAV_ROW = {
-  numbers: [at(0, 84), at(0.125, 62), at(0.25, 40), at(0.375, 18), at(0.5, -4), at(0.5, 154), at(0.625, 132), at(0.75, 110)],
-  end: at(0.9361, 0),
-  circleOffset: -3.5, // le cercle (15 px) est légèrement à gauche du numéro (10 px)
+  numbers: [-8, 159, 326, 493, 660, 818, 985, 1152],
+  end: 1326,
+  y: 23.5, // centre des numéros et du symbole
+  currentY: 21, // centre du numéro courant (19 px, un peu plus haut)
 };
+
+/** Rectangle d'un cadre à l'écran, en px CSS (u = valeur de --u). */
+export function boxRect(box: Box, W: number, H: number, u: number) {
+  return {
+    left: W / 2 + (box.dx - box.w / 2) * u,
+    top: H / 2 + (box.dy - box.h / 2) * u,
+    width: box.w * u,
+    height: box.h * u,
+  };
+}

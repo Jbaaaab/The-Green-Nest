@@ -19,7 +19,7 @@ const X = new Vector3(1, 0, 0);
  * - précession : l'axe d'inclinaison tourne autour de l'axe de vue (disque d'Euler), plus vite quand elle s'aplatit ;
  * - roulement : le centre avance perpendiculairement au point de contact (le bord le plus « bas »),
  *   sur une courbe dont le rayon varie au hasard → des boucles imprévisibles plutôt qu'un cercle parfait ;
- * - le creux de la table la ramène doucement vers le centre de l'écran ;
+ * - le creux de la table la ramène doucement vers sa position de repos (config.ring.center) ;
  * - rotation propre par roulement sans glissement.
  *
  * Hiérarchie : root (position) → wobble (orientation) → model (recentré, normalisé, face caméra).
@@ -112,10 +112,13 @@ export class Ring implements Updatable {
     this.qc.setFromAxisAngle(Z, this.psi);
     this.wobble.quaternion.copy(this.qa).multiply(this.qb).multiply(this.qc);
 
+    // Creux de la table : position de repos de la maquette (px de maquette, y vers le bas).
+    const [cx, cy] = this.viewport.mobile ? cfg.center.mobile : cfg.center.desktop;
+
     // Quand on scrolle, la bague monte avec l'accueil (parallaxe) et se courbe avec le twist de la page.
-    const y = this.pos.y + nav.scroll * config.works.parallax.ring; // 3D : y vers le haut
+    const y = this.pos.y - cy * unit + nav.scroll * config.works.parallax.ring; // 3D : y vers le haut
     const fx = reduced ? { rotX: 0, z: 0 } : drum(-y, this.viewport.height, nav.velocity);
-    this.root.position.set(this.pos.x, y, fx.z);
+    this.root.position.set(this.pos.x + cx * unit, y, fx.z);
     this.root.rotation.x = -fx.rotX; // rotateX CSS et rotation.x Three.js sont de sens opposés
     this.root.visible = y - this.radius < this.viewport.height / 2 + 50;
   }
@@ -124,25 +127,25 @@ export class Ring implements Updatable {
 // Matériau calibré sur la maquette, recentrage sur le centre géométrique, diamètre ramené à 1,
 // face tournée vers la caméra (le GLB est posé à plat, normale = +Y).
 function normalize(scene: Object3D): Object3D {
+  const a = config.ring.look.asperity;
   scene.traverse((o) => {
     if (!(o instanceof Mesh)) return;
-    // UV par projection plane (le GLB n'en a pas) pour poser le micro-relief des aspérités.
-    const geo = o.geometry as BufferGeometry;
-    const pos = geo.getAttribute('position');
-    const uv = new Float32Array(pos.count * 2);
-    const rep = config.ring.look.asperityRepeat;
-    for (let i = 0; i < pos.count; i++) {
-      uv[i * 2] = (pos.getX(i) * 0.5 + 0.5) * rep;
-      uv[i * 2 + 1] = (pos.getZ(i) * 0.5 + 0.5) * rep;
+    const material = new MeshMatcapMaterial({ matcap: ringMatcap(), side: DoubleSide });
+    if (a > 0) {
+      // UV par projection plane (le GLB n'en a pas) pour poser le micro-relief des aspérités.
+      const geo = o.geometry as BufferGeometry;
+      const pos = geo.getAttribute('position');
+      const uv = new Float32Array(pos.count * 2);
+      const rep = config.ring.look.asperityRepeat;
+      for (let i = 0; i < pos.count; i++) {
+        uv[i * 2] = (pos.getX(i) * 0.5 + 0.5) * rep;
+        uv[i * 2 + 1] = (pos.getZ(i) * 0.5 + 0.5) * rep;
+      }
+      geo.setAttribute('uv', new BufferAttribute(uv, 2));
+      material.normalMap = asperityNormalMap(128);
+      material.normalScale = new Vector2(a, a);
     }
-    geo.setAttribute('uv', new BufferAttribute(uv, 2));
-    const a = config.ring.look.asperity;
-    o.material = new MeshMatcapMaterial({
-      matcap: ringMatcap(),
-      side: DoubleSide,
-      normalMap: asperityNormalMap(128),
-      normalScale: new Vector2(a, a),
-    });
+    o.material = material;
   });
 
   const holder = new Group();

@@ -1,14 +1,14 @@
 import { Color, Mesh, MeshMatcapMaterial, MeshStandardMaterial, type Material, type Object3D } from 'three';
-import { studioMatcap } from './environment';
+import { buildLacquerMatcap, type Lacquer } from './environment';
 
 /**
- * Métal poli léger : matcap du studio (voir environment.ts) teintée par la couleur du GLB.
+ * Laque de la couleur du GLB, éclairée par un HDRI (matcap calculée en JS, voir environment.ts).
  * Shader minuscule, aucun environnement à précalculer : rapide à démarrer, même sur mobile.
  * Les normales propres sont calculées en amont par `npm run assets`.
  */
-export function polishedMetal(source: Material): MeshMatcapMaterial {
-  const color = source instanceof MeshStandardMaterial ? source.color.clone() : new Color(0xffffff);
-  return new MeshMatcapMaterial({ color, matcap: studioMatcap(), side: source.side });
+export function lacquer(source: Material, look: Lacquer): MeshMatcapMaterial {
+  const color = source instanceof MeshStandardMaterial ? source.color : new Color(0xffffff); // RGB linéaire
+  return new MeshMatcapMaterial({ matcap: buildLacquerMatcap([color.r, color.g, color.b], look), side: source.side });
 }
 
 // Premier mesh d'un GLB.

@@ -2,7 +2,7 @@ import { Box3, Group, Mesh, MeshMatcapMaterial, Vector2, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { config } from '../config';
-import { neonMatcap } from './environment';
+import { buildMatcap } from './environment';
 import type { Stage, Updatable, Viewport } from './stage';
 
 export const CURSORS = ['click', 'great', 'iluvyou', 'iwannahire', 'super', 'wow'] as const;
@@ -126,10 +126,10 @@ export class Cursor3D implements Updatable {
 }
 
 // Mot redressé face caméra (le GLB est posé à plat, normale = +Y), centré,
-// hauteur des lettres ramenée à 1, chrome qui reflète un HDRI de néons irréalistes.
+// hauteur des lettres ramenée à 1, chrome vert-bleu intense (config.cursor.ambience).
 function normalize(scene: Group): Group {
   scene.traverse((o) => {
-    if (o instanceof Mesh) o.material = new MeshMatcapMaterial({ matcap: neonMatcap() });
+    if (o instanceof Mesh) o.material = new MeshMatcapMaterial({ matcap: buildMatcap(config.cursor.ambience) });
   });
   const holder = new Group();
   holder.add(scene);

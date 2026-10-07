@@ -24,11 +24,11 @@ export class Stage {
   private frame = 0;
 
   constructor(readonly canvas: HTMLCanvasElement) {
-    this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
+    // stencil : sert à masquer le chiffre 3D derrière les vidéos des pages (voir digits.ts).
+    this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, stencil: true, powerPreference: 'high-performance' });
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.autoClear = false;
-
 
     this.camera = new PerspectiveCamera(config.stage.fov, 1, 1, 10000);
     this.viewport = this.measure();

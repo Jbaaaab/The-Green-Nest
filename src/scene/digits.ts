@@ -1,12 +1,24 @@
-import { Box3, Group, Mesh, MeshMatcapMaterial, Vector3 } from 'three';
+import {
+  AlwaysStencilFunc,
+  Box3,
+  Group,
+  Mesh,
+  MeshBasicMaterial,
+  MeshMatcapMaterial,
+  NotEqualStencilFunc,
+  PlaneGeometry,
+  ReplaceStencilOp,
+  Vector3,
+} from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { config } from '../config';
 import { nav } from '../nav';
-import { ps3Matcap } from './environment';
+import { buildMatcap } from './environment';
 import type { Stage, Updatable, Viewport } from './stage';
 
 const TAU = Math.PI * 2;
+const MAX_OCCLUDERS = 6;
 const smooth = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
   return t * t * (3 - 2 * t);
@@ -14,12 +26,16 @@ const smooth = (e0: number, e1: number, x: number) => {
 
 /**
  * Le numéro de la page courante, entouré, en 3D (GLB digit/n), à la place du numéro dans la rangée 1-8.
- * Façon écran de chargement PS3 : chrome froid, rotation continue et régulière sur lui-même,
+ * Façon écran de chargement PS3 : chrome vert-bleu, rotation continue et régulière sur lui-même,
  * léger flottement ; les reflets glissent en tournant. Changement de page : petit « pop ».
+ *
+ * Comme la rangée, il est derrière les vidéos des pages : il est dessiné dans la couche overlay du
+ * canvas (au premier plan), mais masqué (stencil) là où une fenêtre de la page le recouvre.
  */
 export class Digits3D implements Updatable {
   private root = new Group();
   private spinner = new Group();
+  private occluders: Mesh[] = [];
   private viewport: Viewport;
   private current = 0;
   private pop = 1;
@@ -34,6 +50,26 @@ export class Digits3D implements Updatable {
     this.root.add(this.spinner);
     this.root.visible = false;
     stage.overlay.add(this.root);
+
+    // Rectangles invisibles qui marquent le stencil là où les fenêtres de la page passent devant.
+    const plane = new PlaneGeometry(1, 1);
+    const mask = new MeshBasicMaterial({
+      colorWrite: false,
+      depthWrite: false,
+      depthTest: false,
+      stencilWrite: true,
+      stencilRef: 1,
+      stencilFunc: AlwaysStencilFunc,
+      stencilZPass: ReplaceStencilOp,
+    });
+    for (let i = 0; i < MAX_OCCLUDERS; i++) {
+      const m = new Mesh(plane, mask);
+      m.renderOrder = -1; // avant le chiffre
+      m.visible = false;
+      m.frustumCulled = false;
+      this.occluders.push(m);
+      stage.overlay.add(m);
+    }
     document.documentElement.classList.add('has-3d-digits');
   }
 
@@ -68,6 +104,7 @@ export class Digits3D implements Updatable {
     const show = smooth(0.45, 0.85, nav.scroll / nav.sectionHeight);
     if (!slot || !this.digits.has(section) || show < 0.01) {
       this.root.visible = false;
+      for (const m of this.occluders) m.visible = false;
       return;
     }
 
@@ -79,6 +116,7 @@ export class Digits3D implements Updatable {
     this.root.visible = true;
     this.root.position.set(r.left + r.width / 2 - width / 2, height / 2 - (r.top + r.height / 2) + bob, 0);
     this.root.scale.setScalar(size);
+    this.mask(r.left - r.width, r.top - r.height, r.right + r.width, r.bottom + r.height);
 
     // Rotation continue et régulière (pas d'à-coups), légère inclinaison qui respire.
     if (!this.reduced.matches) {
@@ -88,12 +126,36 @@ export class Digits3D implements Updatable {
       this.spinner.rotation.set(0, 0, 0);
     }
   }
+
+  // Place un masque sur chaque fenêtre de page (vidéo, carré) qui recouvre la zone du chiffre.
+  private mask(x0: number, y0: number, x1: number, y1: number): void {
+    const { width, height } = this.viewport;
+    let n = 0;
+    for (const el of document.querySelectorAll<HTMLElement>('.project__main, .project__side')) {
+      if (n >= MAX_OCCLUDERS) break;
+      if (el.hidden || el.style.visibility === 'hidden' || !el.offsetParent) continue;
+      const b = el.getBoundingClientRect();
+      if (b.right <= x0 || b.left >= x1 || b.bottom <= y0 || b.top >= y1) continue;
+      const m = this.occluders[n++];
+      m.visible = true;
+      m.position.set(b.left + b.width / 2 - width / 2, height / 2 - (b.top + b.height / 2), 0);
+      m.scale.set(b.width, b.height, 1);
+    }
+    for (let i = n; i < MAX_OCCLUDERS; i++) this.occluders[i].visible = false;
+  }
 }
 
 // Chiffre redressé face caméra (GLB posé à plat, normale = +Y), centré, cercle ramené à 1 de diamètre.
+// Dessiné seulement hors des masques (stencil ≠ 1).
 function normalize(scene: Group): Group {
   scene.traverse((o) => {
-    if (o instanceof Mesh) o.material = new MeshMatcapMaterial({ matcap: ps3Matcap() });
+    if (o instanceof Mesh)
+      o.material = new MeshMatcapMaterial({
+        matcap: buildMatcap(config.works.digitAmbience),
+        stencilWrite: true,
+        stencilRef: 1,
+        stencilFunc: NotEqualStencilFunc,
+      });
   });
   const holder = new Group();
   holder.add(scene);

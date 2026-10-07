@@ -22,7 +22,8 @@ Ce fichier est lu automatiquement par Claude Code à chaque session. Il contient
 
 - Fichier : `WEBSITE-2027`, fileKey `nCrXLpigcjAbPhawgdT8kV`
 - **Landing desktop de référence : MacBook Pro 14" (1512×982)** : https://www.figma.com/design/nCrXLpigcjAbPhawgdT8kV/WEBSITE-2027?node-id=53-586
-  - **Tailles fixes en px** (texte, bio, bague), quelle que soit la largeur d'écran. Positions horizontales en % de la largeur + décalage (contraintes Figma : Works à 25 % + 35 px, About à 37,5 % + 23 px, Instagram/Mail et dock calés sur 87,5 %). Ne pas tout mettre à l'échelle de la largeur : c'était faux.
+  - **Écran de référence : 1512×949**, la zone visible du MacBook Pro 14" en plein écran (sous l'encoche). Les valeurs desktop sont relevées au pixel sur les captures 1:1 de la maquette envoyées par le DA (Figma présenté en plein écran), puis vérifiées en superposant le site (écart ≤ 0,5 px). C'est du minimalisme : **les rapports doivent être exacts**.
+  - **Unité `--u` = 1 px de maquette = `min(1px, 100vw / 1512, 100vh / 949)`** (`tokens.css`, lue en JS par `readUnit()`). Tailles et décalages en `N × --u`. À 1512×949 et plus grand : tailles exactes de la maquette (jamais plus grand). Fenêtre plus petite (Chrome avec ses onglets ≈ 1512×860) : tout rétrécit uniformément, les rapports restent ceux de la maquette. Positions horizontales en % de la largeur + décalage (contraintes Figma : Works à 25 % + 35, About à 37,5 % + 23, Instagram/Mail et dock calés sur 87,5 % + 0, bord droit à 87,5 % + 120). Ne pas mettre à l'échelle de la largeur seule : c'était faux.
 - Ancienne landing desktop (1440×1024, remplacée par la précédente) : https://www.figma.com/design/nCrXLpigcjAbPhawgdT8kV/WEBSITE-2027?node-id=2-3
 - Landing mobile (402×874) : https://www.figma.com/design/nCrXLpigcjAbPhawgdT8kV/WEBSITE-2027?node-id=46-410
 - Croquis de la traînée de frames : `assets-src/refs/croquis-trainee.png` (frames sombres en diagonale vers le bas-droite, la plus récente en haut et la plus grande, les plus anciennes rétrécissent et pâlissent ; vignette ≈ 91×96 px)
@@ -85,7 +86,7 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 ### Header (desktop)
 
-- **À gauche** : le symbole du logo (noir dans Figma, `src/assets/icons/logo.svg`) suivi de "DESIGNER WITH A MONSTERA". Sous ~1080 px de large (hors maquette), "DWAM" pour ne pas toucher "Works".
+- **À gauche** : le symbole du logo (noir dans Figma, `src/assets/icons/logo.svg`) suivi de "DESIGNER WITH A MONSTERA". "DWAM" sur mobile seulement (sur desktop tout est proportionnel : le nom complet ne touche jamais "Works").
 - **Au centre** : les liens Works et About, qui ne mènent nulle part pour l'instant (`#`).
 - **L'icône curseur** : elle change le curseur (voir la section Curseur).
 - **À droite** : Instagram → https://www.instagram.com/designer_with_a_monstera/, et Mail → `mailto:hello@designer-with-a-monstera.art`.
@@ -94,14 +95,16 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 - Le texte vient de Figma, avec ses trous volontaires entre les mots. **Les trous sont voulus, reproduis-les fidèlement.**
 - C'est du vrai texte DOM, pour le SEO et l'accessibilité.
+- Desktop : 17,67 px (COOL : 22,65 px), bloc de 839 px de large, centré à l'écran (1 px plus haut).
 
 ### Bague (élément central)
 
 - `bague.glb` sur un canvas Three.js plein écran, posé au-dessus de la bio, avec `pointer-events: none`.
 - **Physique réaliste de pièce qui roule** (l'écran = la table, vue de dessus), en boucle infinie. La bague est inclinée presque à plat (70-80° par rapport à la verticale), l'axe d'inclinaison tourne (précession, disque d'Euler), et elle ne tombe jamais.
 - **Trajectoire imprévisible mais physique** : en roulant, le centre avance perpendiculairement au point de contact (le bord le plus bas), sur une courbe dont le rayon change au hasard (bruit lisse) → des boucles de tailles variées dont le centre se balade. Une « table légèrement creuse » la ramène vers le centre de l'écran. Les grandes boucles tournent moins vite (~1/√rayon), comme une vraie pièce. **Pas de balade façon logo DVD** (Lissajous : rejeté) **ni de cercles trop réguliers** (rejeté aussi).
-- Rotation propre par roulement sans glissement, bien visible. Précession rapide, qui accélère quand la bague s'aplatit (comme un vrai disque d'Euler). Inclinaison qui varie au hasard.
-- **Rendu calqué sur le rendu Blender de la maquette** (Figma « bague 1 »), **lisse et métallique** : faces émeraude `#086E48`, liseré clair sur les arêtes, flancs olive marbrés de vert-jaune, reflet brillant qui traverse la face quand elle s'incline, éclats qui glissent sur les arêtes, aspérités (grain sur les arêtes + micro-relief par carte de normales). Matcap en couleur calculée en JS (`src/scene/ringMatcap.ts`, couleurs relevées sur l'image dans `config.ring.look`). Normales recalculées au build (`npm run assets`, équivalent Weighted Normal + Auto Smooth à 35°) : pas de stries. Pas de PMREM : sa compilation bloquait le mobile > 1 s.
+- Rotation propre par roulement sans glissement, bien visible. Précession rapide (0,8 s par tour), qui accélère quand la bague s'aplatit (comme un vrai disque d'Euler). Inclinaison qui varie au hasard (±6°, toutes les ~2 s) : **chancelante**. Boucles de 8 à 170 px.
+- Position de repos (creux de la table) : 33 px sous le centre de l'écran, comme sur la maquette (la bio passe dans son tiers haut). `config.ring.center`.
+- **Rendu calqué sur le rendu Blender de la maquette** (Figma « bague 1 »), **lisse et métallique** : faces émeraude `#086E48`, liseré clair sur les arêtes, flancs olive marbrés de vert-jaune, reflet brillant qui traverse la face quand elle s'incline, éclats qui glissent sur les arêtes. **« Shade smooth »** : grain et aspérités à 0 (ils striaient les flancs). Matcap en couleur calculée en JS (`src/scene/ringMatcap.ts`, couleurs relevées sur l'image dans `config.ring.look`). Normales recalculées au build (`npm run assets`, équivalent Weighted Normal + Auto Smooth à 35°) : pas de stries. Pas de PMREM : sa compilation bloquait le mobile > 1 s.
 - Tous les réglages vont dans `config.ts` : inclinaison, souffle, vitesse de précession, trajectoire (`ring.orbit`), studio.
 
 ### Apparitions de projets (desktop uniquement)
@@ -115,13 +118,14 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 ### Pluie Instagram
 
 - **Desktop** : le survol du lien Instagram fait tomber plein de logos Insta 3D rose flash (celle du GLB : `#FF039F`). Ils tombent du haut, rebondissent, s'empilent en bas, puis disparaissent après quelques secondes.
+  - 70 à 100 px de large. Laque rose éclairée par **le même HDRI que les curseurs** : les sources vert-bleu s'y reflètent en couleur franche (`config.rain.look`).
   - Rendu en `InstancedMesh`, plafonné à environ 60 instances.
   - Le **clic** ouvre Instagram dans un nouvel onglet.
 - **Mobile** : le tap ouvre directement Instagram, sans pluie.
 
 ### Curseur 3D (desktop uniquement)
 
-- Le curseur natif est caché, et un texte 3D (les GLB de `cursors/`) suit la souris en tournant en boucle sur lui-même. 18 px de haut. **Chrome qui reflète un HDRI délirant** (néons cyan, magenta, orange, vert acide, horizon net) : `config.ambiences.neon`.
+- Le curseur natif est caché, et un texte 3D (les GLB de `cursors/`) suit la souris en tournant en boucle sur lui-même. 18 px de haut. **Chrome vert-bleu intense** (ciel bleu nuit, sol vert sombre, horizon aqua, sources émeraude, bleu électrique, cyan) : `config.ambiences.chrome`. Les autres HDRI (néons, PS3, studio) restent au choix dans `config.ambiences`.
 - Le clic sur l'icône curseur du header passe au curseur suivant. L'ordre : click → great → iluvyou → iwannahire → super → wow, puis on reboucle.
 - Curseur par défaut au chargement : **WOW!**. Au survol d'un élément cliquable (liens, boutons) : **CLICK!**.
 - **Rendu dans le canvas principal, couche overlay** (dessinée après effacement de la profondeur, donc toujours devant) : pas de second contexte WebGL, et la boucle de rendu tourne déjà pour la bague. Le canvas est donc au premier plan (`z-index` 5, `pointer-events: none`) : la pluie passe aussi par-dessus le header.
@@ -135,11 +139,11 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 - **Scroll vertical, fluide, façon perappelgren.de** (`src/nav.ts`, scroll virtuel avec inertie type Lenis : molette/trackpad, tactile avec élan, clavier). Accueil puis pages empilées verticalement. **Pas d'aimant** : on scrolle librement. **Arrêt net quand le texte d'un projet arrive au milieu de l'écran** (la page est alors à ses proportions Figma) ; il faut un nouveau geste pour continuer (l'inertie du trackpad ne passe pas l'arrêt). Ancre d'URL par projet (`#longtemps`, `#formula-one`, `#take-care`). Le logo et le symbole en fin de rangée ramènent à l'accueil, « Works » va au projet 1.
 - **Twist façon perappelgren.de** (`src/works/scrollFx.ts`) : pendant le scroll, la page se courbe comme un tambour (en haut ça bascule vers l'arrière par le haut, en bas par le bas), d'autant plus que le scroll est rapide ; au repos tout est plat. **Parallaxe** : fenêtres à des vitesses différentes, textes (et bio) plus lents. La bague 3D suit (parallaxe + twist). Réglages : `config.works`.
 - Historique des refus du DA : fenêtres éparpillées au hasard sur un cylindre horizontal (« goofy »), puis transitions page par page façon diaporama (« trop diaporama, trop aimanté »).
-- **Proportions = contraintes Figma des frames 1440×1024, telles quelles** (tailles fixes en px, positions en % + px), dans `src/works/projects.ts` (`MOSAIC`, `SINGLE`, `NAV_ROW`). Vérifié par superposition avec la maquette.
-- Rangée 1-8 + symbole en haut ; **le numéro courant est le chiffre entouré en 3D** (GLB `digit/n`), **façon écran de chargement PS3** : chrome froid bleu/blanc, rotation continue et régulière, léger flottement.
+- **Proportions** (`src/works/projects.ts`) : chaque page est posée dans un cadre centré à l'écran, à l'échelle `--u`. LONGTEMPS et FORMULA ONE : cadre vidéo 1320×749, texte centré dessus (maquette Longtemps 1512×949, vérifiée au pixel). TAKE CARE : la composition de la frame 1440×1024 à l'identique (grille régulière 5×3, carrés 237×233, écarts de 34 et 25 px, grande vidéo 371×547) dans un cadre 1321×749. Rangée 1-8 calée sur le cadre. Bouton « PROJET + » à 60 px du bord gauche et 47 px du bas. Les contraintes 1440×1024 appliquées « telles quelles » à l'écran 1512×949 cassaient la grille (écarts irréguliers, rangées collées) : abandonnées.
+- Rangée 1-8 + symbole en haut, **derrière les vidéos** : sur Longtemps, seuls le 1 et le symbole dépassent de part et d'autre du cadre ; sur F1 et Take Care, le numéro courant est caché par la vidéo ou un carré. **Le numéro courant est le chiffre entouré en 3D** (GLB `digit/n`, 19 px), **façon écran de chargement PS3** (rotation continue et régulière, léger flottement), en chrome vert-bleu. Il est dessiné dans le canvas (au premier plan) mais masqué au stencil là où une fenêtre de la page le recouvre (`src/scene/digits.ts`).
 - Bouton vert « PROJET + » en bas à gauche : UI seulement pour l'instant (action du « + » à définir).
 - LONGTEMPS et FORMULA ONE : un grand cadre vidéo — **placeholders gris** en attendant les vidéos. Les assets F1 sont dans `assets-src/work/formula one/` (pas encore renommés ni utilisés).
-- TAKE CARE : vidéo `case-take-care` au centre, 14 carrés d'assets autour (`PROJECTS.takeCare` dans `scripts/optimize-assets.mjs`). **Une vidéo à la fois** : survoler un carré vidéo le lance et met la centrale en pause.
+- TAKE CARE : vidéo `case-take-care` au centre, **au premier plan, en boucle à vitesse normale** ; 14 carrés d'assets autour (`PROJECTS.takeCare` dans `scripts/optimize-assets.mjs`). Les vidéos des carrés tournent toutes **à ×0,5**, à ×1 sous la souris ; le carré survolé grandit un tout petit peu (×1,04) et passe devant ses voisins. Réglages : `config.works.hover`.
 - Contenu (textes avec trous, médias) : `src/works/projects.ts`. Médias générés par `npm run assets` (ffmpeg requis) → `public/work/take-care/`, `src/works/media.generated.json`.
 - Mobile (hors maquette) : même structure ; TAKE CARE n'affiche que la vidéo centrale.
 - Perf : pages construites quand le navigateur est inactif, pages lointaines retirées du rendu, médias chargés à l'approche.
@@ -148,7 +152,7 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 - En bas à droite sur desktop, en bas à gauche sur mobile : "Paris HH:MM" et "Seoul HH:MM", en temps réel.
 - Utilise `Intl.DateTimeFormat` avec les fuseaux `Europe/Paris` et `Asia/Seoul`.
-- Les icônes (marcheur, cœur) viennent de Figma.
+- Les icônes (marcheur, cœur) viennent de Figma. Desktop : le cœur remonte sous le marcheur (icône combinée). Dock calé en bas : bas du music player à 43 px du bas de l'écran, haut de l'horloge 36,5 px au-dessus du haut du bouton.
 
 ### Music player
 

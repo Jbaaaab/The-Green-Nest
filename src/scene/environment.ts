@@ -19,6 +19,8 @@ export type Ambience = {
   lights: readonly Light[];
 };
 
+export type AmbienceName = keyof typeof config.ambiences;
+
 const cache = new Map<string, Texture>();
 const smooth = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
@@ -26,16 +28,13 @@ const smooth = (e0: number, e1: number, x: number) => {
 };
 const toSRGB = (v: number) => (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055);
 
-export function buildMatcap(name: string, a: Ambience, size = 256): Texture {
-  const hit = cache.get(name);
-  if (hit) return hit;
-
+// Lumière (RGB linéaire) que l'environnement envoie depuis la direction (x, y, z).
+function makeEnv(a: Ambience): (x: number, y: number, z: number, out: number[]) => void {
   const lights = a.lights.map((l) => {
     const len = Math.hypot(l.dir[0], l.dir[1], l.dir[2]);
     return { ...l, x: l.dir[0] / len, y: l.dir[1] / len, z: l.dir[2] / len };
   });
-  // Lumière (RGB linéaire) vue dans la direction (x, y, z).
-  const env = (x: number, y: number, z: number, out: number[]) => {
+  return (x, y, z, out) => {
     const up = smooth(-0.05, 0.6, y);
     const down = smooth(0.05, -0.6, y);
     for (let c = 0; c < 3; c++) out[c] = a.horizon[c] * (1 - up - down) + a.sky[c] * up + a.floor[c] * down;
@@ -49,7 +48,10 @@ export function buildMatcap(name: string, a: Ambience, size = 256): Texture {
       for (let c = 0; c < 3; c++) out[c] += l.color[c] * k;
     }
   };
+}
 
+// Remplit une matcap : shade(normale, sortie RGB 0-1) pour chaque pixel de la sphère.
+function paintMatcap(name: string, size: number, shade: (nx: number, ny: number, nz: number, out: number[]) => void): Texture {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext('2d')!;
@@ -66,10 +68,9 @@ export function buildMatcap(name: string, a: Ambience, size = 256): Texture {
         ny *= 0.999 / r;
       }
       const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
-      // Direction réfléchie pour un regard venant de +z.
-      env(2 * nz * nx, 2 * nz * ny, 2 * nz * nz - 1, rgb);
+      shade(nx, ny, nz, rgb);
       const o = (j * size + i) * 4;
-      for (let c = 0; c < 3; c++) img.data[o + c] = Math.round(255 * toSRGB(1 - Math.exp(-rgb[c] * a.exposure)));
+      for (let c = 0; c < 3; c++) img.data[o + c] = Math.round(255 * Math.min(1, Math.max(0, rgb[c])));
       img.data[o + 3] = 255;
     }
   }
@@ -81,12 +82,52 @@ export function buildMatcap(name: string, a: Ambience, size = 256): Texture {
   return tex;
 }
 
-// Studio photo neutre (pluie Instagram).
-export const studioMatcap = () => buildMatcap('studio', config.ambiences.studio);
-// HDRI délirant, lumières irréalistes (curseur).
-export const neonMatcap = () => buildMatcap('neon', config.ambiences.neon);
-// Chrome froid façon écran de chargement PS3 (chiffres).
-export const ps3Matcap = () => buildMatcap('ps3', config.ambiences.ps3);
+/** Métal parfaitement poli (chrome) : reflète l'environnement tel quel. */
+export function buildMatcap(name: AmbienceName, size = 256): Texture {
+  const hit = cache.get(name);
+  if (hit) return hit;
+  const a = config.ambiences[name] as Ambience;
+  const env = makeEnv(a);
+  const rgb = [0, 0, 0];
+  return paintMatcap(name, size, (nx, ny, nz, out) => {
+    // Direction réfléchie pour un regard venant de +z.
+    env(2 * nz * nx, 2 * nz * ny, 2 * nz * nz - 1, rgb);
+    for (let c = 0; c < 3; c++) out[c] = toSRGB(1 - Math.exp(-rgb[c] * a.exposure));
+  });
+}
+
+export type Lacquer = {
+  ambience: AmbienceName;
+  key: readonly number[]; // direction de la lumière qui éclaire la couleur
+  ambient: number; // part de la couleur dans l'ombre
+  f0: number; // reflet de face ; monte vers 1 sur les bords (Fresnel)
+  reflection: number; // force des reflets de l'environnement
+};
+
+/**
+ * Laque colorée : la couleur (RGB linéaire) éclairée par une lumière douce ; les sources lumineuses
+ * de l'environnement s'y reflètent avec leur vraie couleur (pas mélangées au rose), plus fort sur les
+ * bords (Fresnel). Le fond sombre de l'HDRI ne se reflète pas : la teinte reste lisible.
+ */
+export function buildLacquerMatcap(base: readonly [number, number, number], look: Lacquer, size = 256): Texture {
+  const name = `lacquer:${look.ambience}:${base.map((v) => v.toFixed(4)).join(',')}`;
+  const hit = cache.get(name);
+  if (hit) return hit;
+  const a = config.ambiences[look.ambience] as Ambience;
+  const env = makeEnv(a);
+  const len = Math.hypot(look.key[0], look.key[1], look.key[2]);
+  const [kx, ky, kz] = look.key.map((v) => v / len);
+  const rgb = [0, 0, 0];
+  return paintMatcap(name, size, (nx, ny, nz, out) => {
+    const lit = look.ambient + (1 - look.ambient) * Math.max(0, nx * kx + ny * ky + nz * kz);
+    const fresnel = look.f0 + (1 - look.f0) * Math.pow(1 - nz, 5);
+    env(2 * nz * nx, 2 * nz * ny, 2 * nz * nz - 1, rgb);
+    for (let c = 0; c < 3; c++) rgb[c] = 1 - Math.exp(-rgb[c] * a.exposure);
+    const lum = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+    const w = Math.min(1, fresnel * look.reflection * smooth(0.2, 0.8, lum));
+    for (let c = 0; c < 3; c++) out[c] = toSRGB(base[c] * lit * (1 - w) + rgb[c] * w);
+  });
+}
 
 /**
  * Carte de normales « aspérités » : bruit fin qui casse légèrement les reflets du métal,

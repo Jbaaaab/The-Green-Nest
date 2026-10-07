@@ -9,10 +9,11 @@ main {
   transform-origin: 50% 50%;
 }
 
+/* Les pages passent devant la rangée 1-8 (les chiffres sont derrière les vidéos). */
 .works {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
 }
 
@@ -53,18 +54,31 @@ main {
   background: #f2f2f2;
 }
 
-.project__side video {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.25s;
+/* La grande vidéo est au premier plan, devant les carrés ; le texte par-dessus. */
+.project__main {
+  z-index: 2;
 }
 
-.project__side.is-playing video {
-  opacity: 1;
+/* Survol d'un carré (Take Care) : il grandit un tout petit peu et passe devant ses voisins. */
+@media (hover: hover) and (pointer: fine) {
+  .project__side {
+    transition: scale 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .project__side:hover {
+    z-index: 1;
+    scale: var(--hover-scale, 1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project__side {
+    transition: none;
+  }
 }
 
 .project__text {
+  z-index: 3;
   overflow: visible;
   pointer-events: none;
   margin: 0;
@@ -86,41 +100,46 @@ main {
   transform: translateY(-50%);
 }
 
-/* Rangée 1-8 */
+/* Rangée 1-8 : derrière les pages (centres --cx / --row-y placés par worksView.ts). */
 .works-nav {
   position: absolute;
   inset: 0 0 auto 0;
-  z-index: 4;
+  z-index: 2;
   visibility: hidden;
 }
 
 .works-nav__item {
+  --size: var(--wnav-size);
   position: absolute;
-  left: var(--left);
-  top: var(--wnav-top);
-  width: var(--wnav-size);
-  height: var(--wnav-size);
+  left: calc(var(--cx) - var(--size) / 2);
+  top: calc(var(--row-y) - var(--size) / 2);
+  width: var(--size);
+  height: var(--size);
   display: grid;
   place-items: center;
   border-radius: 50%;
   font-size: var(--wnav-font);
   line-height: 1;
   opacity: 0.5;
-  transition: top 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.45s;
+  transition-property: left, top, width, height, opacity;
+  transition-duration: 0.45s;
+  transition-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .works-nav__item.is-empty {
   pointer-events: none;
 }
 
+/* Numéro courant : un peu plus grand et plus haut (le chiffre 3D prend sa place). */
 .works-nav__item.is-current {
-  top: var(--wnav-top-current);
+  --size: var(--wnav-current-size);
+  top: calc(var(--row-y-current) - var(--size) / 2);
   opacity: 1;
 }
 
 /* Cercle en CSS tant que le chiffre 3D n'est pas chargé (ou sans WebGL). */
 html:not(.has-3d-digits) .works-nav__item.is-current {
-  box-shadow: inset 0 0 0 1.5px var(--color-text);
+  box-shadow: inset 0 0 0 calc(1.5 * var(--u)) var(--color-text);
 }
 
 .has-3d-digits .works-nav__item.is-current .works-nav__num {
@@ -129,8 +148,8 @@ html:not(.has-3d-digits) .works-nav__item.is-current {
 
 .works-nav__end {
   position: absolute;
-  left: var(--end-left);
-  top: var(--wnav-end-top);
+  left: calc(var(--end-cx) - var(--wnav-end) / 2);
+  top: calc(var(--row-y) - var(--wnav-end) / 2);
   width: var(--wnav-end);
   height: var(--wnav-end);
 }
@@ -145,10 +164,16 @@ html:not(.has-3d-digits) .works-nav__item.is-current {
 @media (max-width: 767px) {
   .works-nav__item {
     left: calc(var(--wnav-x0) + var(--wnav-span) * var(--k) / 8);
+    top: var(--wnav-top);
+  }
+
+  .works-nav__item.is-current {
+    top: var(--wnav-top-current);
   }
 
   .works-nav__end {
     left: calc(var(--wnav-x0) + 4px + var(--wnav-span));
+    top: var(--wnav-end-top);
   }
 }
 

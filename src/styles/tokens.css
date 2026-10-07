@@ -1,7 +1,10 @@
 /*
- * Tokens issus de Figma (fichier WEBSITE-2027).
- * Desktop : frame "MacBook Pro 14' - 1" 53:586 (1512×982).
- *   Tailles fixes en px ; positions horizontales en % de la largeur + décalage, comme les contraintes Figma.
+ * Tokens issus de Figma (fichier WEBSITE-2027), mesurés au pixel sur les captures 1:1 de la maquette.
+ * Desktop : maquette vue sur le MacBook Pro 14" en plein écran = zone visible de 1512×949.
+ *   --u = 1 px de maquette. Il vaut 1px quand la fenêtre fait au moins 1512×949, et rétrécit
+ *   uniformément sinon (fenêtre plus petite) : les rapports de la maquette restent exacts.
+ *   Jamais plus grand que la maquette. Positions horizontales en % de la largeur + décalage,
+ *   comme les contraintes Figma.
  * Mobile : frame "Landing mobile" 46:410 (402×874), mis à l'échelle de la largeur d'écran via --u.
  */
 
@@ -16,68 +19,65 @@
   --weight-bold: 700;
   --weight-extrabold: 800;
 
-  /* 1 px de maquette. Desktop : 1px fixe. Mobile : redéfini plus bas. */
-  --u: 1px;
+  /* 1 px de maquette (écran de référence 1512×949). Mobile : redéfini plus bas. */
+  --u: min(1px, 100vw / 1512, 100vh / 949);
 
   /* Header */
-  --header-y: 49px;
-  --brand-x: 61px;
-  --brand-icon: 12px;
-  --brand-gap: 16px; /* du bord gauche du logo au début du texte */
-  --nav-size: 14px;
-  --works-x: calc(25% + 35px);
-  --about-x: calc(37.5% + 23px);
-  --cursor-btn-x: calc(50% + 10px);
-  --cursor-btn-y: 44px;
-  --cursor-btn-w: 15px;
-  --cursor-btn-h: 16px;
-  --contact-right: calc(12.5% - 129px); /* bord droit aligné sur 87,5 % + 129 px */
-  --contact-y: 51px;
-  --contact-size: 12px;
-  --contact-step: 14px; /* écart vertical Instagram → Mail */
+  --header-y: calc(49 * var(--u));
+  --brand-x: calc(61 * var(--u));
+  --brand-icon: calc(12 * var(--u));
+  --brand-gap: calc(16 * var(--u)); /* du bord gauche du logo au début du texte */
+  --nav-size: calc(14 * var(--u));
+  --works-x: calc(25% + 35 * var(--u));
+  --about-x: calc(37.5% + 23 * var(--u));
+  --cursor-btn-x: calc(50% + 10 * var(--u));
+  --cursor-btn-y: calc(46 * var(--u));
+  --cursor-btn-w: calc(13 * var(--u));
+  --cursor-btn-h: calc(14 * var(--u));
+  --contact-right: calc(12.5% - 120 * var(--u)); /* bord droit aligné sur 87,5 % + 120 px (= bord droit du dock) */
+  --contact-y: calc(51 * var(--u));
+  --contact-size: calc(12 * var(--u));
+  --contact-step: calc(14 * var(--u)); /* écart vertical Instagram → Mail */
 
-  /* Bio : rétrécit proportionnellement si l'écran est trop étroit (pour garder les mêmes retours à la ligne) */
-  --bio-width: min(919px, calc(100vw - 122px));
-  --bio-size: min(19.362px, calc((100vw - 122px) * 19.362 / 919));
-  --bio-cool-size: min(24.81px, calc((100vw - 122px) * 24.81 / 919));
+  /* Bio (centrée à l'écran, 1 px plus haut) */
+  --bio-dy: calc(-1 * var(--u));
+  --bio-width: calc(839 * var(--u));
+  --bio-size: calc(17.67 * var(--u));
+  --bio-cool-size: calc(22.65 * var(--u));
 
-  /* Horloge + music player (groupe 120×50) */
-  --dock-x: calc(87.5% + 9px);
-  --dock-y: calc(83.333% + 53.67px);
-  --dock-size: 12px;
-  --clock-offset-x: 8px; /* l'horloge est décalée de 8 px par rapport au bouton */
-  --clock-icon: 14px;
-  --clock-heart-x: 2px;
-  --clock-heart-y: 15px;
-  --clock-heart-w: 10px;
-  --clock-heart-h: 9px;
-  --clock-text-x: 20px;
-  --clock-text-y: 3px;
-  --clock-h: 27px;
-  --music-w: 120px;
-  --music-h: 20px;
-  --music-gap: 30px; /* du haut de l'horloge au haut du bouton */
-  --music-icon: 11px;
-  --music-icon-x: 9px;
-  --music-icon-y: 4px;
-  --music-label-right: 14px;
-  --music-label-y: 5px;
+  /* Horloge + music player : calés sur 87,5 % de la largeur, en bas de l'écran */
+  --dock-x: 87.5%;
+  --dock-bottom: calc(43 * var(--u)); /* du bas du music player au bas de l'écran */
+  --dock-size: calc(12 * var(--u));
+  --clock-offset-x: calc(8 * var(--u)); /* l'horloge est décalée de 8 px par rapport au bouton */
+  --clock-icon: calc(14 * var(--u));
+  --clock-heart-x: calc(2 * var(--u));
+  --clock-heart-y: calc(9.25 * var(--u)); /* le cœur remonte sous le marcheur (icône combinée) */
+  --clock-heart-w: calc(10 * var(--u));
+  --clock-heart-h: calc(9 * var(--u));
+  --clock-text-x: calc(20 * var(--u));
+  --clock-text-y: calc(3 * var(--u));
+  --clock-h: calc(27 * var(--u));
+  --music-w: calc(120 * var(--u));
+  --music-h: calc(20 * var(--u));
+  --music-gap: calc(36.5 * var(--u)); /* du haut de l'horloge au haut du bouton */
+  --music-icon: calc(11 * var(--u));
+  --music-icon-x: calc(9 * var(--u));
+  --music-icon-y: calc(4 * var(--u));
+  --music-label-right: calc(14 * var(--u));
+  --music-label-y: calc(5 * var(--u));
 
-  /* Pages projets (frames 16:5, 25:448, 25:560) */
-  --wnav-x0: 80px; /* cercle du 1er numéro */
-  --wnav-span: calc(100% - 176px); /* du 1er numéro au symbole de fin (8 intervalles égaux) */
-  --wnav-top: 127px; /* numéros : texte à 129 px */
-  --wnav-top-current: 114px; /* numéro courant, relevé et entouré */
-  --wnav-size: 15px;
-  --wnav-font: 14px;
-  --wnav-end: 12px;
-  --wnav-end-top: 128px;
-  --ptext-size: 14px; /* descriptions */
-  --pbtn-left: 60px;
-  --pbtn-bottom: 60px;
-  --pbtn-w: 148px;
-  --pbtn-h: 18px;
-  --pbtn-font: 14px;
+  /* Pages projets (maquette Longtemps 1512×949). La rangée 1-8 est placée en JS (worksView.ts). */
+  --wnav-size: calc(15 * var(--u));
+  --wnav-current-size: calc(19 * var(--u)); /* numéro courant, entouré (chiffre 3D) */
+  --wnav-font: calc(14 * var(--u));
+  --wnav-end: calc(12 * var(--u));
+  --ptext-size: calc(14 * var(--u)); /* descriptions */
+  --pbtn-left: calc(60 * var(--u));
+  --pbtn-bottom: calc(47 * var(--u));
+  --pbtn-w: calc(148 * var(--u));
+  --pbtn-h: calc(18 * var(--u));
+  --pbtn-font: calc(14 * var(--u));
 }
 
 @media (max-width: 767px) {
@@ -96,6 +96,7 @@
     --contact-size: calc(9.345 * var(--u));
     --contact-step: calc(10.9 * var(--u));
 
+    --bio-dy: 0px;
     --bio-width: calc(353 * var(--u));
     --bio-size: calc(19.318 * var(--u));
     --bio-cool-size: calc(24.754 * var(--u));
@@ -129,6 +130,7 @@
     --wnav-top: calc(46 * var(--u));
     --wnav-top-current: calc(38 * var(--u));
     --wnav-size: calc(11.7 * var(--u));
+    --wnav-current-size: calc(11.7 * var(--u));
     --wnav-font: calc(10.902 * var(--u));
     --wnav-end: calc(9.345 * var(--u));
     --wnav-end-top: calc(46 * var(--u));
