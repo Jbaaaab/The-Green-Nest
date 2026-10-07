@@ -4,7 +4,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { config } from '../config';
 import { nav } from '../nav';
 import { drum } from '../works/scrollFx';
-import { asperityNormalMap } from './environment';
+import { asperityNormalMap, buildMatcap, type AmbienceName } from './environment';
 import { ringMatcap } from './ringMatcap';
 import { createFractalNoise1D } from './noise';
 import type { Updatable, Viewport } from './stage';
@@ -124,13 +124,15 @@ export class Ring implements Updatable {
   }
 }
 
-// Matériau calibré sur la maquette, recentrage sur le centre géométrique, diamètre ramené à 1,
-// face tournée vers la caméra (le GLB est posé à plat, normale = +Y).
+// Matériau (chrome HDRI ou rendu « maquette », voir config.ring.ambience), recentrage sur le centre
+// géométrique, diamètre ramené à 1, face tournée vers la caméra (le GLB est posé à plat, normale = +Y).
 function normalize(scene: Object3D): Object3D {
   const a = config.ring.look.asperity;
+  const ambience: string = config.ring.ambience;
+  const matcap = ambience === 'maquette' ? ringMatcap() : buildMatcap(ambience as AmbienceName);
   scene.traverse((o) => {
     if (!(o instanceof Mesh)) return;
-    const material = new MeshMatcapMaterial({ matcap: ringMatcap(), side: DoubleSide });
+    const material = new MeshMatcapMaterial({ matcap, side: DoubleSide });
     if (a > 0) {
       // UV par projection plane (le GLB n'en a pas) pour poser le micro-relief des aspérités.
       const geo = o.geometry as BufferGeometry;

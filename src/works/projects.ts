@@ -82,12 +82,14 @@ export const SINGLE = {
   textDx: 0.5, // le texte est centré 0,5 px à droite du centre de l'écran
 };
 
-// TAKE CARE (frame 25:560, 1440×1024) : la composition de la frame, à l'identique, dans son cadre.
-// Grille régulière : 5 colonnes (237 px, 34 px d'écart), 3 rangées (233 px, 25 px d'écart).
+// TAKE CARE (frame 25:560, 1440×1024) : la composition de la frame dans son cadre, centrée.
+// Grille régulière : 5 colonnes (34 px d'écart), 3 rangées (233 px, 25 px d'écart).
+// Carrés étirés en largeur (237 → 245 px, demande du DA) : la grille fait 1361 px, un poil plus que
+// la rangée 1-8 (du bord gauche du « 1 » à -671 px au bord droit du symbole à +672 px du centre).
 export const MOSAIC = {
-  box: { w: 1321, h: 749, dx: 0.5, dy: -2.5 } as Box,
-  square: { w: 237, h: 233 },
-  columns: [0, 271, 542, 813, 1084],
+  box: { w: 1361, h: 749, dx: 0, dy: -2.5 } as Box,
+  square: { w: 245, h: 233 },
+  columns: [0, 279, 558, 837, 1116],
   rows: [0, 258, 516],
   // Cases occupées par les carrés (la case centrale de la 2e ligne est sous le grand rectangle).
   cells: [
@@ -95,7 +97,7 @@ export const MOSAIC = {
     [0, 1], [1, 1], [3, 1], [4, 1],
     [0, 2], [1, 2], [2, 2], [3, 2], [4, 2],
   ] as [number, number][],
-  center: { x: 475, y: 101, w: 371, h: 547 }, // grande vidéo, au premier plan
+  center: { x: 495, y: 101, w: 371, h: 547 }, // grande vidéo, au premier plan, centrée sur la colonne du milieu
   textTop: 336,
 };
 

@@ -77,6 +77,26 @@ export const config = {
         { dir: [-0.95, 0.1, 0.15], size: 0.25, softness: 0.2, color: [0.0, 0.8, 0.35], intensity: 2 }, // émeraude
       ],
     },
+    // Chrome à fond, reflets #41F373 (le vert de la marque) : la bague.
+    // Recette du chrome : ciel lumineux (#41F373), sol noir, ligne d'horizon blanche et nette entre les deux.
+    // Quand la bague vacille, sa face passe du vert éclatant au noir en traversant la ligne blanche.
+    // #41F373 en RGB linéaire = [0.053, 0.896, 0.171].
+    greenChrome: {
+      exposure: 2.4,
+      floor: [0.0, 0.006, 0.002], // sol presque noir
+      horizon: [0.002, 0.02, 0.006], // juste sous la ligne : sombre (contraste net)
+      sky: [0.032, 0.54, 0.1], // ciel #41F373 lumineux
+      horizonLine: { color: [1, 1, 1], width: 0.035, intensity: 4 },
+      lights: [
+        { dir: [-0.45, 0.55, 0.7], size: 0.16, softness: 0.05, color: [0.053, 0.896, 0.171], intensity: 3 }, // softbox verte, haut gauche
+        { dir: [0.7, -0.25, 0.65], size: 0.1, softness: 0.05, color: [0.053, 0.896, 0.171], intensity: 3.5 }, // bande verte dans le sol, droite
+        { dir: [-0.35, -0.45, 0.8], size: 0.06, softness: 0.04, color: [0.053, 0.896, 0.171], intensity: 3.5 }, // reflet vert dans le sol, gauche
+        { dir: [0.95, 0.05, 0.25], size: 0.16, softness: 0.06, color: [0.053, 0.896, 0.171], intensity: 3 }, // flanc droit
+        { dir: [-0.95, -0.1, 0.25], size: 0.16, softness: 0.06, color: [0.053, 0.896, 0.171], intensity: 3 }, // flanc gauche
+        { dir: [0.2, 0.45, 0.87], size: 0.035, softness: 0.035, color: [1, 1, 1], intensity: 10 }, // éclat blanc
+        { dir: [-0.3, 0.25, 0.92], size: 0.025, softness: 0.03, color: [1, 1, 1], intensity: 8 }, // éclat blanc
+      ],
+    },
     // Chrome froid façon écran de chargement PS3 : dégradé bleu nuit → blanc, horizon lumineux.
     ps3: {
       exposure: 2.2,
@@ -103,21 +123,21 @@ export const config = {
     // La bague roule comme une pièce sur une table légèrement creuse, vue de dessus (l'écran est la table).
     // tiltDeg : angle entre le plan de la bague et la verticale. 90 = à plat, 70-80 = légèrement penchée.
     tiltDeg: 75,
-    breathDeg: 6, // variation aléatoire de l'inclinaison, ± degrés (plus = plus chancelant)
-    breathPeriod: 2.2, // secondes : échelle de temps de cette variation (plus bas = plus nerveux)
+    breathDeg: 11, // variation aléatoire de l'inclinaison, ± degrés (plus = plus chancelant ; 75 + 11 → 4° de la table)
+    breathPeriod: 0.9, // secondes : échelle de temps de cette variation (plus bas = plus nerveux)
 
     // Un tour de précession (l'axe d'inclinaison fait le tour) à l'inclinaison de référence.
     // Comme un vrai disque d'Euler, ça accélère quand la bague s'aplatit et ralentit quand elle se redresse.
-    precessionPeriod: 0.8,
+    precessionPeriod: 0.38,
 
     // Trajectoire : en roulant, la bague décrit des boucles dont le rayon change au hasard.
     orbit: {
       radiusMin: 8, // px de maquette : petites boucles serrées
-      radiusMax: 170, // px de maquette : grandes boucles qui emmènent la bague plus loin
-      changeEvery: 1.4, // secondes : vitesse à laquelle le rayon change (plus bas = plus nerveux)
+      radiusMax: 150, // px de maquette : grandes boucles qui emmènent la bague plus loin
+      changeEvery: 0.8, // secondes : vitesse à laquelle le rayon change (plus bas = plus nerveux)
       pull: 0.25, // rappel vers le creux de la table (ring.center) ; 0 = aucun
       maxOffset: 230, // px de maquette : au-delà, le rappel se renforce nettement
-      bigLoopSlowdown: 60, // px de maquette : plus bas = les grandes boucles ralentissent davantage
+      bigLoopSlowdown: 45, // px de maquette : plus bas = les grandes boucles ralentissent davantage
       mobileScale: 0.35, // sur mobile, boucles et écart max réduits (l'écran fait ~400 px de large)
     },
 
@@ -129,7 +149,11 @@ export const config = {
       precessionPeriod: 10,
     },
 
-    // Rendu, calibré sur le rendu Blender de la maquette (couleurs sRGB relevées sur l'image).
+    // Reflets de la bague : un HDRI de `ambiences` (chrome), ou 'maquette' pour le rendu émeraude
+    // calibré sur le rendu Blender de la maquette (réglages `look` ci-dessous).
+    ambience: 'greenChrome',
+
+    // Rendu « maquette », calibré sur le rendu Blender (couleurs sRGB relevées sur l'image).
     look: {
       size: 256, // résolution de la matcap (256 suffit pour une bague de ~264 px, et se calcule 4x plus vite)
       light: [-0.3, 0.5, 1], // direction de la lumière principale (haut-gauche, devant)
