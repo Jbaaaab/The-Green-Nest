@@ -3,6 +3,7 @@ import endIcon from '../assets/icons/works-end.svg';
 import { config } from '../config';
 import { nav } from '../nav';
 import { readUnit } from '../ui/unit';
+import { Glow } from './glow';
 import { drum, perspectiveFor } from './scrollFx';
 import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, boxRect, type Project } from './projects';
 
@@ -11,7 +12,10 @@ type Win = {
   cy: number; // centre vertical à l'arrêt de sa page, en px écran
   h: number;
   speed: number; // parallaxe
+  glow?: Glow; // halo lumineux autour de la fenêtre
 };
+
+type Slides = { img: HTMLImageElement; images: string[]; index: number; ready: boolean[] };
 
 type Section = {
   index: number;
@@ -20,6 +24,8 @@ type Section = {
   main: HTMLVideoElement | null; // grande vidéo : en boucle, vitesse normale
   sideVideos: HTMLVideoElement[]; // vidéos des carrés (Take Care) : ralenties, vitesse normale au survol
   images: HTMLImageElement[]; // chargées seulement à l'approche de la section
+  slides: Slides | null; // diaporama (en attendant une vidéo)
+  videoGlows: { glow: Glow; video: HTMLVideoElement }[]; // halos à rafraîchir pendant la lecture
   loaded: boolean;
   el: HTMLElement | null; // l'article de la page (retiré du rendu quand elle est loin)
 };
@@ -86,6 +92,8 @@ export class WorksView {
       main: null,
       sideVideos: [],
       images: [],
+      slides: null,
+      videoGlows: [],
       loaded: true,
       el: null,
     });
@@ -153,50 +161,81 @@ export class WorksView {
       wins.push({ el: w, cy: 0, h: 0, speed: 1 });
       return w;
     };
+    // Fenêtre média : une boîte qui coupe l'image, et (option) un halo lumineux derrière.
+    const mediaWin = (cls: string, withGlow = true) => {
+      const w = win(cls);
+      const box = document.createElement('div');
+      box.className = 'project__media';
+      w.appendChild(box);
+      const glow = withGlow && config.works.glow.enabled ? new Glow(w) : undefined;
+      wins[wins.length - 1].glow = glow;
+      return { box, glow };
+    };
 
     const images: HTMLImageElement[] = [];
     const sideVideos: HTMLVideoElement[] = [];
+    const videoGlows: Section['videoGlows'] = [];
     const { sideRate } = config.works.hover;
     const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const lazyImage = (src: string, glow?: Glow) => {
+      const img = document.createElement('img');
+      img.dataset.src = src;
+      img.alt = '';
+      img.decoding = 'async';
+      if (glow) img.addEventListener('load', () => glow.paint(img));
+      return img;
+    };
 
     // Carrés (Take Care) : les vidéos tournent au ralenti, à vitesse normale sous la souris.
     for (const media of project.side) {
-      const w = win('project__side');
+      const { box, glow } = mediaWin('project__side');
       if (media.video) {
         const v = lazyVideo(media.video, media.image, sideRate);
         v.setAttribute('aria-hidden', 'true');
         sideVideos.push(v);
-        w.appendChild(v);
+        box.appendChild(v);
+        if (glow) {
+          v.addEventListener('loadeddata', () => glow.paint(v));
+          videoGlows.push({ glow, video: v });
+        }
         if (canHover) {
-          w.addEventListener('pointerenter', () => (v.playbackRate = 1));
-          w.addEventListener('pointerleave', () => (v.playbackRate = sideRate));
+          box.parentElement!.addEventListener('pointerenter', () => (v.playbackRate = 1));
+          box.parentElement!.addEventListener('pointerleave', () => (v.playbackRate = sideRate));
         }
       } else {
-        const img = document.createElement('img');
-        img.dataset.src = media.image;
-        img.alt = '';
-        img.decoding = 'async';
+        const img = lazyImage(media.image, glow);
         images.push(img);
-        w.appendChild(img);
+        box.appendChild(img);
       }
     }
 
-    // Grande vidéo (ou placeholder), au premier plan, devant les carrés.
-    const mainWin = win('project__main');
+    // Grande vidéo (ou diaporama, ou placeholder), au premier plan, devant les carrés.
+    const { box: mainBox, glow: mainGlow } = mediaWin('project__main', project.main.kind !== 'placeholder');
     let main: HTMLVideoElement | null = null;
+    let slides: Slides | null = null;
     if (project.main.kind === 'video') {
       main = lazyVideo(project.main.video, project.main.poster, 1);
       main.setAttribute('aria-label', project.title);
-      mainWin.appendChild(main);
+      mainBox.appendChild(main);
+      if (mainGlow) {
+        const v = main;
+        v.addEventListener('loadeddata', () => mainGlow.paint(v));
+        videoGlows.push({ glow: mainGlow, video: v });
+      }
+    } else if (project.main.kind === 'slides') {
+      const img = lazyImage(project.main.images[0], mainGlow);
+      img.alt = project.title;
+      mainBox.appendChild(img);
+      slides = { img, images: project.main.images, index: 0, ready: project.main.images.map(() => false) };
     } else {
-      mainWin.classList.add('is-placeholder');
+      mainBox.parentElement!.classList.add('is-placeholder');
     }
 
     const text = win('project__text');
     text.innerHTML = `<p class="project__lines">${project.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
 
     el.style.display = 'none';
-    return { index: project.number, project, wins, main, sideVideos, images, loaded: false, el };
+    return { index: project.number, project, wins, main, sideVideos, images, slides, videoGlows, loaded: false, el };
   }
 
   // Place les fenêtres de chaque page telles qu'elles sont à l'arrêt (proportions de la maquette).
@@ -214,6 +253,7 @@ export class WorksView {
       win.h = h ?? 60;
       win.cy = y + win.h / 2;
       win.speed = speed;
+      win.glow?.resize(w, win.h, u);
     };
 
     // Accueil : la bio est centrée à l'écran.
@@ -308,7 +348,9 @@ export class WorksView {
     if (trail) trail.style.opacity = String(1 - smooth(0, 0.35, scroll / D));
 
     // Rangée et bouton : visibles sur les pages projets.
-    const show = smooth(0.45, 0.85, scroll / D);
+    // (masqués sur l'accueil et sur le footer, qui suit le dernier projet)
+    const last = PROJECTS.length;
+    const show = smooth(0.45, 0.85, scroll / D) * (1 - smooth(last + 0.35, last + 0.75, scroll / D));
     this.navEl.style.opacity = this.button.style.opacity = String(show);
     this.navEl.style.visibility = this.button.style.visibility = show < 0.01 ? 'hidden' : 'visible';
 
@@ -333,6 +375,7 @@ export class WorksView {
   private syncVideos(scroll: number): void {
     const D = nav.sectionHeight;
     const mobile = this.mobileQuery.matches;
+    let activeSection: Section | null = null;
     for (const section of this.sections) {
       const d = Math.abs(scroll - nav.stopOf(section.index)) / D;
       // Sur mobile, les carrés sont masqués : leurs vidéos ne sont ni chargées ni jouées.
@@ -343,6 +386,16 @@ export class WorksView {
         if (!section.loaded) {
           section.loaded = true;
           for (const img of section.images) img.src = img.dataset.src!;
+          // Diaporama : première image, et préchargement des suivantes (décodées avant d'être affichées).
+          const slides = section.slides;
+          if (slides) {
+            slides.img.src = slides.images[0];
+            slides.images.forEach((src, i) => {
+              const pre = new Image();
+              pre.src = src;
+              pre.decode().then(() => (slides.ready[i] = true), () => undefined);
+            });
+          }
         }
         for (const v of videos) {
           if (v.src) continue;
@@ -358,6 +411,42 @@ export class WorksView {
         if (!active && !v.paused) v.pause();
       }
       if (mobile) for (const v of section.sideVideos) if (!v.paused) v.pause();
+      if (active) activeSection = section;
+    }
+    this.setActive(activeSection);
+  }
+
+  // Minuteries de la page affichée : diaporama (une image toutes les config.works.slideMs)
+  // et rafraîchissement des halos de ses vidéos. Tout s'arrête quand on quitte la page.
+  private active: Section | null = null;
+  private timers: number[] = [];
+
+  private setActive(section: Section | null): void {
+    if (section === this.active) return;
+    this.active = section;
+    for (const t of this.timers) clearInterval(t);
+    this.timers = [];
+    if (!section) return;
+
+    const slides = section.slides;
+    if (slides && slides.images.length > 1) {
+      this.timers.push(
+        window.setInterval(() => {
+          // On n'avance que si l'image suivante est prête : jamais de fenêtre vide pendant un chargement.
+          const next = (slides.index + 1) % slides.images.length;
+          if (!slides.ready[next]) return;
+          slides.index = next;
+          slides.img.src = slides.images[next];
+        }, config.works.slideMs),
+      );
+    }
+    const glows = this.mobileQuery.matches ? section.videoGlows.filter((g) => g.video === section.main) : section.videoGlows;
+    if (glows.length) {
+      this.timers.push(
+        window.setInterval(() => {
+          for (const g of glows) if (!g.video.paused) g.glow.paint(g.video);
+        }, 1000 / config.works.glow.videoFps),
+      );
     }
   }
 }

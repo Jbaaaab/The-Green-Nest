@@ -3,7 +3,9 @@ import '@fontsource/epilogue/latin-800.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/works.css';
+import './styles/footer.css';
 
+import { FooterView } from './footer/footerView';
 import { nav } from './nav';
 import { initHeader } from './ui/header';
 import { initClock } from './ui/clock';
@@ -18,7 +20,11 @@ initMusicPlayer(document.querySelector<HTMLElement>('.music'));
 // par un lien direct (#take-care…), sinon dès que le navigateur a fini d'afficher l'accueil.
 nav.init();
 if (import.meta.env.DEV) Object.assign(window, { __nav: nav }); // pour les tests
-const buildWorks = () => new WorksView(document.querySelector('main')!, () => document.querySelector('.trail'));
+const buildWorks = () => {
+  const main = document.querySelector('main')!;
+  new WorksView(main, () => document.querySelector('.trail'));
+  new FooterView(main); // le footer, tout en bas du scroll
+};
 if (nav.section > 0) buildWorks();
 else if ('requestIdleCallback' in window) requestIdleCallback(buildWorks, { timeout: 1500 });
 else setTimeout(buildWorks, 800);

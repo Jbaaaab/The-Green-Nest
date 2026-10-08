@@ -7,7 +7,7 @@ import { drum } from '../works/scrollFx';
 import { asperityNormalMap, buildMatcap, type AmbienceName } from './environment';
 import { ringMatcap } from './ringMatcap';
 import { createFractalNoise1D } from './noise';
-import type { Updatable, Viewport } from './stage';
+import { steppedFrame, type Updatable, type Viewport } from './stage';
 
 const TAU = Math.PI * 2;
 const DEG = Math.PI / 180;
@@ -110,7 +110,8 @@ export class Ring implements Updatable {
     this.qa.setFromAxisAngle(Z, this.phi);
     this.qb.setFromAxisAngle(X, alpha);
     this.qc.setFromAxisAngle(Z, this.psi);
-    this.wobble.quaternion.copy(this.qa).multiply(this.qb).multiply(this.qc);
+    // « On twos » (config.stepped) : l'orientation n'est appliquée qu'une image sur deux.
+    if (steppedFrame()) this.wobble.quaternion.copy(this.qa).multiply(this.qb).multiply(this.qc);
 
     // Creux de la table : position de repos de la maquette (px de maquette, y vers le bas).
     const [cx, cy] = this.viewport.mobile ? cfg.center.mobile : cfg.center.desktop;

@@ -5,6 +5,11 @@ import { readUnit } from '../ui/unit';
 export type Viewport = { width: number; height: number; unit: number; mobile: boolean };
 export type Updatable = { update(time: number, delta: number): void; resize?(vp: Viewport): void };
 
+// Compteur d'images rendues, pour animer les rotations « on twos » (une pose tenue 2 images).
+let frameCount = 0;
+/** Vrai une image sur config.stepped.every : les rotations des assets 3D ne bougent qu'à ces images. */
+export const steppedFrame = () => !config.stepped.enabled || frameCount % config.stepped.every === 0;
+
 /**
  * Canvas Three.js plein écran partagé par la bague, la pluie Insta et le curseur.
  * La caméra est réglée pour que 1 unité 3D = 1 px CSS dans le plan z = 0.
@@ -59,6 +64,7 @@ export class Stage {
     const delta = Math.min((now - this.last) / 1000, 0.1);
     this.last = now;
     this.elapsed += delta;
+    frameCount++;
     for (const item of this.items) item.update(this.elapsed, delta);
     this.render();
     if (this.running) this.frame = requestAnimationFrame(this.tick);

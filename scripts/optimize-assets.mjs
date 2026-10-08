@@ -15,9 +15,10 @@ const root = path.resolve(import.meta.dirname, '..');
 const src = (p) => path.join(root, 'assets-src', p);
 const out = (p) => path.join(root, 'public', p);
 
-// [source, destination]. daruma.glb n'est pas utilisé sur la landing.
+// [source, destination].
 const MODELS = [
   ['models/bague.glb', 'models/bague.glb'],
+  ['models/daruma.glb', 'models/daruma.glb'], // montagne de daruma du footer
   ['models/instagram.glb', 'models/instagram.glb'],
   ...['click', 'great', 'iluvyou', 'iwannahire', 'super', 'wow'].map((n) => [
     `cursors/glb/${n}.glb`,
@@ -177,6 +178,15 @@ const PROJECTS = {
   },
 };
 
+// Diaporamas (en attendant les vidéos) : toutes les images d'un dossier, dans l'ordre alphabétique,
+// en WebP 1600 px (cadre de 1320 px). Ajoutés à media.generated.json sous { slides: [...] }.
+const SLIDES = {
+  longtemps: { from: 'work/longtemps', to: 'work/longtemps', width: 1600 },
+  formulaOne: { from: 'work/formula one/mockup', to: 'work/formula-one', width: 1600 },
+  // Cartes du footer (315 px affichées) : 1xp, 2chaewon, 3duo, 4windows (la 1 est devant).
+  footer: { from: 'footer-photos', to: 'footer', width: 640 },
+};
+
 const run = promisify(execFile);
 const isVideo = (f) => /\.(mp4|mov|webm)$/i.test(f);
 const base = (f) => f.replace(/\.[^.]+$/, '');
@@ -249,6 +259,22 @@ async function optimizeProjects() {
     for (const f of files) total += (await stat(out(`${p.to}/${f}`))).size;
     console.log(`${p.to}`.padEnd(28), `${files.length} fichiers, ${kb(total)}`);
   }
+
+  for (const [key, s] of Object.entries(SLIDES)) {
+    await mkdir(out(s.to), { recursive: true });
+    const files = (await readdir(src(s.from))).filter((f) => /\.(png|jpe?g|jfif|webp)$/i.test(f)).sort();
+    const slides = [];
+    let total = 0;
+    for (const f of files) {
+      const name = `${f.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.webp`;
+      await imageStill(src(`${s.from}/${f}`), out(`${s.to}/${name}`), s.width);
+      slides.push(`/${s.to}/${name}`);
+      total += (await stat(out(`${s.to}/${name}`))).size;
+    }
+    media[key] = { slides };
+    console.log(`${s.to}`.padEnd(28), `${slides.length} images, ${kb(total)}`);
+  }
+
   await writeFile(path.join(root, 'src/works/media.generated.json'), JSON.stringify(media, null, 2) + '\n');
 }
 

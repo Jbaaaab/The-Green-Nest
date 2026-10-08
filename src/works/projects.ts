@@ -4,7 +4,10 @@ import media from './media.generated.json';
  * Contenu des pages projets (maquettes Figma : LONGTEMPS 16:5, F1 25:448, TAKE CARE 25:560).
  * Les trous dans les textes sont voulus (comme sur la bio) : nombres d'espaces repris de Figma.
  */
-export type MainMedia = { kind: 'video'; video: string; poster: string } | { kind: 'placeholder' };
+export type MainMedia =
+  | { kind: 'video'; video: string; poster: string }
+  | { kind: 'slides'; images: string[] } // diaporama en boucle (config.works.slideMs), en attendant la vidéo
+  | { kind: 'placeholder' };
 export type SideMedia = { image: string; video?: string };
 
 export type Project = {
@@ -32,7 +35,7 @@ export const PROJECTS: Project[] = [
     ],
     textWidth: 649,
     layout: 'single',
-    main: { kind: 'placeholder' }, // vidéo à venir
+    main: { kind: 'slides', images: media.longtemps.slides }, // en attendant la vidéo : images du clip
     side: [],
   },
   {
@@ -47,7 +50,7 @@ export const PROJECTS: Project[] = [
     ],
     textWidth: 667,
     layout: 'single',
-    main: { kind: 'placeholder' }, // vidéo à venir
+    main: { kind: 'slides', images: media.formulaOne.slides }, // en attendant la vidéo : mockups F1
     side: [],
   },
   {

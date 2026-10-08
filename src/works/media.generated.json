@@ -56,5 +56,49 @@
         "video": "/work/take-care/corporate-guuuurl-v2.mp4"
       }
     ]
+  },
+  "longtemps": {
+    "slides": [
+      "/work/longtemps/billie.webp",
+      "/work/longtemps/bureau-01.webp",
+      "/work/longtemps/bureau-02.webp",
+      "/work/longtemps/cafe-01.webp",
+      "/work/longtemps/cafe-02.webp",
+      "/work/longtemps/cafe-03.webp",
+      "/work/longtemps/chambre-01.webp",
+      "/work/longtemps/chambre-02.webp",
+      "/work/longtemps/chambre-03.webp",
+      "/work/longtemps/image-30.webp",
+      "/work/longtemps/image-31.webp",
+      "/work/longtemps/ours.webp",
+      "/work/longtemps/rer-01.webp",
+      "/work/longtemps/rer-02.webp",
+      "/work/longtemps/rue-01.webp",
+      "/work/longtemps/rue-02.webp",
+      "/work/longtemps/rue-03.webp",
+      "/work/longtemps/rue-04.webp",
+      "/work/longtemps/thibz.webp",
+      "/work/longtemps/thibz2.webp"
+    ]
+  },
+  "formulaOne": {
+    "slides": [
+      "/work/formula-one/mockup-1.webp",
+      "/work/formula-one/mockup-2.webp",
+      "/work/formula-one/mockup-3.webp",
+      "/work/formula-one/mockup-4.webp",
+      "/work/formula-one/mockup-5.webp",
+      "/work/formula-one/mockup-6.webp",
+      "/work/formula-one/mockup-7.webp",
+      "/work/formula-one/mockup-8.webp"
+    ]
+  },
+  "footer": {
+    "slides": [
+      "/footer/1xp.webp",
+      "/footer/2chaewon.webp",
+      "/footer/3duo.webp",
+      "/footer/4windows.webp"
+    ]
   }
 }

@@ -15,7 +15,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { config } from '../config';
 import { nav } from '../nav';
 import { buildMatcap } from './environment';
-import type { Stage, Updatable, Viewport } from './stage';
+import { steppedFrame, type Stage, type Updatable, type Viewport } from './stage';
 
 const TAU = Math.PI * 2;
 const MAX_OCCLUDERS = 6;
@@ -118,8 +118,9 @@ export class Digits3D implements Updatable {
     this.root.scale.setScalar(size);
     this.mask(r.left - r.width, r.top - r.height, r.right + r.width, r.bottom + r.height);
 
-    // Rotation continue et régulière (pas d'à-coups), légère inclinaison qui respire.
+    // Rotation continue et régulière, légère inclinaison qui respire ; « on twos » (voir config.stepped).
     if (!this.reduced.matches) {
+      if (!steppedFrame()) return;
       this.spinner.rotation.y = (time / config.works.digitSpinPeriod) * TAU;
       this.spinner.rotation.x = Math.sin(time * 0.9) * 0.18;
     } else {

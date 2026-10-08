@@ -240,6 +240,15 @@ button {
   height: calc(var(--music-gap) + var(--music-h));
   font-size: var(--dock-size);
   white-space: nowrap;
+  transition:
+    opacity 0.4s ease,
+    visibility 0.4s;
+}
+
+/* Sur le footer, le dock s'efface (absent de la maquette, il passerait sur le grand logo) : la musique continue. */
+.is-footer .dock {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .clock {

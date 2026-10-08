@@ -7,7 +7,9 @@ import { config } from './config';
  *   il faut un nouveau geste pour repartir (l'inertie du trackpad ne fait pas passer l'arrêt).
  * Toutes les animations lisent `scroll` (px) et `velocity` (px/s).
  */
-export const SECTION_IDS = ['', 'longtemps', 'formula-one', 'take-care'] as const;
+// Dernière section : le footer (« hello »). Au-delà de son arrêt, une zone de scroll où la page reste fixe
+// pendant que ses cartes s'envolent (config.footer.reveal, en hauteurs d'écran).
+export const SECTION_IDS = ['', 'longtemps', 'formula-one', 'take-care', 'hello'] as const;
 
 type Listener = (scroll: number, velocity: number) => void;
 
@@ -45,8 +47,13 @@ class Nav {
     return i * this.sectionHeight;
   }
 
+  /** Longueur de la zone du footer après son arrêt (les cartes s'envolent), en px. */
+  get footerReveal(): number {
+    return window.innerHeight * config.footer.reveal;
+  }
+
   get max(): number {
-    return this.stopOf(this.count - 1);
+    return this.stopOf(this.count - 1) + this.footerReveal;
   }
 
   init(): void {
@@ -79,8 +86,9 @@ class Nav {
 
   /** Va (en douceur) jusqu'à l'arrêt d'une section. */
   goTo(section: number): void {
-    const s = Math.min(this.count - 1, Math.max(0, Math.round(section)));
-    this.target = this.stopOf(s);
+    const s = Math.max(0, Math.round(section));
+    // Au-delà du footer : tout en bas (cartes envolées).
+    this.target = s > this.count - 1 ? this.max : this.stopOf(s);
     this.animate();
   }
 
@@ -160,7 +168,7 @@ class Nav {
       ArrowUp: () => this.goTo(page() - 1),
       PageUp: () => this.goTo(page() - 1),
       Home: () => this.goTo(0),
-      End: () => this.goTo(this.count - 1),
+      End: () => this.goTo(this.count),
     };
     const action = map[e.key];
     if (!action) return;
@@ -185,7 +193,7 @@ class Nav {
     this.velocity += (v - this.velocity) * (1 - Math.exp(-12 * dt));
     if (this.scroll === this.target && Math.abs(this.velocity) < 5) this.velocity = 0;
 
-    const s = Math.round(this.scroll / this.sectionHeight);
+    const s = Math.min(this.count - 1, Math.round(this.scroll / this.sectionHeight));
     if (s !== this.section) this.setSection(s);
     this.emit();
     this.frame = this.scroll !== this.target || this.velocity !== 0 ? requestAnimationFrame(this.tick) : 0;

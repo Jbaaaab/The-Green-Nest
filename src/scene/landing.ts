@@ -3,6 +3,7 @@ import { WorkTrail } from '../ui/workTrail';
 import { nav } from '../nav';
 import { PROJECTS } from '../works/projects';
 import { Cursor3D } from './cursor';
+import { DarumaMountain } from './darumaMountain';
 import { Digits3D } from './digits';
 import { InstaRain } from './instaRain';
 import { Ring } from './ring';
@@ -57,6 +58,9 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
 
   canvas.style.transitionDuration = `${config.stage.fadeInMs}ms`;
   requestAnimationFrame(() => canvas.classList.add('is-ready'));
+
+  // Montagne de daruma du footer : chargée seulement à l'approche du footer.
+  DarumaMountain.watch(stage);
 
   // Chiffres entourés 3D de la rangée des projets.
   Digits3D.load(stage, PROJECTS.map((p) => p.number))

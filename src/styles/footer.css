@@ -1,0 +1,92 @@
+/* ---------- Footer (maquette « Scroll » 9:22) ---------- */
+
+.footer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+  perspective: var(--persp, 2000px);
+  perspective-origin: 50% 50%;
+}
+
+.footer > * {
+  position: absolute;
+}
+
+/* Texte : Epilogue en majuscules, centré ; les trous de la bio sont voulus. */
+.footer__text {
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: pre-wrap;
+  font-weight: var(--weight-bold);
+}
+
+.footer__text > span {
+  display: block;
+}
+
+.footer__hi {
+  font-size: calc(18.888 * var(--u));
+}
+
+.footer__blank {
+  font-size: calc(17.171 * var(--u));
+  font-weight: 400;
+}
+
+.footer__bio {
+  font-size: calc(15 * var(--u));
+}
+
+.footer__cool {
+  font-size: calc(18 * var(--u));
+  font-weight: var(--weight-bold);
+}
+
+.footer__wide {
+  font-size: calc(20 * var(--u));
+}
+
+/* Cartes empilées : au-dessus du texte, qu'elles révèlent en s'envolant. */
+.footer__cards {
+  inset: 0;
+}
+
+.footer__card {
+  position: absolute;
+  display: block;
+  object-fit: cover;
+  background: #f2f2f2;
+  backface-visibility: hidden;
+}
+
+.footer__logo {
+  display: block;
+}
+
+.footer__symbol {
+  pointer-events: auto;
+}
+
+.footer__symbol img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Mobile (hors maquette) : texte un peu plus petit pour tenir dans la largeur. */
+@media (max-width: 767px) {
+  .footer__hi {
+    font-size: calc(15 * var(--u));
+  }
+
+  .footer__bio {
+    font-size: calc(12 * var(--u));
+  }
+
+  .footer__cool {
+    font-size: calc(14.4 * var(--u));
+  }
+}

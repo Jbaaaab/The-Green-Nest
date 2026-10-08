@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { config } from '../config';
 import { buildMatcap } from './environment';
-import type { Stage, Updatable, Viewport } from './stage';
+import { steppedFrame, type Stage, type Updatable, type Viewport } from './stage';
 
 export const CURSORS = ['click', 'great', 'iluvyou', 'iwannahire', 'super', 'wow'] as const;
 export type CursorName = (typeof CURSORS)[number];
@@ -86,7 +86,7 @@ export class Cursor3D implements Updatable {
     this.visible += ((this.hasPointer ? 1 : 0) - this.visible) * (1 - Math.exp(-cfg.fadeSpeed * delta));
 
     if (!this.reduced.matches) this.angle += (TAU * delta) / cfg.spinPeriod;
-    this.spinner.rotation.y = this.angle;
+    if (steppedFrame()) this.spinner.rotation.y = this.angle; // « on twos » (config.stepped)
 
     const { width, height, unit } = this.viewport;
     this.root.position.set(this.pos.x - width / 2 + cfg.offset.x * unit, height / 2 - this.pos.y - cfg.offset.y * unit, 0);

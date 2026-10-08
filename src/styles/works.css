@@ -29,28 +29,44 @@ main {
   perspective-origin: 50% 50%;
 }
 
+/* La fenêtre ne coupe pas ce qui dépasse (son halo) ; c'est sa boîte média qui coupe l'image. */
 .project__win {
   position: absolute;
-  overflow: hidden;
+  isolation: isolate;
   pointer-events: auto;
   visibility: hidden;
   backface-visibility: hidden;
 }
 
-.project__win img,
-.project__win video {
+.project__media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.project__media img,
+.project__media video {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+/* Halo lumineux derrière la fenêtre (voir src/works/glow.ts : taille, flou et opacité en JS). */
+.project__glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  pointer-events: none;
+}
+
 /* Placeholder tant que la vidéo n'est pas livrée (rouge sur la maquette = asset à venir). */
-.project__main.is-placeholder {
+.project__main.is-placeholder .project__media {
   background: #ececec;
 }
 
-.project__side {
+.project__side .project__media {
   background: #f2f2f2;
 }
 

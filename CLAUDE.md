@@ -134,6 +134,10 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 - Le suivi de la souris est lissé avec un léger lerp.
 - Tout est désactivé sur les écrans tactiles (`pointer: coarse`).
 
+### Rotations « on twos »
+
+- Les rotations des assets 3D (bague, curseurs, chiffres) sont animées **« on twos »** comme en animation : chaque pose est tenue 2 images (moitié du framerate). Les déplacements restent fluides (la bague qui roule, le curseur qui suit la souris). Réglages : `config.stepped`.
+
 ### Pages projets (Works)
 
 - Maquettes : LONGTEMPS `16:5`, FORMULA ONE `25:448`, TAKE CARE `25:560` (frames 1440×1024). **Carré rouge sur la maquette = asset à mettre.**
@@ -143,11 +147,22 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 - **Proportions** (`src/works/projects.ts`) : chaque page est posée dans un cadre centré à l'écran, à l'échelle `--u`. LONGTEMPS et FORMULA ONE : cadre vidéo 1320×749, texte centré dessus (maquette Longtemps 1512×949, vérifiée au pixel). TAKE CARE : la composition de la frame 1440×1024 (grille régulière 5×3, écarts de 34 et 25 px, grande vidéo 371×547 sur la colonne du milieu), **carrés étirés en largeur à 245×233** (demande du DA) pour que la grille (1361 px, centrée) dépasse d'un poil la rangée 1-8 : bord gauche du « 1 » à −671 px, bord droit du symbole à +672 px du centre, grille à ±680,5 px (mesuré à 1512×949). Rangée 1-8 calée sur le cadre. Bouton « PROJET + » à 60 px du bord gauche et 47 px du bas. Les contraintes 1440×1024 appliquées « telles quelles » à l'écran 1512×949 cassaient la grille (écarts irréguliers, rangées collées) : abandonnées.
 - Rangée 1-8 + symbole en haut, **derrière les vidéos** : sur Longtemps, seuls le 1 et le symbole dépassent de part et d'autre du cadre ; sur F1 et Take Care, le numéro courant est caché par la vidéo ou un carré. **Le numéro courant est le chiffre entouré en 3D** (GLB `digit/n`, 19 px), **façon écran de chargement PS3** (rotation continue et régulière, léger flottement), en chrome vert-bleu. Il est dessiné dans le canvas (au premier plan) mais masqué au stencil là où une fenêtre de la page le recouvre (`src/scene/digits.ts`).
 - Bouton vert « PROJET + » en bas à gauche : UI seulement pour l'instant (action du « + » à définir).
-- LONGTEMPS et FORMULA ONE : un grand cadre vidéo — **placeholders gris** en attendant les vidéos. Les assets F1 sont dans `assets-src/work/formula one/` (pas encore renommés ni utilisés).
+- LONGTEMPS et FORMULA ONE : un grand cadre vidéo. **En attendant les vidéos : diaporama en boucle, une image toutes les 0,75 s** (`config.works.slideMs`), qui n'avance que quand l'image suivante est décodée. LONGTEMPS : les 20 images de `assets-src/work/longtemps/` ; FORMULA ONE : les 8 mockups de `assets-src/work/formula one/mockup/` (le dossier `formula one` n'a pas pu être renommé : verrouillé par Windows). WebP 1600 px générés par `npm run assets` (`SLIDES`).
+- **Halo lumineux autour des fenêtres** (façon symbolsofwealth.studio, en plus serré : « juste les alentours ») : chaque fenêtre éclaire autour d'elle aux couleurs de son image ou de sa vidéo (miniature 16 px floutée puis agrandie derrière la fenêtre, `src/works/glow.ts`). Marge et flou fixes à l'écran (30 et 22 px de maquette), quelle que soit la taille de la fenêtre. Réglages : `config.works.glow`.
 - TAKE CARE : vidéo `case-take-care` au centre, **au premier plan, en boucle à vitesse normale** ; 14 carrés d'assets autour (`PROJECTS.takeCare` dans `scripts/optimize-assets.mjs`). Les vidéos des carrés tournent toutes **à ×0,5**, à ×1 sous la souris ; le carré survolé grandit un tout petit peu (×1,04) et passe devant ses voisins. Réglages : `config.works.hover`.
 - Contenu (textes avec trous, médias) : `src/works/projects.ts`. Médias générés par `npm run assets` (ffmpeg requis) → `public/work/take-care/`, `src/works/media.generated.json`.
 - Mobile (hors maquette) : même structure ; TAKE CARE n'affiche que la vidéo centrale.
 - Perf : pages construites quand le navigateur est inactif, pages lointaines retirées du rendu, médias chargés à l'approche.
+
+### Footer (maquette « Scroll » 9:22)
+
+- **Tout en bas du scroll**, après TAKE CARE : dernière section `#hello` (`src/footer/footerView.ts`). Arrêt quand la page est en place, puis encore un peu de scroll (`config.footer.reveal`) pendant lequel **les 4 cartes empilées** (photos de `assets-src/footer-photos/`, dans l'ordre 1xp → 4windows, la 1 devant) **s'envolent vers le haut l'une après l'autre** et révèlent le texte (« HI /안녕하세요/… » + bio avec ses trous). Photos en WebP 640 px (`SLIDES.footer`), chargées à l'approche.
+- Grand logo « DESIGNER WITH A MONSTERA » en bas, pleine largeur (SVG de Figma, `src/assets/footer/`). Symbole en haut à droite (38 px à gauche du bord droit du header, 111 px du haut) : retour à l'accueil.
+- **Montagne de daruma** (`src/scene/darumaMountain.ts`) à la place du trait rouge (Vector 1, `src/assets/footer/ridge.svg`) : le trait devient la crête, les daruma (`daruma.glb`, instanciés) sont accrochés dessous sur 2 rangées décalées, face à l'écran, et se balancent comme des culbutos (on twos). Sous le bloc de texte, la crête est repoussée juste sous la dernière ligne pour qu'il reste lisible. Chargés seulement à l'approche du footer.
+- Le **rouge du corps des daruma n'est pas dans le GLB** (la texture ne contient que les coulures dorées sur fond transparent) : il est posé dessous dans le code, `config.footer.daruma.red` (`#d0202a`, **à valider par le DA**).
+- Le dock (horloge + music player) s'efface sur le footer (absent de la maquette) ; la musique continue.
+- Pas encore fait (vu sur la maquette 9:22) : lien « Spin » dans le header et pastille verte devant « Works ».
+- Mobile (hors maquette) : même structure, crête en miniature (échelle du grand logo) avec des daruma de 24 px.
 
 ### Horloge
 

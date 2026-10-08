@@ -17,6 +17,13 @@ export const config = {
     fadeInMs: 900, // fondu d'apparition de la 3D une fois chargée
   },
 
+  // Rotations des assets 3D (bague, curseurs, chiffres) « on twos », comme en animation :
+  // chaque pose est tenue `every` images (2 = moitié du framerate). Les déplacements restent fluides.
+  stepped: {
+    enabled: true,
+    every: 2,
+  },
+
   // Environnements qui se reflètent dans le métal poli (voir src/scene/environment.ts).
   // Couleurs en RGB linéaire 0-1 (au-delà de 1 = lumière très forte).
   // dir : direction de la lumière vue depuis l'objet (x droite, y haut, z vers la caméra) ;
@@ -245,6 +252,20 @@ export const config = {
       mobile: { side: 10, top: 66, bottom: 70 },
     },
 
+    // Halo lumineux autour des fenêtres (façon symbolsofwealth.studio, en plus serré) :
+    // la fenêtre « éclaire » un peu autour d'elle, aux couleurs de son image ou de sa vidéo.
+    glow: {
+      enabled: true,
+      margin: 30, // de combien le halo déborde autour de la fenêtre (px de maquette), quelle que soit sa taille
+      blur: 22, // flou du halo à l'écran (px de maquette)
+      opacity: 0.6,
+      saturate: 1.5, // couleurs du halo plus vives que l'image
+      videoFps: 8, // rafraîchissements par seconde du halo d'une vidéo
+    },
+
+    // Diaporamas en attendant les vidéos (Longtemps, Formula One).
+    slideMs: 750, // durée d'une image
+
     // Carrés de Take Care : leurs vidéos tournent au ralenti, à vitesse normale sous la souris,
     // et le carré survolé grandit un tout petit peu.
     hover: {
@@ -256,6 +277,49 @@ export const config = {
     digitAmbience: 'chrome', // reflets du chiffre (voir ambiences)
     digitSpinPeriod: 3.2, // secondes par tour
     digitBob: 0.08, // léger balancement (fraction de la taille)
+  },
+
+  // Footer (maquette « Scroll » 9:22, frame 1440×1024) : à la fin du scroll. Les cartes (photos) empilées
+  // s'envolent vers le haut et révèlent le texte ; une montagne de daruma remplace le trait rouge.
+  // Positions en px de maquette ; y depuis le centre de l'écran (frame : centre à y = 512).
+  footer: {
+    reveal: 1.1, // scroll après l'arrêt du footer pendant lequel les cartes s'envolent (hauteurs d'écran)
+    cards: {
+      w: 315,
+      h: 442,
+      tops: [-298, -309, -318, -327], // haut de chaque carte, de celle de devant (photo 1) à celle du fond
+      dx: 0.5,
+      stagger: 0.2, // décalage entre deux cartes qui partent (fraction de la zone d'envol)
+      duration: 0.4, // durée de l'envol d'une carte (fraction de la zone d'envol)
+      lift: 1.3, // hauteur de l'envol (hauteurs d'écran)
+      rotateDeg: 8, // petite rotation en partant (alternée)
+    },
+    text: { top: -43, width: 692 }, // bloc de texte centré
+    // Grand logo en bas, plein cadre : 1473×173 dans une frame de 1440, débordant de 46 px en bas.
+    logo: { w: 1473, h: 173, bottom: -46, frame: 1440 },
+    // Trait rouge (Vector 1) : 1447×408 posé à x = -4, haut à 29,84 px sous le centre ; il s'étire en largeur.
+    ridge: { left: -4, top: 28.84, w: 1447, h: 410, frame: 1440, frameH: 1024 },
+    // Icône en haut à droite (retour en haut) : 38 px à gauche du bord droit du header (87,5 % + 120), 111 px du haut.
+    symbol: { right: 38, top: 111, size: 20 },
+
+    // Montagne de daruma : le trait rouge devient la crête, les daruma sont accrochés dessous (le haut sur le trait).
+    daruma: {
+      url: '/models/daruma.glb',
+      // Rouge du corps : absent du GLB (la texture ne contient que les coulures dorées) → posé dessous. À valider par le DA.
+      red: '#d0202a',
+      height: 58, // hauteur d'un daruma (px de maquette)
+      mobileHeight: 24, // sur mobile (hors maquette) : le trait est en miniature, les daruma aussi
+      spacing: 0.78, // écart entre deux daruma le long du trait (fraction de leur largeur ; < 1 = ils se chevauchent)
+      rows: 2, // rangées superposées (la 2e plus bas, décalée et devant) : effet « montagne »
+      rowDrop: 0.5, // décalage vertical de la rangée suivante (fraction de la hauteur)
+      scale: [0.82, 1.18], // taille tirée au hasard
+      faceDeg: 90, // rotation qui tourne le visage (vers -X dans le GLB) face à l'écran
+      textGap: 8, // sous le texte, la crête est repoussée à cette marge (px de maquette) pour qu'il reste lisible
+      yawDeg: 28, // orientation au hasard autour de la verticale (±)
+      rock: { deg: 7, period: 1.6 }, // ils se balancent comme des culbutos
+      // Laque éclairée par le studio : le rouge reste franc, des reflets blancs glissent dessus.
+      look: { ambience: 'studio', key: [-0.4, 0.6, 1], ambient: 0.5, f0: 0.25, reflection: 1.6 },
+    },
   },
 
   // Apparitions de projets en fond (desktop uniquement) : des vignettes surgissent au hasard
