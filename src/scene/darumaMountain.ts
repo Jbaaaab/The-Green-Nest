@@ -9,7 +9,7 @@ import { buildLacquerMatcap } from './environment';
 import { lacquer } from './materials';
 import { steppedFrame, type Stage, type Updatable, type Viewport } from './stage';
 
-const MAX = 260; // daruma au maximum (toutes rangées confondues)
+const MAX = 1500; // daruma au maximum
 const DEG = Math.PI / 180;
 const TAU = Math.PI * 2;
 const hash = (n: number) => {
@@ -17,7 +17,7 @@ const hash = (n: number) => {
   return x - Math.floor(x);
 };
 
-type Slot = { x: number; y: number; z: number; scale: number; yaw: number; phase: number };
+type Slot = { x: number; y: number; z: number; scale: number; yaw: number; tilt: number; phase: number; amp: number };
 
 // Le rouge du corps n'est pas dans le GLB : la texture ne contient que les coulures dorées, sur fond
 // transparent. On la pose sur le rouge de config (une fois, dans un canvas de 512 px au plus).
@@ -37,9 +37,10 @@ function onRed(map: Texture, red: string): Texture {
 }
 
 /**
- * Montagne de daruma du footer : elle remplace le trait rouge de la maquette (Vector 1).
- * Les daruma sont accrochés sous ce tracé (qui devient la crête, deux rangées décalées), face à l'écran,
- * et se balancent comme des culbutos. Rendu instancié : un appel de dessin par matériau, quel que soit leur nombre.
+ * Montagne de daruma du footer : elle remplace le trait rouge de la maquette (Vector 1), qui en devient
+ * la crête. Un amoncellement de petits daruma, face à l'écran, posé sur le grand logo et qui monte
+ * jusqu'au tracé ; ils se balancent comme des culbutos. Modèle allégé (daruma-lite.glb, ~1 300 triangles)
+ * et rendu instancié : un appel de dessin par matériau, quel que soit leur nombre.
  * Chargés seulement à l'approche du footer.
  */
 export class DarumaMountain implements Updatable {
@@ -51,6 +52,8 @@ export class DarumaMountain implements Updatable {
   private dirty = true; // à replacer (redimensionnement) : fait au prochain affichage, quand le texte du footer est mesurable
   private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   private rocks = new Float32Array(0); // angle de balancement tenu de chaque daruma (on twos)
+  private moved = true; // placement à réappliquer
+  private lastPageY = NaN;
   private m = new Matrix4();
   private t = new Matrix4();
   private q = new Quaternion();
@@ -65,7 +68,10 @@ export class DarumaMountain implements Updatable {
       if (started || scroll < nav.stopOf(FOOTER_SECTION) - nav.sectionHeight * 1.4) return;
       started = true;
       DarumaMountain.load(stage)
-        .then((m) => stage.add(m))
+        .then((m) => {
+          stage.add(m);
+          if (import.meta.env.DEV) Object.assign(window, { __daruma: m }); // pour les tests
+        })
         .catch((err) => console.error('Daruma indisponibles :', err));
     });
   }
@@ -143,46 +149,73 @@ export class DarumaMountain implements Updatable {
     }
     svg.remove();
 
-    // Un daruma tous les `spacing × largeur` le long de la crête, sur `rows` rangées : le haut de la
-    // première rangée touche le trait, les suivantes descendent et passent devant.
     const h = (mobile ? d.mobileHeight : d.height) * u;
-    const step = d.spacing * h * this.aspect;
-    const at = (dist: number) => {
-      let i = 1;
-      while (i < pts.length - 1 && pts[i].len < dist) i++;
+    const w = h * this.aspect;
+
+    // Crête : pour chaque tranche de 2 px en x, le point le plus haut du tracé.
+    const BIN = 2;
+    const bins = Math.ceil(W / BIN) + 1;
+    const crest = new Float32Array(bins).fill(Infinity);
+    for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1];
       const b = pts[i];
-      const t = (dist - a.len) / Math.max(1e-6, b.len - a.len);
-      return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
-    };
+      const steps = Math.max(1, Math.ceil(Math.abs(b.x - a.x) / BIN));
+      for (let s = 0; s <= steps; s++) {
+        const x = a.x + ((b.x - a.x) * s) / steps;
+        const j = Math.round((x + W / 2) / BIN);
+        if (j >= 0 && j < bins) crest[j] = Math.min(crest[j], a.y + ((b.y - a.y) * s) / steps);
+      }
+    }
     // Le pic du trait croise la dernière ligne du texte : sous le bloc de texte, la crête est repoussée
     // juste en dessous (fondu sur une largeur de daruma de chaque côté), ailleurs elle suit le trait.
     const text = document.querySelector<HTMLElement>('.footer__text');
     const floor = text ? f.text.top * u + text.offsetHeight + d.textGap * u : -Infinity; // depuis le centre, comme le trait
     const half = text ? text.offsetWidth / 2 : 0;
-    const ridgeAt = (dist: number) => {
-      const p = at(dist);
-      const weight = Math.min(1, Math.max(0, (half + h - Math.abs(p.x)) / h));
-      return { x: p.x, y: p.y < floor ? p.y + (floor - p.y) * weight : p.y };
+    const crestAt = (x: number) => {
+      const y = crest[Math.min(bins - 1, Math.max(0, Math.round((x + W / 2) / BIN)))];
+      const weight = Math.min(1, Math.max(0, (half + w - Math.abs(x)) / w));
+      return y < floor ? y + (floor - y) * weight : y;
     };
+    // Sol : le haut du grand logo (la montagne est posée dessus).
+    const kLogo = W / f.logo.frame;
+    const ground = H / 2 - (f.logo.h + f.logo.bottom) * kLogo;
 
+    // Amoncellement : des colonnes serrées ; dans chacune, le premier daruma touche la crête, les
+    // suivants s'empilent en dessous (chevauchés, un peu devant) jusqu'au sol. Une colonne sur deux est
+    // décalée d'une demi-hauteur, et tout est un peu en désordre.
     this.slots = [];
-    for (let row = 0; row < d.rows; row++) {
-      for (let dist = (row * step) / 2; dist <= len && this.slots.length < MAX; dist += step) {
+    const step = d.spacing * w;
+    const rowStep = d.rowStep * h;
+    for (let c = 0, x = -W / 2 + step / 2; x < W / 2 && this.slots.length < MAX; c++, x += step) {
+      const top = crestAt(x);
+      if (!Number.isFinite(top)) continue;
+      const floorY = ground + d.sink * h; // la base peut s'enfoncer un peu dans le haut des lettres
+      let lastBase = top;
+      for (let r = 0; this.slots.length < MAX; r++) {
         const n = this.slots.length;
-        const { x, y } = ridgeAt(dist);
         const scale = h * (d.scale[0] + (d.scale[1] - d.scale[0]) * hash(n));
+        let y = r === 0 ? top : top + (r + (c % 2) * 0.5) * rowStep + (hash(n + 300) - 0.5) * 2 * d.jitter * h;
+        if (y + scale > floorY) {
+          // Plus de place : s'il reste un trou au-dessus du sol, un dernier daruma posé dessus.
+          if (r === 0 || floorY - lastBase < 0.3 * h) break;
+          y = floorY - scale;
+        }
         this.slots.push({
-          x,
-          y: y + scale + row * d.rowDrop * h, // y = base du daruma (son origine)
-          z: row * h * 0.4, // la rangée du dessous passe un peu devant
+          x: x + (hash(n + 700) - 0.5) * 2 * d.jitter * w,
+          y: y + scale, // y = base du daruma (son origine)
+          z: r * d.depth * h + hash(n + 100) * 0.2 * h, // ceux du dessous passent devant
           scale,
           yaw: (d.faceDeg + (hash(n + 500) * 2 - 1) * d.yawDeg) * DEG,
+          tilt: r === 0 ? 0 : (hash(n + 1100) * 2 - 1) * d.tiltDeg * DEG, // dans la pile, ils penchent un peu
           phase: hash(n + 900) * TAU,
+          amp: r === 0 ? 1 : d.rock.below, // ceux du dessous, coincés, se balancent moins
         });
+        lastBase = y + scale;
+        if (lastBase >= floorY - 0.5) break;
       }
     }
     for (const { mesh } of this.meshes) mesh.count = this.slots.length;
+    this.moved = true;
   }
 
   update(time: number): void {
@@ -194,14 +227,18 @@ export class DarumaMountain implements Updatable {
       this.layout();
     }
     // Le balancement est animé « on twos » (comme les autres rotations) ; le défilement reste fluide.
-    const rockNow = steppedFrame();
+    // Rien à recalculer entre deux poses si la page ne bouge pas.
+    const rockNow = steppedFrame() && !this.reduced.matches;
+    if (!rockNow && !this.moved && pageY === this.lastPageY) return;
+    this.moved = false;
+    this.lastPageY = pageY;
     const { deg, period } = config.footer.daruma.rock;
     if (this.rocks.length !== this.slots.length) this.rocks = new Float32Array(this.slots.length);
 
     this.slots.forEach((slot, i) => {
-      if (rockNow) this.rocks[i] = this.reduced.matches ? 0 : deg * DEG * Math.sin((TAU * time) / period + slot.phase);
+      if (rockNow) this.rocks[i] = slot.amp * deg * DEG * Math.sin((TAU * time) / period + slot.phase);
       // Balancement autour de l'axe du visage (X du GLB), puis orientation : de face, il penche à gauche et à droite.
-      this.e.set(this.rocks[i], slot.yaw, 0);
+      this.e.set(slot.tilt + this.rocks[i], slot.yaw, 0);
       this.q.setFromEuler(this.e);
       this.p.set(slot.x, -(slot.y + pageY), slot.z); // 3D : y vers le haut
       this.s.setScalar(slot.scale);

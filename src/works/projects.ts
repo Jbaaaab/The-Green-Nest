@@ -1,14 +1,15 @@
 import media from './media.generated.json';
 
 /**
- * Contenu des pages projets (maquettes Figma : LONGTEMPS 16:5, F1 25:448, TAKE CARE 25:560).
+ * Contenu des pages projets (maquettes Figma : LONGTEMPS 16:5, F1 25:448, TAKE CARE 25:560 ; SOCIAL MEDIA
+ * d'après les indications du DA).
  * Les trous dans les textes sont voulus (comme sur la bio) : nombres d'espaces repris de Figma.
  */
 export type MainMedia =
   | { kind: 'video'; video: string; poster: string }
   | { kind: 'slides'; images: string[] } // diaporama en boucle (config.works.slideMs), en attendant la vidéo
   | { kind: 'placeholder' };
-export type SideMedia = { image: string; video?: string };
+export type SideMedia = { image: string; video?: string; color?: string }; // color : fond pendant le chargement
 
 export type Project = {
   id: string; // ancre d'URL (#longtemps…)
@@ -16,7 +17,7 @@ export type Project = {
   title: string; // texte du bouton vert
   lines: string[]; // description, ligne par ligne
   textWidth: number; // largeur du bloc de texte, px de maquette
-  layout: 'single' | 'mosaic';
+  layout: 'single' | 'mosaic' | 'social'; // social : page à part, src/works/socialView.ts
   main: MainMedia;
   side: SideMedia[];
 };
@@ -50,7 +51,7 @@ export const PROJECTS: Project[] = [
     ],
     textWidth: 667,
     layout: 'single',
-    main: { kind: 'slides', images: media.formulaOne.slides }, // en attendant la vidéo : mockups F1
+    main: { kind: 'video', ...media.formulaOne.main }, // le case F1
     side: [],
   },
   {
@@ -66,6 +67,16 @@ export const PROJECTS: Project[] = [
     layout: 'mosaic',
     main: { kind: 'video', ...media.takeCare.main },
     side: media.takeCare.side,
+  },
+  {
+    id: 'social-media',
+    number: 4,
+    title: 'SOCIAL MEDIA',
+    lines: [], // pas de texte pour l'instant
+    textWidth: 0,
+    layout: 'social',
+    main: { kind: 'video', ...media.socialMedia.main },
+    side: media.socialMedia.tiles, // déjà triés par couleur (npm run assets), colonne par colonne
   },
 ];
 
@@ -102,6 +113,17 @@ export const MOSAIC = {
   ] as [number, number][],
   center: { x: 495, y: 101, w: 371, h: 547 }, // grande vidéo, au premier plan, centrée sur la colonne du milieu
   textTop: 336,
+};
+
+// SOCIAL MEDIA (pas de maquette, d'après les indications du DA) : petits carrés de 1/4 de ceux de Take Care
+// (moitié de largeur et de hauteur), 6 rangées × 10 colonnes dans le même cadre (écarts recalculés pour le
+// remplir exactement). La mosaïque dépasse à droite et défile ; le grand rectangle de Take Care reste au centre.
+export const SOCIAL = {
+  box: MOSAIC.box,
+  tile: { w: MOSAIC.square.w / 2, h: MOSAIC.square.h / 2 },
+  rows: 6,
+  columns: 10, // colonnes dans le cadre, à l'arrêt
+  center: MOSAIC.center,
 };
 
 // Rangée 1-8 + symbole de fin, calée sur le cadre SINGLE (centres, en px depuis son coin haut-gauche).

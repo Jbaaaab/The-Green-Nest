@@ -4,7 +4,9 @@ import { config } from '../config';
 import { nav } from '../nav';
 import { readUnit } from '../ui/unit';
 import { Glow } from './glow';
+import { lazyVideo, loadVideo } from './lazyVideo';
 import { drum, perspectiveFor } from './scrollFx';
+import { SocialView } from './socialView';
 import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, boxRect, type Project } from './projects';
 
 type Win = {
@@ -13,6 +15,9 @@ type Win = {
   h: number;
   speed: number; // parallaxe
   glow?: Glow; // halo lumineux autour de la fenêtre
+  // Texte : hors de sa page (calque .works-texts), il porte sa propre perspective, centrée sur l'écran.
+  // Décalage du centre de l'écran par rapport au milieu du bord haut du texte (son transform-origin), en px.
+  origin?: { x: number; y: number };
 };
 
 type Slides = { img: HTMLImageElement; images: string[]; index: number; ready: boolean[] };
@@ -41,20 +46,6 @@ const hash = (n: number) => {
   return x - Math.floor(x);
 };
 
-// Vidéo muette en boucle, chargée seulement à l'approche de sa page (data-src → src).
-function lazyVideo(src: string, poster: string, rate: number): HTMLVideoElement {
-  const v = document.createElement('video');
-  v.muted = true;
-  v.loop = true;
-  v.playsInline = true;
-  v.preload = 'none';
-  v.defaultPlaybackRate = rate;
-  v.playbackRate = rate;
-  v.dataset.src = src;
-  v.dataset.poster = poster;
-  return v;
-}
-
 /**
  * Accueil puis pages projets empilées verticalement (scroll fluide, voir nav.ts).
  * Chaque page est à ses proportions de maquette quand elle est à l'arrêt (texte au milieu de l'écran).
@@ -64,6 +55,8 @@ function lazyVideo(src: string, poster: string, rate: number): HTMLVideoElement 
 export class WorksView {
   private root: HTMLElement;
   private stage: HTMLElement;
+  private texts: HTMLElement;
+  private social: SocialView | null = null;
   private navEl: HTMLElement;
   private navItems: HTMLButtonElement[] = [];
   private button: HTMLButtonElement;
@@ -83,6 +76,10 @@ export class WorksView {
     this.stage = document.createElement('div');
     this.stage.className = 'works-stage';
     this.root.appendChild(this.stage);
+    // Textes des projets en « noir négatif » (mode différence) : dans un calque à part, au-dessus des
+    // pages, car .works isole les mélanges et le texte doit inverser aussi le blanc de la page.
+    this.texts = document.createElement('div');
+    this.texts.className = 'works-texts';
 
     // Section 0 : l'accueil (la bio), qui défile comme un texte.
     this.sections.push({
@@ -97,7 +94,10 @@ export class WorksView {
       loaded: true,
       el: null,
     });
-    for (const project of PROJECTS) this.sections.push(this.buildProject(project));
+    for (const project of PROJECTS) {
+      if (project.layout === 'social') this.social = new SocialView(this.stage, project);
+      else this.sections.push(this.buildProject(project));
+    }
 
     // Rangée 1-8 + symbole (retour à l'accueil), derrière les vidéos des pages.
     this.navEl = document.createElement('nav');
@@ -138,7 +138,7 @@ export class WorksView {
     this.button.append(this.buttonLabel);
     this.button.insertAdjacentHTML('beforeend', `<img class="project-btn__plus" src="${plusIcon}" alt="" width="12" height="12" />`);
 
-    landing.after(this.root, this.navEl, this.button);
+    landing.after(this.root, this.texts, this.navEl, this.button);
 
     window.addEventListener('resize', () => this.layout());
     document.addEventListener('visibilitychange', () => this.syncVideos(nav.scroll));
@@ -154,10 +154,10 @@ export class WorksView {
     this.stage.appendChild(el);
 
     const wins: Win[] = [];
-    const win = (cls: string) => {
+    const win = (cls: string, parent: HTMLElement = el) => {
       const w = document.createElement('div');
       w.className = `project__win ${cls}`;
-      el.appendChild(w);
+      parent.appendChild(w);
       wins.push({ el: w, cy: 0, h: 0, speed: 1 });
       return w;
     };
@@ -231,8 +231,9 @@ export class WorksView {
       mainBox.parentElement!.classList.add('is-placeholder');
     }
 
-    const text = win('project__text');
-    text.innerHTML = `<p class="project__lines">${project.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
+    const text = win('project__text', this.texts);
+    wins[wins.length - 1].origin = { x: 0, y: 0 };
+    text.innerHTML =`<p class="project__lines">${project.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
 
     el.style.display = 'none';
     return { index: project.number, project, wins, main, sideVideos, images, slides, videoGlows, loaded: false, el };
@@ -254,12 +255,15 @@ export class WorksView {
       win.cy = y + win.h / 2;
       win.speed = speed;
       win.glow?.resize(w, win.h, u);
+      if (win.origin) win.origin = { x: W / 2 - (x + w / 2), y: H / 2 - y };
     };
 
     // Accueil : la bio est centrée à l'écran.
     const landing = this.sections[0].wins[0];
     landing.cy = H / 2;
     landing.h = H;
+
+    this.social?.layout(W, H, u, mobile);
 
     for (const section of this.sections) {
       const project = section.project;
@@ -320,11 +324,14 @@ export class WorksView {
     const D = nav.sectionHeight;
 
     for (const section of this.sections) {
-      const off = scroll - nav.stopOf(section.index); // > 0 : la page est passée vers le haut
+      const off = nav.offsetOf(section.index, scroll); // > 0 : la page est passée vers le haut
       const far = Math.abs(off) > D * 1.6;
       if (section.el) {
         section.el.style.display = far ? 'none' : '';
-        if (far) continue;
+        if (far) {
+          for (const win of section.wins) if (win.origin) win.el.style.visibility = 'hidden';
+          continue;
+        }
       }
       const isLanding = section.index === 0;
       for (const win of section.wins) {
@@ -338,10 +345,17 @@ export class WorksView {
           win.el.style.transform = '';
           continue;
         }
-        const persp = isLanding ? `perspective(${this.persp}px) ` : '';
+        // Perspective : celle de la page (CSS), sauf l'accueil et les textes, qui portent la leur.
+        const o = win.origin;
+        const persp = isLanding
+          ? `perspective(${this.persp}px) `
+          : o
+            ? `translate(${o.x}px, ${o.y}px) perspective(${this.persp}px) translate(${-o.x}px, ${-o.y}px) `
+            : '';
         win.el.style.transform = `${persp}translate3d(0, ${y}px, ${fx.z}px) rotateX(${fx.rotX}rad)`;
       }
     }
+    this.social?.update(scroll, velocity);
 
     // Les apparitions de l'accueil s'effacent dès qu'on quitte l'accueil.
     const trail = this.trail();
@@ -350,9 +364,15 @@ export class WorksView {
     // Rangée et bouton : visibles sur les pages projets.
     // (masqués sur l'accueil et sur le footer, qui suit le dernier projet)
     const last = PROJECTS.length;
-    const show = smooth(0.45, 0.85, scroll / D) * (1 - smooth(last + 0.35, last + 0.75, scroll / D));
-    this.navEl.style.opacity = this.button.style.opacity = String(show);
-    this.navEl.style.visibility = this.button.style.visibility = show < 0.01 ? 'hidden' : 'visible';
+    const pos = nav.position(scroll);
+    const show = smooth(0.45, 0.85, pos) * (1 - smooth(last + 0.35, last + 0.75, pos));
+    // Sur Social Media, la rangée passerait entre les petits carrés (et clignoterait pendant le défilement) :
+    // elle s'efface, comme sur Take Care où les carrés la cachent entièrement. Le bouton reste.
+    const row = this.social ? show * smooth(0.35, 0.65, Math.abs(pos - this.social.index)) : show;
+    this.navEl.style.opacity = String(row);
+    this.button.style.opacity = String(show);
+    this.navEl.style.visibility = row < 0.01 ? 'hidden' : 'visible';
+    this.button.style.visibility = show < 0.01 ? 'hidden' : 'visible';
 
     const current = nav.section;
     if (current !== this.current) {
@@ -376,8 +396,9 @@ export class WorksView {
     const D = nav.sectionHeight;
     const mobile = this.mobileQuery.matches;
     let activeSection: Section | null = null;
+    this.social?.sync(scroll);
     for (const section of this.sections) {
-      const d = Math.abs(scroll - nav.stopOf(section.index)) / D;
+      const d = Math.abs(nav.offsetOf(section.index, scroll)) / D;
       // Sur mobile, les carrés sont masqués : leurs vidéos ne sont ni chargées ni jouées.
       const videos = section.main ? [section.main] : [];
       if (!mobile) videos.push(...section.sideVideos);
@@ -397,12 +418,7 @@ export class WorksView {
             });
           }
         }
-        for (const v of videos) {
-          if (v.src) continue;
-          v.poster = v.dataset.poster!;
-          v.src = v.dataset.src!;
-          v.preload = 'auto';
-        }
+        for (const v of videos) loadVideo(v);
       }
 
       const active = d < 0.5 && !document.hidden;

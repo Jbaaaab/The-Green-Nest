@@ -9,6 +9,7 @@ import { drum, perspectiveFor } from '../works/scrollFx';
 const gap = (n: number) => ' '.repeat(n);
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
 /** Index de section du footer (la dernière). */
 export const FOOTER_SECTION = nav.count - 1;
@@ -56,11 +57,12 @@ export class FooterView {
       '<span class="footer__blank" aria-hidden="true"> </span>' +
       `<span class="footer__bio">DESIGNER WITH A MONSTERA IS AN ART DIRECTOR${gap(20)}AND DESIGNER BASED IN PARIS, WORKING 360${gap(22)}IN MUSIC, FASHION, AND ADVERTISING.${gap(23)}HIS WORK FOCUSES ON MAKING THINGS LOOK <strong class="footer__cool">COOL</strong><span class="footer__wide"> </span>FOR PEOPLE AND BRANDS.</span>`;
 
-    // Cartes : la photo 1 est devant. Dans le DOM, la carte du fond vient en premier (dessinée dessous).
+    // Cartes : calques inversés par rapport à la maquette, la photo 1 au fond et la 4 devant
+    // (dans le DOM, la carte du fond vient en premier : dessinée dessous).
     const photos = media.footer.slides;
     const stack = document.createElement('div');
     stack.className = 'footer__cards';
-    for (let i = photos.length - 1; i >= 0; i--) {
+    for (let i = 0; i < photos.length; i++) {
       const img = document.createElement('img');
       img.className = 'footer__card';
       img.alt = '';
@@ -84,6 +86,9 @@ export class FooterView {
 
     this.root.append(this.text, stack, this.logo, this.symbol);
     after.after(this.root);
+    // Arrêt du scroll quand la pile de cartes est complète.
+    const { pause } = config.footer.cards;
+    if (pause !== null) nav.setPauses(FOOTER_SECTION, [pause]);
 
     window.addEventListener('resize', () => this.layout());
     this.layout();
@@ -152,13 +157,17 @@ export class FooterView {
     move(this.logo, 1);
     move(this.symbol, 1);
 
-    // Envol des cartes, de celle de devant (photo 1) à celle du fond, chacune à son tour.
-    const { stagger, duration, lift, rotateDeg } = config.footer.cards;
+    // Les cartes montent d'en bas une à une (1, 2, 3, 4), puis s'envolent par le haut de la pile (4, 3, 2, 1).
+    const { arrive, leave, enter, lift, rotateDeg } = config.footer.cards;
+    const n = this.cards.length;
+    const step = (t: number) => (reduced ? (t > 0 ? 1 : 0) : t);
     this.cards.forEach((card, i) => {
-      const q = reduced ? (reveal > 0.5 ? 1 : 0) : easeInOutCubic(clamp01((reveal - i * stagger) / duration));
-      const rot = (i % 2 === 0 ? -1 : 1) * rotateDeg * q;
-      move(card, 1, q > 0 ? `translateY(${-q * lift * H}px) rotate(${rot}deg)` : '');
-      card.style.visibility = q >= 1 ? 'hidden' : '';
+      const a = step(easeOutCubic(clamp01((reveal - arrive.start - i * arrive.stagger) / arrive.duration)));
+      const l = step(easeInOutCubic(clamp01((reveal - leave.start - (n - 1 - i) * leave.stagger) / leave.duration)));
+      const rot = (i % 2 === 0 ? -1 : 1) * rotateDeg * (1 - a + l);
+      const y = (1 - a) * enter * H - l * lift * H;
+      move(card, 1, y !== 0 ? `translateY(${y}px) rotate(${rot}deg)` : '');
+      card.style.visibility = a <= 0 || l >= 1 ? 'hidden' : '';
     });
   }
 }

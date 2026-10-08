@@ -2,23 +2,24 @@
 // Les originaux ne sont jamais modifiés. Lancer avec : npm run assets
 
 import { execFile } from 'node:child_process';
-import { mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { dedup, prune, unweld, weld, meshopt } from '@gltf-transform/functions';
-import { MeshoptEncoder } from 'meshoptimizer';
+import { dedup, prune, simplify, unweld, weld, meshopt } from '@gltf-transform/functions';
+import { MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
 
 const root = path.resolve(import.meta.dirname, '..');
 const src = (p) => path.join(root, 'assets-src', p);
 const out = (p) => path.join(root, 'public', p);
 
-// [source, destination].
+// [source, destination, options]. simplify : part de sommets gardés (version allégée, pour les modèles affichés en masse).
 const MODELS = [
   ['models/bague.glb', 'models/bague.glb'],
-  ['models/daruma.glb', 'models/daruma.glb'], // montagne de daruma du footer
+  ['models/daruma.glb', 'models/daruma-lite.glb', { simplify: 0.3 }], // montagne de daruma du footer (des centaines, petits)
   ['models/instagram.glb', 'models/instagram.glb'],
   ...['click', 'great', 'iluvyou', 'iwannahire', 'super', 'wow'].map((n) => [
     `cursors/glb/${n}.glb`,
@@ -106,12 +107,14 @@ function creasedNormals(creaseDeg) {
 
 async function optimizeModels() {
   await MeshoptEncoder.ready;
+  await MeshoptSimplifier.ready;
   const io = new NodeIO()
     .registerExtensions(ALL_EXTENSIONS)
     .registerDependencies({ 'meshopt.encoder': MeshoptEncoder });
 
-  for (const [from, to] of MODELS) {
+  for (const [from, to, options = {}] of MODELS) {
     const doc = await io.read(src(from));
+    if (options.simplify) await doc.transform(weld(), simplify({ simplifier: MeshoptSimplifier, ratio: options.simplify, error: 0.01 }));
     await doc.transform(
       dedup(),
       prune(),
@@ -124,7 +127,8 @@ async function optimizeModels() {
     await mkdir(path.dirname(out(to)), { recursive: true });
     await io.write(out(to), doc);
     const [a, b] = await Promise.all([stat(src(from)), stat(out(to))]);
-    console.log(`${from.padEnd(28)} ${kb(a.size).padStart(7)} → ${kb(b.size).padStart(7)}`);
+    const tris = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives()).reduce((n, p) => n + (p.getIndices() ?? p.getAttribute('POSITION')).getCount() / 3, 0);
+    console.log(`${to.padEnd(28)} ${kb(a.size).padStart(7)} → ${kb(b.size).padStart(7)}, ${Math.round(tris)} triangles`);
   }
 }
 
@@ -160,6 +164,34 @@ async function optimizeThumbs() {
   console.log(`${files.length} vignettes ${THUMBS.from}`.padEnd(28), `${kb(before).padStart(7)} → ${kb(after).padStart(7)}`);
 }
 
+// Versions web de toutes les images sources lourdes (originaux jusqu'à 50 Mo) : WebP qualité 82,
+// 2000 px max sur le grand côté (1080 pour les posts Instagram, leur taille d'origine). Pas de perte
+// visible en plein écran. Mêmes noms et sous-dossiers que les sources, dans public/.
+const GALLERIES = [
+  { from: 'work/music-culture', to: 'work/music-culture', max: 2000 },
+  { from: 'work/magazine', to: 'work/magazine', max: 2000 },
+  { from: 'work/social-media', to: 'work/social-media', max: 1080 },
+];
+
+async function optimizeGalleries() {
+  for (const g of GALLERIES) {
+    const files = (await readdir(src(g.from), { recursive: true })).filter((f) => /\.(png|jpe?g|jfif|webp)$/i.test(f)).sort();
+    let before = 0;
+    let after = 0;
+    for (const f of files) {
+      const input = src(path.join(g.from, f));
+      const output = out(path.join(g.to, f.replace(/\.[^.]+$/, '.webp')));
+      await mkdir(path.dirname(output), { recursive: true });
+      if (!(await newer(output, input))) {
+        await sharp(input).resize({ width: g.max, height: g.max, fit: 'inside', withoutEnlargement: true }).webp({ quality: 82, effort: 5 }).toFile(output);
+      }
+      before += (await stat(input)).size;
+      after += (await stat(output)).size;
+    }
+    console.log(`${g.to}`.padEnd(28), `${files.length} images, ${kb(before).padStart(9)} → ${kb(after).padStart(8)}`);
+  }
+}
+
 // Médias des pages projets. Vidéos en MP4 H.264 sans son (lecture auto, muette), image d'attente WebP.
 // Nécessite ffmpeg dans le PATH. Écrit src/works/media.generated.json, importé par src/works/projects.ts.
 const PROJECTS = {
@@ -176,20 +208,40 @@ const PROJECTS = {
       'stop-mo-trousse.mp4', 'kuromi-1.png', 'whatsinmybag.mp4', 'take-care-de-paques.mp4', 'corporate-guuuurl-v2.mp4',
     ],
   },
+  formulaOne: {
+    from: 'work/formula one/anims',
+    to: 'work/formula-one',
+    main: 'CASE F1.mov', // le case, dans le grand cadre (1320 px affichés)
+    mainWidth: 1600,
+    mainCrf: 27, // 18 s en 1600 px : un poil plus compressé pour rester léger
+    side: [],
+  },
 };
 
 // Diaporamas (en attendant les vidéos) : toutes les images d'un dossier, dans l'ordre alphabétique,
 // en WebP 1600 px (cadre de 1320 px). Ajoutés à media.generated.json sous { slides: [...] }.
 const SLIDES = {
   longtemps: { from: 'work/longtemps', to: 'work/longtemps', width: 1600 },
-  formulaOne: { from: 'work/formula one/mockup', to: 'work/formula-one', width: 1600 },
   // Cartes du footer (315 px affichées) : 1xp, 2chaewon, 3duo, 4windows (la 1 est devant).
   footer: { from: 'footer-photos', to: 'footer', width: 640 },
+};
+
+// Page Social Media : mosaïque de petits carrés (122,5×116,5 px, 1/4 des carrés de Take Care) triés par
+// couleur, et une grande vidéo au centre. Carrés en WebP 2x recadrés, vidéos en MP4 muet.
+const SOCIAL = {
+  from: 'work/social-media',
+  to: 'work/social-media/tiles',
+  tile: [246, 234],
+  main: 'snapinsta-to-aqmvyfng8zqq41', // début du nom de la vidéo du grand rectangle central (720×960, 13 s)
+  mainWidth: 720,
+  rows: 6, // rangées de la mosaïque : l'ordre des couleurs se lit colonne par colonne, de gauche à droite
+  neutral: 0.13, // en dessous de cette saturation moyenne, une image est rangée avec les neutres
 };
 
 const run = promisify(execFile);
 const isVideo = (f) => /\.(mp4|mov|webm)$/i.test(f);
 const base = (f) => f.replace(/\.[^.]+$/, '');
+const slug = (f) => base(f).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 async function newer(output, input) {
   try {
@@ -222,6 +274,81 @@ async function imageStill(input, output, width) {
   await sharp(input).resize({ width, withoutEnlargement: true }).webp({ quality: 80 }).toFile(output);
 }
 
+// Couleur perçue d'une image : teinte moyenne pondérée par la saturation (un fond blanc ou noir ne
+// compte presque pas), saturation moyenne, clarté moyenne et couleur moyenne (fond du carré au chargement).
+async function colorOf(input) {
+  const { data } = await sharp(input).resize(48, 48, { fit: 'inside' }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const n = data.length / 3;
+  let x = 0, y = 0, sat = 0, light = 0, r = 0, g = 0, b = 0;
+  for (let i = 0; i < data.length; i += 3) {
+    const R = data[i] / 255, G = data[i + 1] / 255, B = data[i + 2] / 255;
+    const max = Math.max(R, G, B), min = Math.min(R, G, B), c = max - min;
+    light += (max + min) / 2;
+    r += R; g += G; b += B;
+    sat += c * c;
+    if (c < 1e-3) continue;
+    const h = max === R ? (G - B) / c : max === G ? (B - R) / c + 2 : (R - G) / c + 4; // sixièmes de tour
+    x += Math.cos((h * Math.PI) / 3) * c * c;
+    y += Math.sin((h * Math.PI) / 3) * c * c;
+  }
+  const hex = [r, g, b].map((v) => Math.round((v / n) * 255).toString(16).padStart(2, '0')).join('');
+  return { hue: ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360, saturation: Math.sqrt(sat / n), light: light / n, color: `#${hex}` };
+}
+
+async function optimizeSocial() {
+  const p = SOCIAL;
+  await mkdir(out(p.to), { recursive: true });
+  const url = (f) => `/${p.to}/${f}`;
+  const files = (await readdir(src(p.from))).sort();
+  const mainFile = files.find((f) => f.startsWith(p.main));
+
+  // Grande vidéo centrale.
+  const mainIn = src(`${p.from}/${mainFile}`);
+  await encodeVideo(mainIn, out(`${p.to}/main.mp4`), p.mainWidth, 26);
+  await videoStill(mainIn, out(`${p.to}/main.webp`), p.mainWidth);
+
+  // Carrés : images recadrées au format du carré, vidéos réduites (sans les doublons exacts).
+  const seen = new Set();
+  const tiles = [];
+  for (const f of files) {
+    if (f === mainFile || !/\.(png|jpe?g|jfif|webp|mp4|mov)$/i.test(f)) continue;
+    const input = src(`${p.from}/${f}`);
+    const sum = createHash('sha1').update(await readFile(input)).digest('hex');
+    if (seen.has(sum)) continue;
+    seen.add(sum);
+    const name = base(f).slice(0, 48); // les noms Instagram sont interminables
+    const image = `${name}.webp`;
+    let still = input;
+    const tile = {};
+    if (isVideo(f)) {
+      await encodeVideo(input, out(`${p.to}/${name}.mp4`), 300, 28);
+      await videoStill(input, out(`${p.to}/${image}`), p.tile[0]);
+      tile.video = url(`${name}.mp4`);
+      still = out(`${p.to}/${image}`);
+    } else if (!(await newer(out(`${p.to}/${image}`), input))) {
+      await sharp(input).resize(p.tile[0], p.tile[1], { fit: 'cover' }).webp({ quality: 78 }).toFile(out(`${p.to}/${image}`));
+    }
+    tiles.push({ image: url(image), ...tile, ...(await colorOf(still)) });
+  }
+
+  // Tri par couleur : les couleurs dans l'ordre de l'arc-en-ciel (du rouge au rose), puis les neutres du
+  // plus sombre au plus clair (la mosaïque finit sur du blanc, comme la page). Dans chaque colonne,
+  // du plus clair en haut au plus sombre en bas.
+  const colored = tiles.filter((t) => t.saturation >= p.neutral).sort((a, b) => ((a.hue + 20) % 360) - ((b.hue + 20) % 360));
+  const neutral = tiles.filter((t) => t.saturation < p.neutral).sort((a, b) => a.light - b.light);
+  const sorted = [...colored, ...neutral];
+  const ordered = [];
+  for (let i = 0; i < sorted.length; i += p.rows) ordered.push(...sorted.slice(i, i + p.rows).sort((a, b) => b.light - a.light));
+
+  let total = 0;
+  for (const f of await readdir(out(p.to))) total += (await stat(out(`${p.to}/${f}`))).size;
+  console.log(`${p.to}`.padEnd(28), `${tiles.length} carrés (${colored.length} en couleur, ${neutral.length} neutres), ${kb(total)}`);
+  return {
+    main: { video: url('main.mp4'), poster: url('main.webp') },
+    tiles: ordered.map(({ image, video, color }) => (video ? { image, video, color } : { image, color })),
+  };
+}
+
 async function optimizeProjects() {
   try {
     await run('ffmpeg', ['-version']);
@@ -236,8 +363,9 @@ async function optimizeProjects() {
     const url = (f) => `/${p.to}/${f}`;
 
     const mainIn = src(`${p.from}/${p.main}`);
-    await encodeVideo(mainIn, out(`${p.to}/${base(p.main)}.mp4`), p.mainWidth, 26);
-    await videoStill(mainIn, out(`${p.to}/${base(p.main)}.webp`), p.mainWidth);
+    const mainName = slug(p.main);
+    await encodeVideo(mainIn, out(`${p.to}/${mainName}.mp4`), p.mainWidth, p.mainCrf ?? 26);
+    await videoStill(mainIn, out(`${p.to}/${mainName}.webp`), p.mainWidth);
 
     const side = [];
     for (const f of p.side) {
@@ -253,7 +381,7 @@ async function optimizeProjects() {
       }
     }
 
-    media[key] = { main: { video: url(`${base(p.main)}.mp4`), poster: url(`${base(p.main)}.webp`) }, side };
+    media[key] = { main: { video: url(`${mainName}.mp4`), poster: url(`${mainName}.webp`) }, side };
     const files = await readdir(out(p.to));
     let total = 0;
     for (const f of files) total += (await stat(out(`${p.to}/${f}`))).size;
@@ -274,6 +402,8 @@ async function optimizeProjects() {
     media[key] = { slides };
     console.log(`${s.to}`.padEnd(28), `${slides.length} images, ${kb(total)}`);
   }
+
+  media.socialMedia = await optimizeSocial();
 
   await writeFile(path.join(root, 'src/works/media.generated.json'), JSON.stringify(media, null, 2) + '\n');
 }
@@ -330,5 +460,6 @@ async function optimizeMusic() {
 const only = process.argv[2];
 if (!only || only === 'models') await optimizeModels();
 if (!only || only === 'thumbs') await optimizeThumbs();
+if (!only || only === 'galleries') await optimizeGalleries();
 if (!only || only === 'projects') await optimizeProjects();
 if (!only || only === 'music') await optimizeMusic();

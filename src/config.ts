@@ -279,20 +279,36 @@ export const config = {
     digitBob: 0.08, // léger balancement (fraction de la taille)
   },
 
+  // Page SOCIAL MEDIA (src/works/socialView.ts) : les posts arrivent du côté droit, colonne par colonne,
+  // puis la mosaïque défile vers la droite (la page reste fixe) avant que le scroll vertical reprenne.
+  social: {
+    scrollPerPx: 1, // scroll consommé par px de défilement horizontal (plus = défilement plus lent)
+    arrive: 0.65, // les carrés arrivent pendant la fin de l'approche de la page (fraction de la distance entre deux pages)
+    stagger: 0.04, // décalage d'arrivée entre deux colonnes (fraction de l'arrivée)
+    twist: true, // pendant le défilement horizontal, la mosaïque se courbe comme un tambour vertical (selon la vitesse)
+    mobileGap: 6, // écart entre les carrés sur mobile (hors maquette), px
+  },
+
   // Footer (maquette « Scroll » 9:22, frame 1440×1024) : à la fin du scroll. Les cartes (photos) empilées
   // s'envolent vers le haut et révèlent le texte ; une montagne de daruma remplace le trait rouge.
   // Positions en px de maquette ; y depuis le centre de l'écran (frame : centre à y = 512).
   footer: {
-    reveal: 1.1, // scroll après l'arrêt du footer pendant lequel les cartes s'envolent (hauteurs d'écran)
+    reveal: 2.2, // scroll après l'arrêt du footer : les cartes arrivent puis s'envolent (hauteurs d'écran)
+    // Calques inversés par rapport à la maquette (demande du DA) : la photo 1 est au fond, la 4 devant.
+    // En arrivant il n'y a rien ; au scroll, les cartes montent d'en bas une à une (1, 2, 3, 4), chacune
+    // posée sur la précédente ; arrêt quand la pile est complète ; puis elles s'envolent par le haut de la pile (4, 3, 2, 1).
+    // Timings en fractions de la zone du footer (reveal).
     cards: {
       w: 315,
       h: 442,
-      tops: [-298, -309, -318, -327], // haut de chaque carte, de celle de devant (photo 1) à celle du fond
+      tops: [-298, -309, -318, -327], // haut de chaque carte, photos 1 à 4 (positions de la maquette)
       dx: 0.5,
-      stagger: 0.2, // décalage entre deux cartes qui partent (fraction de la zone d'envol)
-      duration: 0.4, // durée de l'envol d'une carte (fraction de la zone d'envol)
+      arrive: { start: 0.04, stagger: 0.09, duration: 0.16 }, // arrivée de la 1, puis des suivantes
+      leave: { start: 0.55, stagger: 0.09, duration: 0.16 }, // envol de la 4, puis des suivantes
+      pause: 0.5 as number | null, // arrêt du scroll quand la pile est complète (null : pas d'arrêt)
+      enter: 1.1, // les cartes arrivent d'en bas (hauteurs d'écran)
       lift: 1.3, // hauteur de l'envol (hauteurs d'écran)
-      rotateDeg: 8, // petite rotation en partant (alternée)
+      rotateDeg: 8, // petite rotation en arrivant et en partant (alternée)
     },
     text: { top: -43, width: 692 }, // bloc de texte centré
     // Grand logo en bas, plein cadre : 1473×173 dans une frame de 1440, débordant de 46 px en bas.
@@ -304,19 +320,22 @@ export const config = {
 
     // Montagne de daruma : le trait rouge devient la crête, les daruma sont accrochés dessous (le haut sur le trait).
     daruma: {
-      url: '/models/daruma.glb',
+      url: '/models/daruma-lite.glb', // version allégée (npm run assets) : ils sont des centaines
       // Rouge du corps : absent du GLB (la texture ne contient que les coulures dorées) → posé dessous. À valider par le DA.
       red: '#d0202a',
-      height: 58, // hauteur d'un daruma (px de maquette)
-      mobileHeight: 24, // sur mobile (hors maquette) : le trait est en miniature, les daruma aussi
-      spacing: 0.78, // écart entre deux daruma le long du trait (fraction de leur largeur ; < 1 = ils se chevauchent)
-      rows: 2, // rangées superposées (la 2e plus bas, décalée et devant) : effet « montagne »
-      rowDrop: 0.5, // décalage vertical de la rangée suivante (fraction de la hauteur)
-      scale: [0.82, 1.18], // taille tirée au hasard
+      height: 34, // hauteur d'un daruma (px de maquette)
+      mobileHeight: 14, // sur mobile (hors maquette) : le trait est en miniature, les daruma aussi
+      spacing: 0.8, // écart entre deux colonnes de la pile (fraction de la largeur d'un daruma ; < 1 = ils se chevauchent)
+      rowStep: 0.6, // écart entre deux daruma empilés (fraction de la hauteur) : celui du dessous cache le bas de l'autre
+      depth: 0.3, // chaque daruma passe devant celui du dessus (recul, fraction de la hauteur)
+      jitter: 0.2, // désordre de la pile (fraction de la taille)
+      tiltDeg: 12, // dans la pile, ils penchent un peu au hasard (±)
+      sink: 0.12, // la base de la pile s'enfonce un peu dans le haut des lettres du logo (fraction de la hauteur)
+      scale: [0.85, 1.15], // taille tirée au hasard
       faceDeg: 90, // rotation qui tourne le visage (vers -X dans le GLB) face à l'écran
       textGap: 8, // sous le texte, la crête est repoussée à cette marge (px de maquette) pour qu'il reste lisible
       yawDeg: 28, // orientation au hasard autour de la verticale (±)
-      rock: { deg: 7, period: 1.6 }, // ils se balancent comme des culbutos
+      rock: { deg: 7, period: 1.6, below: 0.3 }, // culbutos ; ceux du dessous, coincés, bougent moins (below)
       // Laque éclairée par le studio : le rouge reste franc, des reflets blancs glissent dessus.
       look: { ambience: 'studio', key: [-0.4, 0.6, 1], ambient: 0.5, f0: 0.25, reflection: 1.6 },
     },

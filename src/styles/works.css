@@ -93,8 +93,19 @@ main {
   }
 }
 
+/* Textes des projets en « noir négatif » : blancs en mode différence, ils sont noirs sur le blanc de la page
+   et inversent les images qu'ils survolent. Calque à part, au-dessus des pages (.works isole les mélanges). */
+.works-texts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .project__text {
   z-index: 3;
+  color: #fff;
+  mix-blend-mode: difference;
+  transform-origin: 50% 0;
   overflow: visible;
   pointer-events: none;
   margin: 0;
@@ -114,6 +125,59 @@ main {
 /* Mobile : texte centré verticalement sur la vidéo (le haut du bloc est au milieu du cadre). */
 .project__text.is-centered .project__lines {
   transform: translateY(-50%);
+}
+
+/* ---------- Social Media : mosaïque de petits carrés (src/works/socialView.ts) ---------- */
+
+/* La mosaïque garde la 3D de la page : ses colonnes se courbent pendant le défilement horizontal. */
+.social__grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform-style: preserve-3d;
+}
+
+.social__col {
+  position: absolute;
+  visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.social__tile {
+  position: absolute;
+  left: 0;
+  overflow: hidden;
+  pointer-events: auto;
+  background: #f2f2f2;
+}
+
+.social__tile img,
+.social__tile video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .social__tile {
+    transition: scale 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .social__col:hover,
+  .social__tile:hover {
+    z-index: 1;
+  }
+
+  .social__tile:hover {
+    scale: var(--hover-scale, 1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social__tile {
+    transition: none;
+  }
 }
 
 /* Rangée 1-8 : derrière les pages (centres --cx / --row-y placés par worksView.ts). */

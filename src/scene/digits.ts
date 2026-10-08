@@ -19,10 +19,6 @@ import { steppedFrame, type Stage, type Updatable, type Viewport } from './stage
 
 const TAU = Math.PI * 2;
 const MAX_OCCLUDERS = 6;
-const smooth = (e0: number, e1: number, x: number) => {
-  const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
-  return t * t * (3 - 2 * t);
-};
 
 /**
  * Le numéro de la page courante, entouré, en 3D (GLB digit/n), à la place du numéro dans la rangée 1-8.
@@ -100,8 +96,9 @@ export class Digits3D implements Updatable {
     }
     this.pop += (1 - this.pop) * (1 - Math.exp(-10 * delta));
 
-    const slot = document.querySelector('.works-nav__item.is-current');
-    const show = smooth(0.45, 0.85, nav.scroll / nav.sectionHeight);
+    const slot = document.querySelector<HTMLElement>('.works-nav__item.is-current');
+    // Apparaît et s'efface avec la rangée 1-8 (opacité réglée par worksView.ts).
+    const show = slot ? parseFloat(slot.parentElement!.style.opacity || '0') : 0;
     if (!slot || !this.digits.has(section) || show < 0.01) {
       this.root.visible = false;
       for (const m of this.occluders) m.visible = false;
@@ -132,7 +129,7 @@ export class Digits3D implements Updatable {
   private mask(x0: number, y0: number, x1: number, y1: number): void {
     const { width, height } = this.viewport;
     let n = 0;
-    for (const el of document.querySelectorAll<HTMLElement>('.project__main, .project__side')) {
+    for (const el of document.querySelectorAll<HTMLElement>('.project__main, .project__side, .social__tile.is-top')) {
       if (n >= MAX_OCCLUDERS) break;
       if (el.hidden || el.style.visibility === 'hidden' || !el.offsetParent) continue;
       const b = el.getBoundingClientRect();
