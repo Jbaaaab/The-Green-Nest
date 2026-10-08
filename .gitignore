@@ -4,6 +4,7 @@ dist
 .DS_Store
 Thumbs.db
 *.local
+.figma
 
 # Sources trop lourdes pour GitHub (gardées en local seulement)
 assets-src/work/social-media/

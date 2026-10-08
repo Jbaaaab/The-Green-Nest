@@ -1,6 +1,6 @@
 import { config } from '../config';
 import media from './media.generated.json';
-import { PROJECTS } from './projects';
+import { MAGAZINE_TEXTS, PROJECTS } from './projects';
 
 /**
  * Chronologie de la page Magazines, partagée par la navigation (longueur de la zone fixe) et la 3D
@@ -13,6 +13,8 @@ export const MAGAZINES = media.magazines;
 type Step = { kind: 'turn' | 'flip'; mag: number; leaf: number; len: number }; // len : hauteurs d'écran
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+const easeInCubic = (t: number) => t * t * t;
 
 function steps(): Step[] {
   const { flip, turn } = config.magazines;
@@ -59,4 +61,30 @@ export function magazineState(progress: number): { ring: number; leaves: number[
     else leaves[s.mag][s.leaf] = t;
   }
   return { ring, leaves };
+}
+
+/**
+ * La page Magazines arrive de la droite à la fin de l'approche et repart par la gauche (comme Social Media) :
+ * pas de mouvement vertical, elle « glisse » de côté. off : décalage de la page (nav.offsetOf), D : distance
+ * entre deux pages. inT : arrivée (0 → 1) ; outT : départ (0 → 1) ; x : décalage, en largeurs d'écran.
+ * Partagé par les magazines 3D et leur texte.
+ */
+export function magazineSlide(off: number, D: number): { inT: number; outT: number; x: number } {
+  const span = D * config.magazines.slide;
+  const inT = off < 0 ? clamp01(1 + off / span) : 1;
+  const outT = off > 0 ? clamp01(off / span) : 0;
+  return { inT, outT, x: (1 - easeOutCubic(inT) - easeInCubic(outT)) * 1.1 };
+}
+
+/**
+ * Texte affiché (index dans MAGAZINE_TEXTS) : celui du magazine de devant, ou de la section de ses doubles
+ * pages (hors-séries de Typeshit). Il change à mi-chemin d'une page qui tourne ou du cercle qui tourne.
+ */
+export function magazineTextIndex(progress: number): number {
+  const { ring, leaves } = magazineState(progress);
+  const m = Math.min(MAGAZINES.length - 1, Math.max(0, Math.round(ring)));
+  const page = Math.round(leaves[m].reduce((s, p) => s + p, 0)); // 0 : couverture ; n : n-ième double page
+  const id = MAGAZINES[m].id;
+  const section = MAGAZINE_TEXTS.findIndex((t) => t.mag === id && t.spreads && page >= t.spreads[0] && page <= t.spreads[1]);
+  return section >= 0 ? section : MAGAZINE_TEXTS.findIndex((t) => t.mag === id && !t.spreads);
 }

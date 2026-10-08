@@ -279,7 +279,7 @@ export const config = {
     digitBob: 0.08, // léger balancement (fraction de la taille)
   },
 
-  // Page MAGAZINES (src/scene/magazines.ts ; maquettes Figma à appliquer) : les 3 magazines en 3D, en cercle.
+  // Page MAGAZINES (src/scene/magazines.ts ; textes des maquettes : src/works/magazineTexts.ts) : les 3 magazines en 3D, en cercle.
   // Celui de devant prend la place d'une case (le grand rectangle de Take Care). Au scroll, il s'ouvre,
   // ses doubles pages se tournent, il se referme sur sa 4e de couv, puis le cercle tourne jusqu'au suivant.
   magazines: {

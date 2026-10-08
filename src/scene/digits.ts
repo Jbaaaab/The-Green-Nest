@@ -14,6 +14,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { config } from '../config';
 import { nav } from '../nav';
+import { PROJECTS } from '../works/projects';
 import { buildMatcap } from './environment';
 import { steppedFrame, type Stage, type Updatable, type Viewport } from './stage';
 
@@ -85,12 +86,13 @@ export class Digits3D implements Updatable {
   }
 
   update(time: number, delta: number): void {
-    const section = nav.section;
-    if (section !== this.current) {
+    // Numéro du projet affiché (il peut sauter : Social Media est le 7).
+    const number = PROJECTS.find((p) => p.section === nav.section)?.number ?? 0;
+    if (number !== this.current) {
       const prev = this.digits.get(this.current);
       if (prev) prev.visible = false;
-      this.current = section;
-      const next = this.digits.get(section);
+      this.current = number;
+      const next = this.digits.get(number);
       if (next) next.visible = true;
       this.pop = 0.4;
     }
@@ -99,7 +101,7 @@ export class Digits3D implements Updatable {
     const slot = document.querySelector<HTMLElement>('.works-nav__item.is-current');
     // Apparaît et s'efface avec la rangée 1-8 (opacité réglée par worksView.ts).
     const show = slot ? parseFloat(slot.parentElement!.style.opacity || '0') : 0;
-    if (!slot || !this.digits.has(section) || show < 0.01) {
+    if (!slot || !this.digits.has(number) || show < 0.01) {
       this.root.visible = false;
       for (const m of this.occluders) m.visible = false;
       return;

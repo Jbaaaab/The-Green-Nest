@@ -122,7 +122,25 @@ main {
   display: block;
 }
 
-/* Mobile : texte centré verticalement sur la vidéo (le haut du bloc est au milieu du cadre). */
+/* Magazines : au-dessus du canvas (les magazines 3D), qu'ils inversent aussi ; un texte par magazine,
+   celui du magazine de devant apparaît en fondu (src/works/magazineTexts.ts). */
+.project__text--magazine {
+  z-index: 6;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.project__text--magazine.is-on {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project__text--magazine {
+    transition: none;
+  }
+}
+
+/* Texte centré verticalement (le haut du bloc est au milieu) : mobile, Social Media et Magazines. */
 .project__text.is-centered .project__lines {
   transform: translateY(-50%);
 }

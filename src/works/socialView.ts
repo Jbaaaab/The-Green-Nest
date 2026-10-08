@@ -13,9 +13,10 @@ type Column = { el: HTMLElement; x: number }; // x : bord gauche à l'arrêt (px
 
 /**
  * Page SOCIAL MEDIA : on descend sur une page blanche, les posts arrivent du côté droit, colonne par
- * colonne, et forment une mosaïque de petits carrés triés par couleur (6 rangées) autour d'un grand
- * rectangle vidéo qui reste au centre. La mosaïque dépasse à droite : le scroll la fait défiler vers la
- * droite (la page reste fixe pendant sa zone, nav.holdOf), puis le scroll vertical reprend vers le footer.
+ * colonne, et forment une mosaïque de petits carrés mélangés (6 rangées) autour d'un grand rectangle vidéo
+ * (le case) qui reste au centre. La mosaïque dépasse à droite : le scroll la fait défiler vers la droite
+ * (la page reste fixe pendant sa zone, nav.holdOf), puis le scroll vertical reprend vers le footer.
+ * Le texte de la page est géré par worksView.ts, comme ceux des autres pages.
  */
 export class SocialView {
   readonly index: number;
@@ -44,7 +45,7 @@ export class SocialView {
   private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   constructor(stage: HTMLElement, project: Project) {
-    this.index = project.number;
+    this.index = project.section;
     this.media = project.side;
     this.el = document.createElement('article');
     this.el.className = 'project project--social';

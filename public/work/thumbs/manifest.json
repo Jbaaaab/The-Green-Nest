@@ -1,7 +1,23 @@
 [
   {
+    "src": "/work/thumbs/1.webp",
+    "ratio": 0.8
+  },
+  {
+    "src": "/work/thumbs/3.webp",
+    "ratio": 0.708
+  },
+  {
     "src": "/work/thumbs/apt-poster-v3-low.webp",
     "ratio": 0.6593
+  },
+  {
+    "src": "/work/thumbs/back-cover-4000km.webp",
+    "ratio": 1
+  },
+  {
+    "src": "/work/thumbs/back-mockup.webp",
+    "ratio": 1
   },
   {
     "src": "/work/thumbs/bauhaus-low.webp",
@@ -16,8 +32,20 @@
     "ratio": 0.7038
   },
   {
+    "src": "/work/thumbs/cover-4000-kilometres-2750.webp",
+    "ratio": 1
+  },
+  {
     "src": "/work/thumbs/cover-low.webp",
     "ratio": 0.708
+  },
+  {
+    "src": "/work/thumbs/cover.webp",
+    "ratio": 1
+  },
+  {
+    "src": "/work/thumbs/front.webp",
+    "ratio": 0.8108
   },
   {
     "src": "/work/thumbs/halsey.webp",
@@ -26,6 +54,10 @@
   {
     "src": "/work/thumbs/houdi-poster-min.webp",
     "ratio": 0.708
+  },
+  {
+    "src": "/work/thumbs/mockup-tee-2.webp",
+    "ratio": 1
   },
   {
     "src": "/work/thumbs/pixelated-kiss-poster.webp",
@@ -60,11 +92,27 @@
     "ratio": 0.708
   },
   {
+    "src": "/work/thumbs/poster.webp",
+    "ratio": 0.708
+  },
+  {
+    "src": "/work/thumbs/snapinsta-to-610138504-17877544062452508-1471944247257045174-n.webp",
+    "ratio": 0.8
+  },
+  {
     "src": "/work/thumbs/time-poster.webp",
     "ratio": 0.708
   },
   {
     "src": "/work/thumbs/ultra-low.webp",
     "ratio": 0.708
+  },
+  {
+    "src": "/work/thumbs/vdef.webp",
+    "ratio": 0.7101
+  },
+  {
+    "src": "/work/thumbs/whatsapp-image-2026-07-30-at-08-22-34.webp",
+    "ratio": 1.7778
   }
 ]

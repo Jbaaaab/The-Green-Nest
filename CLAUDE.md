@@ -40,6 +40,8 @@ Configure le MCP Figma pour ce projet en créant `.mcp.json` à la racine :
 
 Ensuite, aide-moi à l'authentifier avec la commande `/mcp`. Récupère depuis Figma les typos, tailles, couleurs, espacements et la grille. **N'invente aucune valeur.**
 
+- **Accès Figma en pratique** : le connecteur Figma de claude.ai est authentifié, mais le plan **Starter** limite le MCP à 20 lectures par mois (quota vite épuisé). Pas de `.mcp.json` (doublon). Deux voies : les **captures 1:1** envoyées par le DA (mesures au pixel ; les trous des textes se convertissent en espaces : 1 espace = 3,5 px en Epilogue 700 14 px), ou l'**API REST** : `npm run figma -- <liens>` (`scripts/figma.mjs`, jeton `FIGMA_TOKEN` dans `.env.local`, sortie dans `.figma/`, tous deux ignorés par git).
+
 ## Stack
 
 - **Vite + TypeScript, en vanilla** (pas de framework UI pour l'instant). Prévois la structure pour des pages Works et About plus tard.
@@ -156,23 +158,27 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 - Perf : pages construites quand le navigateur est inactif, pages lointaines retirées du rendu, médias chargés à l'approche.
 - **Textes des projets en « noir négatif »** (demande du DA, « TAKE CARE BEAUTY… ») : blancs en `mix-blend-mode: difference`, ils sont noirs sur le blanc et inversent les images qu'ils survolent. Ils vivent dans un calque à part (`.works-texts`, au-dessus de `.works` qui isole les mélanges) et portent leur propre perspective (même twist que leur page).
 
-### Magazines (projet 4 ; maquettes Figma 25:631, 25:838, 25:888, 51:475, 51:525 pas encore appliquées : MCP Figma indisponible)
+### Magazines (projet 4 ; maquettes Figma 25:631, 25:838, 25:888, 51:475, 51:525 : textes appliqués)
 
-- `src/scene/magazines.ts` (3D, dans le canvas) + `src/works/magazineTimeline.ts` (chronologie), section `#magazines` entre TAKE CARE et SOCIAL MEDIA. **Les 3 magazines en 3D, en cercle à plat** (« plus horizontal ») : **Typeshit d'abord**, puis CPGCQD et DPP (couverture, doubles pages, 4e de couv ; `MAGAZINES` dans `scripts/optimize-assets.mjs`, ordre des doubles pages de Typeshit à confirmer). **Fermé, celui de devant a la taille d'une case** (page de 547 px de haut = grand rectangle de Take Care) ; **ouvert, il grandit jusqu'à la hauteur des grands cadres** (749 px, la place d'une case normale de Longtemps / F1). Les autres sont derrière, sur les côtés.
-- **Ils arrivent de la droite et repartent par la gauche** (comme Social Media, sans mouvement vertical), pendant la fin de l'approche (`config.magazines.slide`). **Espace en plus avant la page** (`config.magazines.space`, `nav.setSpace`) : ils n'apparaissent qu'une fois Take Care partie. La rangée 1-8 est masquée sur cette page (les magazines 3D passent devant le DOM).
+- `src/scene/magazines.ts` (3D, dans le canvas) + `src/works/magazineTimeline.ts` (chronologie), section `#magazines` entre TAKE CARE et SOCIAL MEDIA. **Les 3 magazines en 3D, en cercle à plat** (« plus horizontal ») : **Typeshit d'abord**, puis CPGCQD et DPP (couverture, doubles pages, 4e de couv ; `MAGAZINES` dans `scripts/optimize-assets.mjs`). Doubles pages de Typeshit : les siennes, puis ses **hors-séries Music puis Fashion** (sections de Typeshit, choix du DA ; pas de couvertures à part). **Fermé, celui de devant a la taille d'une case** (page de 547 px de haut = grand rectangle de Take Care) ; **ouvert, il grandit jusqu'à la hauteur des grands cadres** (749 px, la place d'une case normale de Longtemps / F1). Les autres sont derrière, sur les côtés.
+- **Ils arrivent de la droite et repartent par la gauche** (comme Social Media, sans mouvement vertical), pendant la fin de l'approche (`config.magazines.slide`, `magazineSlide`). **Espace en plus avant la page** (`config.magazines.space`, `nav.setSpace`) : ils n'apparaissent qu'une fois Take Care partie.
+- **Textes des maquettes** (`MAGAZINE_TEXTS` dans `src/works/projects.ts`, `src/works/magazineTexts.ts`) : un par maquette (Typeshit, Music hors-série, Fashion hors-série, CPGCQDB, DPP), centrés à l'écran, en noir négatif **au-dessus du canvas** (ils inversent les magazines 3D), et ils glissent de côté avec eux. Celui du magazine de devant s'affiche ; sur Typeshit, le texte du hors-série prend le relais sur ses doubles pages (fondu, à mi-page). Orthographe de la maquette gardée (BI-ANUAL, MUISIC, BASICALY, GABANA : à corriger seulement si le DA le demande).
+- **Rangée 1-8 visible** (maquettes, ④ entouré) : le magazine ouvert la recouvre comme les vidéos des autres pages ; le papier marque le stencil, donc le chiffre 3D passe derrière.
 - Zone fixe pilotée par le scroll : le magazine de devant **s'ouvre, ses doubles pages se tournent une à une** (pli de la page qui tourne), il **se referme sur sa 4e de couv**, puis **le cercle tourne** jusqu'au suivant ; arrêt à chaque nouveau magazine. Réglages : `config.magazines` (`flip`, `turn`, `ring`, `paper`, `varnish`, `tilt`, `sway`).
 - **Papier** : feuilles souples calculées en JS (bombées, qui sortent de la reliure quand le magazine est ouvert, qui se plient en tournant). **Vernis** : reflets ajoutés à l'image (matcap de bandes de lumière) qui glissent quand la page se courbe, tourne ou se balance (léger balancement au repos). Pas d'environnement à précalculer (même principe que le reste du site).
 - Textures WebP (pages ~700 px, 3,9 Mo pour les 3 magazines) chargées à l'approche de la page ; pages intérieures ensuite, magazine par magazine ; réduites au décodage sur mobile.
 - Mobile (hors maquette) : même chose, le magazine ouvert tient dans la largeur.
 
-### Social Media (projet 5, sans maquette, d'après les indications du DA)
+### Social Media (projet ⑦ ; maquette 25:938 pour le texte et le numéro, la mosaïque reste celle d'après les indications du DA)
+
+- **Numéro 7** dans la rangée (maquette) : les projets 5 et 6 viendront s'intercaler. `Project.number` = numéro affiché, `Project.section` = index de section dans le scroll (Social Media reste la 5e section) : ne pas confondre les deux.
 
 - `src/works/socialView.ts`, section `#social-media` entre MAGAZINES et le footer. On descend sur une page blanche, **les posts arrivent du côté droit** colonne par colonne (pendant la fin de l'approche, `config.social.arrive`), puis à l'arrêt **la mosaïque défile vers la droite** (zone fixe, 1 px de scroll = 1 px de défilement ; molette, trackpad ou doigt, vertical comme horizontal), avant que le scroll vertical reprenne vers le footer. Pendant le défilement horizontal, les colonnes se courbent comme un tambour vertical (twist, selon la vitesse).
-- **Petits carrés de 1/4 de ceux de Take Care** (122,5×116,5 px), **6 rangées × 10 colonnes** dans le cadre de Take Care (1361×749, écarts recalculés pour le remplir exactement : 15,1 et 10 px), qui dépasse à droite (18 colonnes, 108 posts). **Grand rectangle vidéo au centre** (371×547, comme Take Care), qui reste en place.
+- **Petits carrés de 1/4 de ceux de Take Care** (122,5×116,5 px), **6 rangées × 10 colonnes** dans le cadre de Take Care (1361×749, écarts recalculés pour le remplir exactement : 15,1 et 10 px), qui dépasse à droite (19 colonnes, 109 posts). **Grand rectangle vidéo au centre** (371×547, comme Take Care), qui reste en place. La maquette 25:938 (gros carrés sur 3 rangées) est volontairement ignorée pour la mosaïque (demande du DA).
 - **Mélangés** (demande du DA : le tri par couleur faisait trop ordonné ; `SOCIAL.order` dans `scripts/optimize-assets.mjs`, `'color'` le remet, `seed` change l'ordre). Doublons exacts retirés. Carrés WebP 246×234 (2x), fond de leur couleur moyenne en attendant l'image.
 - **Halo global** : un pixel par carré à sa couleur moyenne, flouté et agrandi derrière la mosaïque (mêmes marge et flou que les halos des autres fenêtres) : la lumière déborde autour de la mosaïque et dans ses interstices. Un dégradé blanc / vert #41F373 / noir selon la clarté a été testé puis écarté par le DA (`config.social.glowPalette`, désactivé : `null`).
 - La rangée 1-8 est masquée sur cette page (elle passerait entre les petits carrés) ; le bouton « SOCIAL MEDIA + » reste. Carrés construits seulement quand on quitte l'accueil (perfs).
-- Pas encore de texte (aucun fourni). Vidéo centrale : la reel de 13 s de `social-media/` (`SOCIAL.main`), les 2 autres vidéos sont des carrés.
+- **Texte de la maquette** (« SOCIAL MEDIA / I’VE DONE THAT SHIT… »), centré à l'écran, en noir négatif, géré par `worksView.ts` comme ceux des autres pages. **Vidéo centrale : le case** (`case social media.mov`, 1080×1920, 15 s → `case.mp4` 720 px, `SOCIAL.main`) ; l'ancienne reel de 13 s et les 2 autres vidéos sont des carrés.
 
 ### Footer (maquette « Scroll » 9:22)
 
@@ -221,7 +227,7 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 4. **Pluie Instagram** (avec un placeholder tant que le GLB manque).
 5. **Curseur 3D** (avec un placeholder tant que les GLB ne sont pas ré-exportés).
 6. **Passe perfs et mobile**, puis déploiement de preview.
-7. **Pages projets** : LONGTEMPS (1), FORMULA ONE (2) avec placeholders vidéo, TAKE CARE (3) avec ses assets, MAGAZINES (4, 3D), SOCIAL MEDIA (5). Ensuite : maquettes Magazines et Social Media à appliquer, vidéo Longtemps, projets 6 à 8, action du bouton « + ».
+7. **Pages projets** : LONGTEMPS (1), FORMULA ONE (2) avec placeholders vidéo, TAKE CARE (3) avec ses assets, MAGAZINES (4, 3D), SOCIAL MEDIA (7). Ensuite : vidéo Longtemps, projets 5, 6 et 8, action du bouton « + ».
 
 ## Trous à remplir par le DA
 

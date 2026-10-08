@@ -7,6 +7,7 @@ import { Glow } from './glow';
 import { lazyVideo, loadVideo } from './lazyVideo';
 import { drum, perspectiveFor } from './scrollFx';
 import { MAGAZINE_PROJECT, magazineHold, magazinePauses } from './magazineTimeline';
+import { MagazineTexts } from './magazineTexts';
 import { SocialView } from './socialView';
 import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, boxRect, type Project } from './projects';
 
@@ -58,6 +59,7 @@ export class WorksView {
   private stage: HTMLElement;
   private texts: HTMLElement;
   private social: SocialView | null = null;
+  private magazineTexts: MagazineTexts | null = null;
   private navEl: HTMLElement;
   private navItems: HTMLButtonElement[] = [];
   private button: HTMLButtonElement;
@@ -96,8 +98,13 @@ export class WorksView {
       el: null,
     });
     for (const project of PROJECTS) {
-      if (project.layout === 'social') this.social = new SocialView(this.stage, project);
-      else if (project.layout !== 'magazine') this.sections.push(this.buildProject(project)); // magazines : en 3D
+      if (project.layout === 'social') {
+        // Mosaïque et vidéo : socialView.ts ; le texte, comme sur les autres pages (parallaxe, twist).
+        this.social = new SocialView(this.stage, project);
+        this.sections.push(this.buildText(project));
+      } else if (project.layout === 'magazine') {
+        this.magazineTexts = new MagazineTexts(this.texts, project.section); // magazines : en 3D
+      } else this.sections.push(this.buildProject(project));
     }
 
     // Rangée 1-8 + symbole (retour à l'accueil), derrière les vidéos des pages.
@@ -113,7 +120,7 @@ export class WorksView {
       const project = PROJECTS.find((p) => p.number === n);
       if (project) {
         item.setAttribute('aria-label', `${n} — ${project.title}`);
-        item.addEventListener('click', () => nav.goTo(n));
+        item.addEventListener('click', () => nav.goTo(project.section));
       } else {
         item.classList.add('is-empty');
         item.setAttribute('aria-disabled', 'true');
@@ -232,12 +239,25 @@ export class WorksView {
       mainBox.parentElement!.classList.add('is-placeholder');
     }
 
-    const text = win('project__text', this.texts);
-    wins[wins.length - 1].origin = { x: 0, y: 0 };
-    text.innerHTML =`<p class="project__lines">${project.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
+    wins.push(this.textWin(project));
 
     el.style.display = 'none';
-    return { index: project.number, project, wins, main, sideVideos, images, slides, videoGlows, loaded: false, el };
+    return { index: project.section, project, wins, main, sideVideos, images, slides, videoGlows, loaded: false, el };
+  }
+
+  // Texte d'une page, dans le calque des textes ; il porte sa propre perspective (origin, voir layout).
+  private textWin(project: Project): Win {
+    const text = document.createElement('div');
+    text.className = 'project__win project__text';
+    text.innerHTML = `<p class="project__lines">${project.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
+    this.texts.appendChild(text);
+    return { el: text, cy: 0, h: 0, speed: 1, origin: { x: 0, y: 0 } };
+  }
+
+  // Section réduite à son texte (Social Media : le reste de la page est géré par socialView.ts).
+  private buildText(project: Project): Section {
+    const wins = [this.textWin(project)];
+    return { index: project.section, project, wins, main: null, sideVideos: [], images: [], slides: null, videoGlows: [], loaded: true, el: null };
   }
 
   // Place les fenêtres de chaque page telles qu'elles sont à l'arrêt (proportions de la maquette).
@@ -265,12 +285,19 @@ export class WorksView {
     landing.h = H;
 
     this.social?.layout(W, H, u, mobile);
+    this.magazineTexts?.layout(W, H, u, mobile);
     // Magazines : la page reste fixe pendant que les magazines tournent et s'ouvrent.
     if (MAGAZINE_PROJECT) {
-      nav.setSpace(MAGAZINE_PROJECT.number, config.magazines.space * H); // ils arrivent plus tard
-      nav.setHold(MAGAZINE_PROJECT.number, magazineHold(H));
-      nav.setPauses(MAGAZINE_PROJECT.number, magazinePauses()); // arrêt à chaque nouveau magazine
+      nav.setSpace(MAGAZINE_PROJECT.section, config.magazines.space * H); // ils arrivent plus tard
+      nav.setHold(MAGAZINE_PROJECT.section, magazineHold(H));
+      nav.setPauses(MAGAZINE_PROJECT.section, magazinePauses()); // arrêt à chaque nouveau magazine
     }
+
+    // Cadre du contenu mobile (hors maquette).
+    const mBox = config.works.box.mobile;
+    const by = mBox.top * u;
+    const bh = H - by - mBox.bottom * u;
+    const bw = W - 2 * mBox.side * u;
 
     for (const section of this.sections) {
       const project = section.project;
@@ -281,10 +308,15 @@ export class WorksView {
       const sides = wins.filter((w) => w.el.classList.contains('project__side'));
       const tw = mobile ? Math.min(project.textWidth * u, W - 40 * u) : project.textWidth * u;
       const textSpeed = config.works.parallax.text;
-      text.el.classList.toggle('is-centered', mobile);
+      text.el.classList.toggle('is-centered', mobile || project.layout === 'social');
       const sideSpeed = (i: number) => vMin + (vMax - vMin) * hash(section.index * 31 + i);
 
-      if (!mobile && project.layout === 'mosaic') {
+      if (project.layout === 'social') {
+        // Texte seul, centré à l'écran (maquette 25:938) ; sur mobile, au milieu du cadre comme les autres.
+        const cy = mobile ? by + bh / 2 : H / 2;
+        set(text, (W - tw) / 2, cy, tw, null, textSpeed);
+        text.cy = cy;
+      } else if (!mobile && project.layout === 'mosaic') {
         // Composition de la frame TAKE CARE, à l'identique, dans son cadre centré.
         const b = boxRect(MOSAIC.box, W, H, u);
         const { square, columns, rows, cells, center } = MOSAIC;
@@ -304,10 +336,6 @@ export class WorksView {
         text.cy = H / 2;
       } else {
         // Mobile (hors maquette) : la vidéo seule, à la hauteur du cadre ; texte centré dessus.
-        const box = config.works.box.mobile;
-        const by = box.top * u;
-        const bh = H - by - box.bottom * u;
-        const bw = W - 2 * box.side * u;
         sides.forEach((w) => (w.el.hidden = true));
         const w = project.layout === 'mosaic' ? Math.min(bw, (bh * MOSAIC.center.w) / MOSAIC.center.h) : bw;
         set(main, (W - w) / 2, by, w, bh, 1);
@@ -363,6 +391,7 @@ export class WorksView {
       }
     }
     this.social?.update(scroll, velocity);
+    this.magazineTexts?.update(scroll);
 
     // Les apparitions de l'accueil s'effacent dès qu'on quitte l'accueil.
     const trail = this.trail();
@@ -374,12 +403,10 @@ export class WorksView {
     const pos = nav.position(scroll);
     const show = smooth(0.45, 0.85, pos) * (1 - smooth(last + 0.35, last + 0.75, pos));
     // La rangée s'efface sur Social Media (elle passerait entre les petits carrés et clignoterait pendant le
-    // défilement) et sur Magazines (les magazines 3D passent devant le DOM : le magazine ouvert ne la
-    // cacherait pas). Comme sur Take Care, où les carrés la cachent entièrement. Le bouton reste.
+    // défilement), comme sur Take Care, où les carrés la cachent entièrement. Le bouton reste.
+    // Sur Magazines, elle reste (maquettes) : le magazine ouvert la recouvre, chiffre 3D compris.
     let row = show;
-    for (const index of [this.social?.index, MAGAZINE_PROJECT?.number]) {
-      if (index !== undefined) row *= smooth(0.35, 0.65, Math.abs(pos - index));
-    }
+    if (this.social) row *= smooth(0.35, 0.65, Math.abs(pos - this.social.index));
     this.navEl.style.opacity = String(row);
     this.button.style.opacity = String(show);
     this.navEl.style.visibility = row < 0.01 ? 'hidden' : 'visible';
@@ -388,13 +415,13 @@ export class WorksView {
     const current = nav.section;
     if (current !== this.current) {
       this.current = current;
+      const project = PROJECTS.find((pr) => pr.section === current);
       this.navItems.forEach((item, i) => {
-        const on = i + 1 === current;
+        const on = i + 1 === project?.number;
         item.classList.toggle('is-current', on);
         if (on) item.setAttribute('aria-current', 'page');
         else item.removeAttribute('aria-current');
       });
-      const project = PROJECTS.find((pr) => pr.number === current);
       if (project) this.buttonLabel.textContent = project.title;
     }
 

@@ -1,4 +1,5 @@
 import {
+  AlwaysStencilFunc,
   BackSide,
   BufferAttribute,
   BufferGeometry,
@@ -7,6 +8,7 @@ import {
   Group,
   Mesh,
   MeshMatcapMaterial,
+  ReplaceStencilOp,
   SRGBColorSpace,
   Texture,
   TextureLoader,
@@ -14,7 +16,7 @@ import {
 } from 'three';
 import { config } from '../config';
 import { nav } from '../nav';
-import { MAGAZINE_PROJECT, MAGAZINES, magazineState } from '../works/magazineTimeline';
+import { MAGAZINE_PROJECT, MAGAZINES, magazineSlide, magazineState } from '../works/magazineTimeline';
 import type { Stage, Updatable, Viewport } from './stage';
 
 const SEG = 24; // segments d'une page sur sa largeur (sa courbure)
@@ -23,7 +25,6 @@ const TAU = Math.PI * 2;
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const smooth = (t: number) => t * t * (3 - 2 * t);
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-const easeInCubic = (t: number) => t * t * t;
 
 // ---------- Vernis : matcaps calculées en JS (pas d'environnement à précalculer) ----------
 
@@ -78,8 +79,18 @@ const gloss = () =>
     blob(0.5, 0.86, 0.3, 0.05, 0, 0.3); // reflet du sol
   }));
 
+// Le papier marque le stencil : le chiffre 3D de la rangée 1-8 (couche overlay) est caché derrière les
+// magazines, comme derrière les fenêtres des autres pages (voir digits.ts).
 function varnished(map: Texture, side: Side): MeshMatcapMaterial {
-  const material = new MeshMatcapMaterial({ map, matcap: paper(), side });
+  const material = new MeshMatcapMaterial({
+    map,
+    matcap: paper(),
+    side,
+    stencilWrite: true,
+    stencilRef: 1,
+    stencilFunc: AlwaysStencilFunc,
+    stencilZPass: ReplaceStencilOp,
+  });
   material.onBeforeCompile = (shader) => {
     shader.uniforms.glossMap = { value: gloss() };
     shader.uniforms.glossStrength = { value: config.magazines.varnish };
@@ -244,9 +255,9 @@ export class Magazines implements Updatable {
     if (!project) return;
     let started = false;
     nav.onScroll((scroll) => {
-      if (started || Math.abs(nav.offsetOf(project.number, scroll)) > nav.sectionHeight * 1.8) return;
+      if (started || Math.abs(nav.offsetOf(project.section, scroll)) > nav.sectionHeight * 1.8) return;
       started = true;
-      Magazines.load(stage, project.number)
+      Magazines.load(stage, project.section)
         .then((m) => {
           stage.add(m);
           if (import.meta.env.DEV) Object.assign(window, { __magazines: m }); // pour les tests
@@ -296,15 +307,11 @@ export class Magazines implements Updatable {
     const reduced = this.reduced.matches;
 
     // Ils arrivent de la droite à la fin de l'approche et repartent par la gauche (comme Social Media) :
-    // pas de mouvement vertical, la page « glisse » de côté.
-    const span = D * cfg.slide;
-    const inT = off < 0 ? clamp01(1 + off / span) : 1; // arrivée : 0 → 1
-    const outT = off > 0 ? clamp01(off / span) : 0; // départ : 0 → 1
+    // pas de mouvement vertical, la page « glisse » de côté (leur texte aussi, voir magazineTexts.ts).
+    const { inT, outT, x } = magazineSlide(off, D);
     this.root.visible = inT > 0 && outT < 1;
     if (!this.root.visible) return;
-    const slideIn = reduced ? 0 : 1 - easeOutCubic(inT);
-    const slideOut = reduced ? 0 : easeInCubic(outT);
-    this.root.position.set((slideIn - slideOut) * W * 1.1, 0, 0);
+    this.root.position.set(reduced ? 0 : x * W, 0, 0);
 
     // Tailles : fermé, une page a la hauteur d'une case ; ouvert, la hauteur des grands cadres (Longtemps, F1).
     // Sur mobile, ouvert, il tient dans la largeur.

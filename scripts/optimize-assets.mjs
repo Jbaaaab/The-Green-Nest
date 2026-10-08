@@ -227,12 +227,13 @@ const SLIDES = {
 };
 
 // Page Social Media : mosaïque de petits carrés (122,5×116,5 px, 1/4 des carrés de Take Care), mélangés,
-// et une grande vidéo au centre. Carrés en WebP 2x recadrés, vidéos en MP4 muet.
+// et une grande vidéo au centre (le case). Carrés en WebP 2x recadrés, vidéos en MP4 muet.
 const SOCIAL = {
   from: 'work/social-media',
   to: 'work/social-media/tiles',
   tile: [246, 234],
-  main: 'snapinsta-to-aqmvyfng8zqq41', // début du nom de la vidéo du grand rectangle central (720×960, 13 s)
+  main: 'case social media', // début du nom de la vidéo du grand rectangle central (le case, 1080×1920, 15 s)
+  mainName: 'case', // fichiers générés : case.mp4, case.webp
   mainWidth: 720,
   order: 'shuffle', // 'shuffle' : mélangés (demande du DA) ; 'color' : triés par couleur (trop ordonné)
   seed: 7, // graine du mélange : changer ce nombre pour un autre ordre
@@ -250,8 +251,9 @@ const MAGAZINES = [
     from: 'work/magazine/typeshit',
     cover: 'cover-typeshit.png',
     back: '4couv-typeshit.png',
-    // Ordre des doubles pages à confirmer par le DA.
-    spreads: ['tpeshit-1.png', 'tpeshit-2.png', 'tpeshit-3.png', 'fashion.png', 'fashion-2.png', 'fashion-3.png', 'music.png', 'music-2.png', 'music-3.png'],
+    // Typeshit, puis ses hors-séries Music et Fashion (sections de ses doubles pages, avec leur propre texte :
+    // MAGAZINE_TEXTS dans src/works/projects.ts, qui repère les doubles pages par leur numéro).
+    spreads: ['tpeshit-1.png', 'tpeshit-2.png', 'tpeshit-3.png', 'music.png', 'music-2.png', 'music-3.png', 'fashion.png', 'fashion-2.png', 'fashion-3.png'],
   },
   {
     id: 'cpgcqd',
@@ -360,8 +362,8 @@ async function optimizeSocial() {
 
   // Grande vidéo centrale.
   const mainIn = src(`${p.from}/${mainFile}`);
-  await encodeVideo(mainIn, out(`${p.to}/main.mp4`), p.mainWidth, 26);
-  await videoStill(mainIn, out(`${p.to}/main.webp`), p.mainWidth);
+  await encodeVideo(mainIn, out(`${p.to}/${p.mainName}.mp4`), p.mainWidth, 26);
+  await videoStill(mainIn, out(`${p.to}/${p.mainName}.webp`), p.mainWidth);
 
   // Carrés : images recadrées au format du carré, vidéos réduites (sans les doublons exacts).
   const seen = new Set();
@@ -416,7 +418,7 @@ async function optimizeSocial() {
   for (const f of await readdir(out(p.to))) total += (await stat(out(`${p.to}/${f}`))).size;
   console.log(`${p.to}`.padEnd(28), `${tiles.length} carrés (${p.order === 'color' ? 'triés par couleur' : 'mélangés'}), ${kb(total)}`);
   return {
-    main: { video: url('main.mp4'), poster: url('main.webp') },
+    main: { video: url(`${p.mainName}.mp4`), poster: url(`${p.mainName}.webp`) },
     tiles: ordered.map(({ image, video, color }) => (video ? { image, video, color } : { image, color })),
   };
 }

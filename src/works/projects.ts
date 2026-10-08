@@ -1,8 +1,9 @@
 import media from './media.generated.json';
 
 /**
- * Contenu des pages projets (maquettes Figma : LONGTEMPS 16:5, F1 25:448, TAKE CARE 25:560 ; SOCIAL MEDIA
- * d'après les indications du DA).
+ * Contenu des pages projets (maquettes Figma : LONGTEMPS 16:5, F1 25:448, TAKE CARE 25:560, MAGAZINES 25:631,
+ * 25:838, 25:888, 51:475, 51:525 ; SOCIAL MEDIA 25:938 pour son texte et son numéro, la mosaïque restant
+ * celle d'après les indications du DA).
  * Les trous dans les textes sont voulus (comme sur la bio) : nombres d'espaces repris de Figma.
  */
 export type MainMedia =
@@ -13,7 +14,8 @@ export type SideMedia = { image: string; video?: string; color?: string }; // co
 
 export type Project = {
   id: string; // ancre d'URL (#longtemps…)
-  number: number; // numéro dans la rangée 1-8 (= index de section)
+  number: number; // numéro affiché dans la rangée 1-8 (peut sauter : les projets 5 et 6 sont à venir)
+  section: number; // index de section dans le scroll (0 = l'accueil) : rang dans la liste
   title: string; // texte du bouton vert
   lines: string[]; // description, ligne par ligne
   textWidth: number; // largeur du bloc de texte, px de maquette
@@ -24,7 +26,7 @@ export type Project = {
 
 const gap = (n: number) => ' '.repeat(n);
 
-export const PROJECTS: Project[] = [
+const LIST: Omit<Project, 'section'>[] = [
   {
     id: 'longtemps',
     number: 1,
@@ -80,13 +82,79 @@ export const PROJECTS: Project[] = [
   },
   {
     id: 'social-media',
-    number: 5,
+    number: 7, // maquette 25:938 : les projets 5 et 6 viendront s'intercaler
     title: 'SOCIAL MEDIA',
-    lines: [], // pas de texte pour l'instant
-    textWidth: 0,
+    lines: [
+      'SOCIAL MEDIA',
+      `I’VE DONE THAT SHIT${gap(11)}FOR YEARS TOO`,
+      `NOT ALWAYS${gap(6)}SATISFYING THO${gap(7)}TBH.`,
+    ],
+    textWidth: 285,
     layout: 'social',
-    main: { kind: 'video', ...media.socialMedia.main },
-    side: media.socialMedia.tiles, // déjà triés par couleur (npm run assets), colonne par colonne
+    main: { kind: 'video', ...media.socialMedia.main }, // le case, dans le grand rectangle central
+    side: media.socialMedia.tiles, // mélangés (npm run assets), colonne par colonne
+  },
+];
+
+export const PROJECTS: Project[] = LIST.map((p, i) => ({ ...p, section: i + 1 }));
+
+/**
+ * Textes de la page MAGAZINES (un par maquette), centrés à l'écran, par-dessus les magazines 3D : celui du
+ * magazine de devant. Les hors-séries Music et Fashion sont des sections de Typeshit : leur texte prend le
+ * relais sur leurs doubles pages (spreads : de la n-ième à la m-ième, comptées à partir de 1, dans l'ordre de
+ * MAGAZINES, scripts/optimize-assets.mjs). Sans spreads : le texte du magazine, couvertures comprises.
+ * Orthographe reprise telle quelle des maquettes ; trous mesurés au pixel (une espace = 3,5 px de maquette).
+ */
+export type MagazineText = { mag: string; spreads?: [number, number]; lines: string[]; textWidth: number };
+
+export const MAGAZINE_TEXTS: MagazineText[] = [
+  {
+    mag: 'typeshit',
+    lines: [
+      'TYPESHIT MAGAZINE',
+      `A BI-ANUAL MAGAZINE ABOUT${gap(9)}FASHION, TRAVEL, LIFE`,
+      `76 PAGES${gap(8)}MADE WITH PASSION.${gap(11)}TYPESHIT.`,
+    ],
+    textWidth: 387,
+  },
+  {
+    mag: 'typeshit',
+    spreads: [4, 6],
+    lines: [
+      'MUSIC HORS-SERIE',
+      `FOCUSED ON${gap(12)}A SELECTION OF GOOD MUSIC`,
+      `CAUSE I HAVE GOATED${gap(14)}MUSIC TASTE`,
+    ],
+    textWidth: 332,
+  },
+  {
+    mag: 'typeshit',
+    spreads: [7, 9],
+    lines: [
+      `FASHION${gap(5)}HORS-SERIE`,
+      `FOCUSED ON${gap(11)}INTERESTING BRAND`,
+      `BUT YOU GUYS ONLY WATCH${gap(10)}DOLCE GABANA`,
+    ],
+    textWidth: 330,
+  },
+  {
+    mag: 'cpgcqd',
+    lines: [
+      'CPGCQDB MAGAZINE',
+      `A ONCE${gap(10)}IN A LIFETIME${gap(10)}CULINARY STORY`,
+      `BASICALY A MAGAZINE I MADE FOR${gap(11)}MY FAMILY WITH`,
+      `ALL THE${gap(5)}FAMILY RECIPES`,
+    ],
+    textWidth: 383,
+  },
+  {
+    mag: 'dpp',
+    lines: [
+      'DA PUNK PROPAGANDA',
+      `MUISIC FANZINE${gap(12)}MADE FOR FUN`,
+      `IN A${gap(8)}PUNK ROCK STYLE.`,
+    ],
+    textWidth: 254,
   },
 ];
 

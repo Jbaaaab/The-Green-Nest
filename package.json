@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "assets": "node scripts/optimize-assets.mjs"
+    "assets": "node scripts/optimize-assets.mjs",
+    "figma": "node scripts/figma.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.21.0",
