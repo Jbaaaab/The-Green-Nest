@@ -17,7 +17,7 @@ export type Project = {
   title: string; // texte du bouton vert
   lines: string[]; // description, ligne par ligne
   textWidth: number; // largeur du bloc de texte, px de maquette
-  layout: 'single' | 'mosaic' | 'social'; // social : page à part, src/works/socialView.ts
+  layout: 'single' | 'mosaic' | 'magazine' | 'social'; // magazine : 3D (src/scene/magazines.ts) ; social : src/works/socialView.ts
   main: MainMedia;
   side: SideMedia[];
 };
@@ -69,8 +69,18 @@ export const PROJECTS: Project[] = [
     side: media.takeCare.side,
   },
   {
-    id: 'social-media',
+    id: 'magazines',
     number: 4,
+    title: 'MAGAZINES',
+    lines: [], // pas de texte pour l'instant
+    textWidth: 0,
+    layout: 'magazine', // les magazines sont en 3D, dans le canvas : src/scene/magazines.ts
+    main: { kind: 'placeholder' },
+    side: [],
+  },
+  {
+    id: 'social-media',
+    number: 5,
     title: 'SOCIAL MEDIA',
     lines: [], // pas de texte pour l'instant
     textWidth: 0,

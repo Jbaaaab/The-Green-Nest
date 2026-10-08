@@ -103,160 +103,40 @@
     },
     "tiles": [
       {
-        "image": "/work/social-media/tiles/snapinsta-to-715450457-18051542624757832-8545026.webp",
-        "color": "#f1acb6"
+        "image": "/work/social-media/tiles/snapinsta-to-670424949-18575728114010056-4631471.webp",
+        "color": "#8b8583"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-780422368-18064264289757832-5020244.webp",
-        "color": "#e8a4bd"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-708168118-18050811995757832-1768766.webp",
-        "color": "#ca9499"
-      },
-      {
-        "image": "/work/social-media/tiles/petinos-ouverture-2.webp",
-        "color": "#c84c49"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-441378960-742855598011756-328801136.webp",
-        "color": "#bc4742"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-482226638-942874448009869-835301860.webp",
-        "color": "#87453d"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-713423833-18051542633757832-2765507.webp",
-        "color": "#d6a09f"
-      },
-      {
-        "image": "/work/social-media/tiles/petinos-ouverture.webp",
-        "color": "#d3554d"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-482021732-943013437995970-188367859.webp",
-        "color": "#b6524b"
-      },
-      {
-        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-59-49.webp",
-        "color": "#ad574d"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-482059340-943027121327935-629005119.webp",
-        "color": "#b84c46"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-436443241-730051219292194-686387851.webp",
-        "color": "#b04c45"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-484286273-1042066234620234-12697610.webp",
-        "color": "#e4b7a8"
-      },
-      {
-        "image": "/work/social-media/tiles/1.webp",
-        "color": "#e86c5d"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-440197098-742850351345614-869559505.webp",
-        "color": "#ce4a3e"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-813613705-18068283797757832-5204702.webp",
-        "color": "#837674"
-      },
-      {
-        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-59-54.webp",
-        "color": "#aa4d43"
-      },
-      {
-        "image": "/work/social-media/tiles/petinos-de-noel.webp",
-        "color": "#a74d42"
-      },
-      {
-        "image": "/work/social-media/tiles/1-copie-2.webp",
-        "color": "#f5e9e0"
+        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-58-47.webp",
+        "color": "#aeb7cd"
       },
       {
         "image": "/work/social-media/tiles/3-pom-bistro.webp",
         "color": "#eed1c3"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-670535093-18045046367757832-2674757.webp",
-        "color": "#ddada4"
+        "image": "/work/social-media/tiles/snapinsta-to-742208664-18057421661757832-1833635.webp",
+        "color": "#efb0ca"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-484142857-1042068394620018-22973100.webp",
-        "color": "#b16252"
+        "image": "/work/social-media/tiles/snapinsta-to-486633656-1241433090865991-71017735.webp",
+        "color": "#c4cad4"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-484441182-1042068324620025-66336359.webp",
-        "color": "#a5513f"
+        "image": "/work/social-media/tiles/snapinsta-to-657652299-18569382430010056-6759315.webp",
+        "color": "#5a5251"
       },
       {
-        "image": "/work/social-media/tiles/pgw1.webp",
-        "color": "#7e4234"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-484592946-1045388540954670-57260137.webp",
-        "color": "#dda18b"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-485629421-1044612141032310-15046489.webp",
-        "color": "#a18b81"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-484132815-943544827942831-766462992.webp",
-        "color": "#bf644c"
-      },
-      {
-        "image": "/work/social-media/tiles/cabral-de-la-nouvelle-annee.webp",
-        "color": "#b9634c"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-589637309-18028451333757832-3690746.webp",
-        "color": "#c15f3d"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-431898243-710953421201974-349179997.webp",
-        "color": "#b05c3d"
-      },
-      {
-        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-57-56.webp",
-        "color": "#d6a691"
+        "image": "/work/social-media/tiles/snapinsta-to-482021732-943013437995970-188367859.webp",
+        "color": "#b6524b"
       },
       {
         "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-57-49.webp",
         "color": "#bc8c75"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-485307850-1045610057599185-80164008.webp",
-        "color": "#c3876c"
-      },
-      {
-        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-58-11.webp",
-        "color": "#a28e85"
-      },
-      {
-        "image": "/work/social-media/tiles/petinos-sales-1-2.webp",
-        "color": "#c9765a"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-630140339-18554955646010056-6369877.webp",
-        "color": "#72635c"
-      },
-      {
-        "image": "/work/social-media/tiles/cabral-de-noel.webp",
-        "color": "#edbfa7"
-      },
-      {
-        "image": "/work/social-media/tiles/cabral-de-noel-logo.webp",
-        "color": "#ecbea6"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-482272620-942874461343201-481734177.webp",
-        "color": "#ba8467"
+        "image": "/work/social-media/tiles/snapinsta-to-486416000-1238809581128342-78693393.webp",
+        "color": "#c0cbe1"
       },
       {
         "image": "/work/social-media/tiles/snapinsta-to-aqmfhko9ifhqilh-lskd3swdjsfoxdtujsn.webp",
@@ -264,208 +144,228 @@
         "color": "#bf8060"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-766397592-18061771661757832-2708390.webp",
-        "color": "#a87b61"
+        "image": "/work/social-media/tiles/snapinsta-to-670986821-18577943068010056-8522468.webp",
+        "color": "#5e527b"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-694077360-17872233897668062-7203554.webp",
-        "color": "#996d52"
+        "image": "/work/social-media/tiles/snapinsta-to-813613705-18068283797757832-5204702.webp",
+        "color": "#837674"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-480578024-1042642401229284-57819452.webp",
-        "color": "#ecc8b2"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-484827671-1044613311032193-63704810.webp",
-        "color": "#dbbeaf"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-485034667-1042068037953387-66734496.webp",
-        "color": "#d6b19d"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-706727054-17875128885668062-7715192.webp",
-        "color": "#7f6049"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-722956453-17878359726668062-5338870.webp",
-        "color": "#7d4928"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-729260104-17880897873668062-8741986.webp",
-        "color": "#6c4023"
-      },
-      {
-        "image": "/work/social-media/tiles/2.webp",
-        "color": "#efdcc7"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-731093809-18056162162757832-5397801.webp",
-        "color": "#d4a479"
-      },
-      {
-        "image": "/work/social-media/tiles/pbp2.webp",
-        "color": "#997f68"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-449787981-776462604651055-880511851.webp",
-        "color": "#806d58"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-753225121-17887241376668062-8582349.webp",
-        "color": "#936a44"
-      },
-      {
-        "image": "/work/social-media/tiles/pbp1.webp",
-        "color": "#5b4c32"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-730688727-18055123256757832-6633458.webp",
-        "color": "#debe8c"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-705018763-18049829771757832-6026942.webp",
-        "color": "#d2b683"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-482032142-943014237995890-251005186.webp",
-        "color": "#947754"
-      },
-      {
-        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-59-08.webp",
-        "color": "#343941"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-487684017-1244223703920263-36356235.webp",
-        "color": "#333840"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-487297243-1244227947253172-20150575.webp",
-        "color": "#2c3137"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-486633656-1241433090865991-71017735.webp",
-        "color": "#c4cad4"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-487299481-1244980133844620-57986211.webp",
-        "color": "#bac4d1"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-700387126-18048960878757832-4375612.webp",
-        "color": "#eccc89"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-487165410-1244979520511348-90783217.webp",
-        "color": "#464d47"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-486292494-1241435097532457-55895417.webp",
-        "color": "#394148"
-      },
-      {
-        "image": "/work/social-media/tiles/global-de-noel.webp",
-        "color": "#3d3f35"
-      },
-      {
-        "image": "/work/social-media/tiles/global-nouvel-an.webp",
-        "color": "#c9d5ea"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-486416000-1238809581128342-78693393.webp",
-        "color": "#c0cbe1"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-485146672-1237284314614202-52884020.webp",
-        "color": "#b9c5da"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-487558640-1244979537178013-47377746.webp",
-        "color": "#b7c2d7"
-      },
-      {
-        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-58-53.webp",
-        "color": "#b4bbca"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-487511941-1247917160217584-10130699.webp",
-        "color": "#acb7cf"
-      },
-      {
-        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-58-47.webp",
-        "color": "#aeb7cd"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-488870025-1248989190110381-45743069.webp",
-        "color": "#a0adc8"
-      },
-      {
-        "image": "/work/social-media/tiles/gs.webp",
-        "color": "#3d4adc"
-      },
-      {
-        "image": "/work/social-media/tiles/gs2.webp",
-        "color": "#363eb9"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-757994170-1343405091247524-49470711.webp",
-        "color": "#2a3dc4"
+        "image": "/work/social-media/tiles/petinos-de-noel.webp",
+        "color": "#a74d42"
       },
       {
         "image": "/work/social-media/tiles/pgw2.webp",
         "color": "#252a3c"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-768205735-1354306526824047-75001059.webp",
-        "color": "#8788f1"
+        "image": "/work/social-media/tiles/snapinsta-to-714264480-17992985096987149-8930269.webp",
+        "color": "#f7fafb"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-670986821-18577943068010056-8522468.webp",
-        "color": "#5e527b"
+        "image": "/work/social-media/tiles/snapinsta-to-436443241-730051219292194-686387851.webp",
+        "color": "#b04c45"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-726704593-18594472270010056-2565778.webp",
-        "color": "#4c4077"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-628288714-18554955628010056-7497168.webp",
-        "color": "#514372"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-715019694-18590399038010056-2737329.webp",
-        "color": "#4b3b73"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-773240399-18611621407010056-7331578.webp",
-        "color": "#483870"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-774508929-18062888570757832-9026767.webp",
-        "color": "#f4b9d8"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-742278072-18057421670757832-2710861.webp",
-        "color": "#f2b6d6"
-      },
-      {
-        "image": "/work/social-media/tiles/pgw3.webp",
-        "color": "#cfc5d2"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-669244881-18044092286757832-6091391.webp",
-        "color": "#b4afc8"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-749066406-18058352177757832-6413623.webp",
-        "color": "#b88bc6"
+        "image": "/work/social-media/tiles/snapinsta-to-781459633-18006132338987149-1130001.webp",
+        "color": "#f9fbfc"
       },
       {
         "image": "/work/social-media/tiles/snapinsta-to-650932920-18565789033010056-9197104.webp",
         "color": "#65595d"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-742208664-18057421661757832-1833635.webp",
-        "color": "#efb0ca"
+        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-58-11.webp",
+        "color": "#a28e85"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-715019694-18590399038010056-2737329.webp",
+        "color": "#4b3b73"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-628288714-18554955628010056-7497168.webp",
+        "color": "#514372"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-759823533-18001711583987149-1942259.webp",
+        "color": "#f4f8f9"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-482226638-942874448009869-835301860.webp",
+        "color": "#87453d"
+      },
+      {
+        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-59-08.webp",
+        "color": "#343941"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-669841375-17985841457987149-8512302.webp",
+        "color": "#f0f6f8"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-487684017-1244223703920263-36356235.webp",
+        "color": "#333840"
+      },
+      {
+        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-59-49.webp",
+        "color": "#ad574d"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-487299481-1244980133844620-57986211.webp",
+        "color": "#bac4d1"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-705018763-18049829771757832-6026942.webp",
+        "color": "#d2b683"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-761306983-17888864874668062-2579749.webp",
+        "color": "#554b41"
+      },
+      {
+        "image": "/work/social-media/tiles/1-copie-2.webp",
+        "color": "#f5e9e0"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-589637309-18028451333757832-3690746.webp",
+        "color": "#c15f3d"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-753225121-17887241376668062-8582349.webp",
+        "color": "#936a44"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-730040750-17997325526987149-9627796.webp",
+        "color": "#f1f7f8"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-449787981-776462604651055-880511851.webp",
+        "color": "#806d58"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-487511941-1247917160217584-10130699.webp",
+        "color": "#acb7cf"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-440197098-742850351345614-869559505.webp",
+        "color": "#ce4a3e"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-482032142-943014237995890-251005186.webp",
+        "color": "#947754"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-749066406-18058352177757832-6413623.webp",
+        "color": "#b88bc6"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-484827671-1044613311032193-63704810.webp",
+        "color": "#dbbeaf"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-730688727-18055123256757832-6633458.webp",
+        "color": "#debe8c"
+      },
+      {
+        "image": "/work/social-media/tiles/cabral-de-la-nouvelle-annee.webp",
+        "color": "#b9634c"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-482272620-942874461343201-481734177.webp",
+        "color": "#ba8467"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-700387126-18048960878757832-4375612.webp",
+        "color": "#eccc89"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-482059340-943027121327935-629005119.webp",
+        "color": "#b84c46"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-766397592-18061771661757832-2708390.webp",
+        "color": "#a87b61"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-708043020-18050811983757832-1658288.webp",
+        "color": "#d5a0b7"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-486292494-1241435097532457-55895417.webp",
+        "color": "#394148"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-670535093-18045046367757832-2674757.webp",
+        "color": "#ddada4"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-729260104-17880897873668062-8741986.webp",
+        "color": "#6c4023"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-441378960-742855598011756-328801136.webp",
+        "color": "#bc4742"
+      },
+      {
+        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-57-56.webp",
+        "color": "#d6a691"
+      },
+      {
+        "image": "/work/social-media/tiles/global-nouvel-an.webp",
+        "color": "#c9d5ea"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-630140339-18554955646010056-6369877.webp",
+        "color": "#72635c"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-773240399-18611621407010056-7331578.webp",
+        "color": "#483870"
+      },
+      {
+        "image": "/work/social-media/tiles/calque-694.webp",
+        "color": "#7c8191"
+      },
+      {
+        "image": "/work/social-media/tiles/pbp1.webp",
+        "color": "#5b4c32"
+      },
+      {
+        "image": "/work/social-media/tiles/gs2.webp",
+        "color": "#363eb9"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-484132815-943544827942831-766462992.webp",
+        "color": "#bf644c"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-484286273-1042066234620234-12697610.webp",
+        "color": "#e4b7a8"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-487447527-1244234267252540-14030532.webp",
+        "color": "#38404d"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-431898243-710953421201974-349179997.webp",
+        "color": "#b05c3d"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-731093809-18056162162757832-5397801.webp",
+        "color": "#d4a479"
+      },
+      {
+        "image": "/work/social-media/tiles/petinos-ouverture-2.webp",
+        "color": "#c84c49"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-757994170-1343405091247524-49470711.webp",
+        "color": "#2a3dc4"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-713423833-18051542633757832-2765507.webp",
+        "color": "#d6a09f"
       },
       {
         "image": "/work/social-media/tiles/snapinsta-to-aqnrvgnpuzzf1gvl0echeqw3wu-j8u7iydv.webp",
@@ -473,69 +373,210 @@
         "color": "#d0b0bb"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-708043020-18050811983757832-1658288.webp",
-        "color": "#d5a0b7"
+        "image": "/work/social-media/tiles/pgw3.webp",
+        "color": "#cfc5d2"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-761306983-17888864874668062-2579749.webp",
-        "color": "#554b41"
+        "image": "/work/social-media/tiles/snapinsta-to-715450457-18051542624757832-8545026.webp",
+        "color": "#f1acb6"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-487447527-1244234267252540-14030532.webp",
-        "color": "#38404d"
+        "image": "/work/social-media/tiles/snapinsta-to-722956453-17878359726668062-5338870.webp",
+        "color": "#7d4928"
+      },
+      {
+        "image": "/work/social-media/tiles/2.webp",
+        "color": "#efdcc7"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-487558640-1244979537178013-47377746.webp",
+        "color": "#b7c2d7"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-669244881-18044092286757832-6091391.webp",
+        "color": "#b4afc8"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-485034667-1042068037953387-66734496.webp",
+        "color": "#d6b19d"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-708168118-18050811995757832-1768766.webp",
+        "color": "#ca9499"
       },
       {
         "image": "/work/social-media/tiles/snapinsta-to-486379460-1238809717794995-42033202.webp",
         "color": "#283443"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-800413158-18008173076987149-8684200.webp",
-        "color": "#f1f2f2"
+        "image": "/work/social-media/tiles/snapinsta-to-780422368-18064264289757832-5020244.webp",
+        "color": "#e8a4bd"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-484441182-1042068324620025-66336359.webp",
+        "color": "#a5513f"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-768205735-1354306526824047-75001059.webp",
+        "color": "#8788f1"
+      },
+      {
+        "image": "/work/social-media/tiles/cabral-de-noel-logo.webp",
+        "color": "#ecbea6"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-488870025-1248989190110381-45743069.webp",
+        "color": "#a0adc8"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-484592946-1045388540954670-57260137.webp",
+        "color": "#dda18b"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-774508929-18062888570757832-9026767.webp",
+        "color": "#f4b9d8"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-726704593-18594472270010056-2565778.webp",
+        "color": "#4c4077"
+      },
+      {
+        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-58-53.webp",
+        "color": "#b4bbca"
+      },
+      {
+        "image": "/work/social-media/tiles/global-de-noel.webp",
+        "color": "#3d3f35"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-706727054-17875128885668062-7715192.webp",
+        "color": "#7f6049"
+      },
+      {
+        "image": "/work/social-media/tiles/pbp2.webp",
+        "color": "#997f68"
       },
       {
         "image": "/work/social-media/tiles/snapinsta-to-730332035-17997325547987149-5814305.webp",
         "color": "#edf0f0"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-670424949-18575728114010056-4631471.webp",
-        "color": "#8b8583"
+        "image": "/work/social-media/tiles/snapinsta-to-742278072-18057421670757832-2710861.webp",
+        "color": "#f2b6d6"
       },
       {
-        "image": "/work/social-media/tiles/calque-694.webp",
-        "color": "#7c8191"
+        "image": "/work/social-media/tiles/snapinsta-to-485307850-1045610057599185-80164008.webp",
+        "color": "#c3876c"
+      },
+      {
+        "image": "/work/social-media/tiles/pgw1.webp",
+        "color": "#7e4234"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-480578024-1042642401229284-57819452.webp",
+        "color": "#ecc8b2"
+      },
+      {
+        "image": "/work/social-media/tiles/gs.webp",
+        "color": "#3d4adc"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-485629421-1044612141032310-15046489.webp",
+        "color": "#a18b81"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-800413158-18008173076987149-8684200.webp",
+        "color": "#f1f2f2"
+      },
+      {
+        "image": "/work/social-media/tiles/capture-d-ecran-2025-05-29-a-14-59-54.webp",
+        "color": "#aa4d43"
+      },
+      {
+        "image": "/work/social-media/tiles/petinos-sales-1-2.webp",
+        "color": "#c9765a"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-694077360-17872233897668062-7203554.webp",
+        "color": "#996d52"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-487297243-1244227947253172-20150575.webp",
+        "color": "#2c3137"
+      },
+      {
+        "image": "/work/social-media/tiles/petinos-ouverture.webp",
+        "color": "#d3554d"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-485146672-1237284314614202-52884020.webp",
+        "color": "#b9c5da"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-484142857-1042068394620018-22973100.webp",
+        "color": "#b16252"
+      },
+      {
+        "image": "/work/social-media/tiles/snapinsta-to-487165410-1244979520511348-90783217.webp",
+        "color": "#464d47"
       },
       {
         "image": "/work/social-media/tiles/snapinsta-to-698253890-18583675297010056-4276925.webp",
         "color": "#6e6865"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-657652299-18569382430010056-6759315.webp",
-        "color": "#5a5251"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-781459633-18006132338987149-1130001.webp",
-        "color": "#f9fbfc"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-714264480-17992985096987149-8930269.webp",
-        "color": "#f7fafb"
-      },
-      {
         "image": "/work/social-media/tiles/snapinsta-to-790755172-18007141808987149-1474168.webp",
         "color": "#f4f8fa"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-759823533-18001711583987149-1942259.webp",
-        "color": "#f4f8f9"
+        "image": "/work/social-media/tiles/cabral-de-noel.webp",
+        "color": "#edbfa7"
       },
       {
-        "image": "/work/social-media/tiles/snapinsta-to-730040750-17997325526987149-9627796.webp",
-        "color": "#f1f7f8"
-      },
-      {
-        "image": "/work/social-media/tiles/snapinsta-to-669841375-17985841457987149-8512302.webp",
-        "color": "#f0f6f8"
+        "image": "/work/social-media/tiles/1.webp",
+        "color": "#e86c5d"
       }
     ]
-  }
+  },
+  "magazines": [
+    {
+      "id": "typeshit",
+      "title": "TYPESHIT",
+      "cover": "/work/magazine/3d/typeshit/cover.webp",
+      "back": "/work/magazine/3d/typeshit/back.webp",
+      "spreads": [
+        "/work/magazine/3d/typeshit/spread-1.webp",
+        "/work/magazine/3d/typeshit/spread-2.webp",
+        "/work/magazine/3d/typeshit/spread-3.webp",
+        "/work/magazine/3d/typeshit/spread-4.webp",
+        "/work/magazine/3d/typeshit/spread-5.webp",
+        "/work/magazine/3d/typeshit/spread-6.webp",
+        "/work/magazine/3d/typeshit/spread-7.webp",
+        "/work/magazine/3d/typeshit/spread-8.webp",
+        "/work/magazine/3d/typeshit/spread-9.webp"
+      ]
+    },
+    {
+      "id": "cpgcqd",
+      "title": "C'EST PAS GRAS C'EST QUE DU BEURRE",
+      "cover": "/work/magazine/3d/cpgcqd/cover.webp",
+      "back": "/work/magazine/3d/cpgcqd/back.webp",
+      "spreads": [
+        "/work/magazine/3d/cpgcqd/spread-1.webp",
+        "/work/magazine/3d/cpgcqd/spread-2.webp",
+        "/work/magazine/3d/cpgcqd/spread-3.webp"
+      ]
+    },
+    {
+      "id": "dpp",
+      "title": "DA PUNK PROPAGANDA",
+      "cover": "/work/magazine/3d/dpp/cover.webp",
+      "back": "/work/magazine/3d/dpp/back.webp",
+      "spreads": [
+        "/work/magazine/3d/dpp/spread-1.webp",
+        "/work/magazine/3d/dpp/spread-2.webp",
+        "/work/magazine/3d/dpp/spread-3.webp"
+      ]
+    }
+  ]
 }

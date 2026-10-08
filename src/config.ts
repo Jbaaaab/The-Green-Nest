@@ -201,8 +201,8 @@ export const config = {
   // Pluie Instagram au survol du lien (desktop uniquement). Physique Rapier chargée au premier survol.
   rain: {
     url: '/models/instagram.glb',
-    maxInstances: 60,
-    spawnPerSecond: 20,
+    maxInstances: 120, // plafond : au-delà, les plus anciens disparaissent pour laisser tomber les suivants (pluie continue)
+    spawnPerSecond: 40,
     minEmitSeconds: 0.6, // émission minimale après un survol, même très bref
     width: { min: 70, max: 100 }, // largeur du logo en px de maquette, tirée au hasard
     lifeSeconds: { min: 4, max: 5.5 }, // durée avant disparition
@@ -264,7 +264,7 @@ export const config = {
     },
 
     // Diaporamas en attendant les vidéos (Longtemps, Formula One).
-    slideMs: 750, // durée d'une image
+    slideMs: 375, // durée d'une image (Longtemps)
 
     // Carrés de Take Care : leurs vidéos tournent au ralenti, à vitesse normale sous la souris,
     // et le carré survolé grandit un tout petit peu.
@@ -279,6 +279,30 @@ export const config = {
     digitBob: 0.08, // léger balancement (fraction de la taille)
   },
 
+  // Page MAGAZINES (src/scene/magazines.ts ; maquettes Figma à appliquer) : les 3 magazines en 3D, en cercle.
+  // Celui de devant prend la place d'une case (le grand rectangle de Take Care). Au scroll, il s'ouvre,
+  // ses doubles pages se tournent, il se referme sur sa 4e de couv, puis le cercle tourne jusqu'au suivant.
+  magazines: {
+    pageHeight: 547, // hauteur d'une page du magazine de devant, fermé (px de maquette) : celle du grand rectangle de Take Care
+    openHeight: 749, // ouvert : la hauteur des grands cadres (Longtemps, F1), il prend la place d'une case normale
+    space: 0.5, // espace en plus avant la page (hauteurs d'écran) : les magazines arrivent plus tard
+    flip: 0.28, // scroll pour tourner une page (hauteurs d'écran)
+    turn: 0.6, // scroll pour faire tourner le cercle jusqu'au magazine suivant (hauteurs d'écran)
+    // Cercle (px de maquette) : rayons en largeur et en profondeur, ceux du fond montent un peu (lift)
+    // et tournent légèrement avec le cercle (face : 0 = toujours de face, 1 = tournés vers l'extérieur).
+    ring: { rx: 900, rz: 520, lift: 0, face: 0.35 }, // à plat (demande du DA : « plus horizontal »)
+    arrive: 0.5, // en arrivant, le cercle tourne pour amener le premier magazine (part de la distance entre deux magazines)
+    // Les magazines arrivent de la droite et repartent par la gauche (comme Social Media), pendant la fin
+    // de l'approche et le début du départ (part de la distance entre deux pages).
+    slide: 0.6,
+    // Papier : page bombée (bend), qui sort de la reliure (rise, magazine ouvert), pli quand on la tourne
+    // (curl), en radians ; épaisseur d'une feuille (px).
+    paper: { bend: 0.22, rise: 0.5, curl: 0.9, thickness: 0.8 },
+    tilt: 0.16, // magazines un peu couchés vers l'arrière (radians) : la courbure et les reflets se voient mieux
+    varnish: 0.75, // vernis : force des reflets (0 = papier mat)
+    sway: 0.07, // léger balancement au repos (radians) : les reflets glissent sur le papier
+  },
+
   // Page SOCIAL MEDIA (src/works/socialView.ts) : les posts arrivent du côté droit, colonne par colonne,
   // puis la mosaïque défile vers la droite (la page reste fixe) avant que le scroll vertical reprenne.
   social: {
@@ -287,25 +311,31 @@ export const config = {
     stagger: 0.04, // décalage d'arrivée entre deux colonnes (fraction de l'arrivée)
     twist: true, // pendant le défilement horizontal, la mosaïque se courbe comme un tambour vertical (selon la vitesse)
     mobileGap: 6, // écart entre les carrés sur mobile (hors maquette), px
+    // Halo en dégradé : chaque couleur devient celle de la palette selon sa clarté (du plus clair au plus
+    // sombre), ex. ['#ffffff', '#41f373', '#000000']. Testé en blanc / vert / noir, écarté par le DA :
+    // null = couleurs d'origine.
+    glowPalette: null as string[] | null,
   },
 
   // Footer (maquette « Scroll » 9:22, frame 1440×1024) : à la fin du scroll. Les cartes (photos) empilées
   // s'envolent vers le haut et révèlent le texte ; une montagne de daruma remplace le trait rouge.
   // Positions en px de maquette ; y depuis le centre de l'écran (frame : centre à y = 512).
   footer: {
-    reveal: 2.2, // scroll après l'arrêt du footer : les cartes arrivent puis s'envolent (hauteurs d'écran)
+    reveal: 1.5, // scroll après l'arrêt du footer : les cartes arrivent, puis on les envoie (hauteurs d'écran)
     // Calques inversés par rapport à la maquette (demande du DA) : la photo 1 est au fond, la 4 devant.
     // En arrivant il n'y a rien ; au scroll, les cartes montent d'en bas une à une (1, 2, 3, 4), chacune
-    // posée sur la précédente ; arrêt quand la pile est complète ; puis elles s'envolent par le haut de la pile (4, 3, 2, 1).
+    // posée devant la précédente et un peu plus bas (les autres dépassent au-dessus, comme sur la maquette) ;
+    // arrêt quand la pile est complète ; le scroll suivant les envoie toutes d'un coup (animation).
     // Timings en fractions de la zone du footer (reveal).
     cards: {
       w: 315,
       h: 442,
-      tops: [-298, -309, -318, -327], // haut de chaque carte, photos 1 à 4 (positions de la maquette)
+      tops: [-298, -309, -318, -327], // haut des cartes, de celle de devant à celle du fond (maquette)
       dx: 0.5,
-      arrive: { start: 0.04, stagger: 0.09, duration: 0.16 }, // arrivée de la 1, puis des suivantes
-      leave: { start: 0.55, stagger: 0.09, duration: 0.16 }, // envol de la 4, puis des suivantes
-      pause: 0.5 as number | null, // arrêt du scroll quand la pile est complète (null : pas d'arrêt)
+      arrive: { start: 0.04, stagger: 0.16, duration: 0.2 }, // arrivée de la 1, puis des suivantes
+      pause: 0.76 as number | null, // arrêt du scroll quand la pile est complète (null : pas d'arrêt)
+      flyMs: 1100, // durée de l'envol de la pile (déclenché par le scroll qui suit l'arrêt)
+      flyStagger: 0.06, // décalage entre les cartes qui s'envolent (fraction de l'envol), celle de devant d'abord
       enter: 1.1, // les cartes arrivent d'en bas (hauteurs d'écran)
       lift: 1.3, // hauteur de l'envol (hauteurs d'écran)
       rotateDeg: 8, // petite rotation en arrivant et en partant (alternée)
@@ -313,27 +343,27 @@ export const config = {
     text: { top: -43, width: 692 }, // bloc de texte centré
     // Grand logo en bas, plein cadre : 1473×173 dans une frame de 1440, débordant de 46 px en bas.
     logo: { w: 1473, h: 173, bottom: -46, frame: 1440 },
-    // Trait rouge (Vector 1) : 1447×408 posé à x = -4, haut à 29,84 px sous le centre ; il s'étire en largeur.
-    ridge: { left: -4, top: 28.84, w: 1447, h: 410, frame: 1440, frameH: 1024 },
     // Icône en haut à droite (retour en haut) : 38 px à gauche du bord droit du header (87,5 % + 120), 111 px du haut.
     symbol: { right: 38, top: 111, size: 20 },
 
-    // Montagne de daruma : le trait rouge devient la crête, les daruma sont accrochés dessous (le haut sur le trait).
+    // Tas de daruma (demande du DA, à la place du trait rouge de la maquette) : il part du bas de l'écran
+    // et monte entre 1/3 et 2/3 des lettres du grand logo, qu'il recouvre en partie.
     daruma: {
       url: '/models/daruma-lite.glb', // version allégée (npm run assets) : ils sont des centaines
       // Rouge du corps : absent du GLB (la texture ne contient que les coulures dorées) → posé dessous. À valider par le DA.
       red: '#d0202a',
-      height: 34, // hauteur d'un daruma (px de maquette)
-      mobileHeight: 14, // sur mobile (hors maquette) : le trait est en miniature, les daruma aussi
+      height: 28, // hauteur d'un daruma (px de maquette)
+      mobileHeight: 12, // sur mobile (hors maquette) : le logo est petit, les daruma aussi
+      heap: [1 / 3, 2 / 3] as [number, number], // haut du tas : entre 1/3 et 2/3 de la hauteur visible des lettres du logo
+      waves: [[1.3, 1], [3.1, 0.6], [7.7, 0.3]] as [number, number][], // relief du tas : [ondulations sur la largeur, poids]
       spacing: 0.8, // écart entre deux colonnes de la pile (fraction de la largeur d'un daruma ; < 1 = ils se chevauchent)
       rowStep: 0.6, // écart entre deux daruma empilés (fraction de la hauteur) : celui du dessous cache le bas de l'autre
       depth: 0.3, // chaque daruma passe devant celui du dessus (recul, fraction de la hauteur)
       jitter: 0.2, // désordre de la pile (fraction de la taille)
       tiltDeg: 12, // dans la pile, ils penchent un peu au hasard (±)
-      sink: 0.12, // la base de la pile s'enfonce un peu dans le haut des lettres du logo (fraction de la hauteur)
+      sink: 0.3, // le bas du tas est coupé par le bord de l'écran (fraction de la hauteur)
       scale: [0.85, 1.15], // taille tirée au hasard
       faceDeg: 90, // rotation qui tourne le visage (vers -X dans le GLB) face à l'écran
-      textGap: 8, // sous le texte, la crête est repoussée à cette marge (px de maquette) pour qu'il reste lisible
       yawDeg: 28, // orientation au hasard autour de la verticale (±)
       rock: { deg: 7, period: 1.6, below: 0.3 }, // culbutos ; ceux du dessous, coincés, bougent moins (below)
       // Laque éclairée par le studio : le rouge reste franc, des reflets blancs glissent dessus.

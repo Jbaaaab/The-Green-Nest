@@ -5,6 +5,7 @@ import { PROJECTS } from '../works/projects';
 import { Cursor3D } from './cursor';
 import { DarumaMountain } from './darumaMountain';
 import { Digits3D } from './digits';
+import { Magazines } from './magazines';
 import { InstaRain } from './instaRain';
 import { Ring } from './ring';
 import { Stage, type Viewport } from './stage';
@@ -61,6 +62,9 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
 
   // Montagne de daruma du footer : chargée seulement à l'approche du footer.
   DarumaMountain.watch(stage);
+
+  // Magazines 3D (page Magazines) : chargés seulement à l'approche de la page.
+  Magazines.watch(stage);
 
   // Chiffres entourés 3D de la rangée des projets.
   Digits3D.load(stage, PROJECTS.map((p) => p.number))

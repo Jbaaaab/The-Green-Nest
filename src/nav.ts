@@ -8,9 +8,10 @@ import { config } from './config';
  * Toutes les animations lisent `scroll` (px) et `velocity` (px/s).
  */
 // Une section peut avoir, après son arrêt, une zone de scroll où sa page reste fixe (holdOf) :
+// - Magazines : les magazines 3D tournent et s'ouvrent (longueur : works/magazineTimeline.ts) ;
 // - Social Media : la mosaïque défile vers la droite (longueur donnée par socialView.ts) ;
 // - le footer (« hello », la dernière) : ses cartes s'envolent (config.footer.reveal, en hauteurs d'écran).
-export const SECTION_IDS = ['', 'longtemps', 'formula-one', 'take-care', 'social-media', 'hello'] as const;
+export const SECTION_IDS = ['', 'longtemps', 'formula-one', 'take-care', 'magazines', 'social-media', 'hello'] as const;
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
@@ -49,9 +50,20 @@ class Nav {
   /** Position de l'arrêt de la section i (les zones fixes des sections précédentes s'ajoutent). */
   stopOf(i: number): number {
     let stop = i * this.sectionHeight;
-    for (let j = 0; j < i; j++) stop += this.holdOf(j);
+    for (let j = 0; j < i; j++) stop += this.holdOf(j) + this.spaces[j + 1];
     return stop;
   }
+
+  /** Espace en plus avant la section i (px) : sa page arrive plus tard (page Magazines). */
+  setSpace(i: number, px: number): void {
+    if (Math.abs(this.spaces[i] - px) < 0.5) return;
+    const progress = this.holdProgress(this.section);
+    this.spaces[i] = px;
+    this.scroll = this.target = this.stopOf(this.section) + progress * this.holdOf(this.section);
+    this.emit();
+  }
+
+  private spaces: number[] = SECTION_IDS.map(() => 0);
 
   /** Longueur de la zone du footer après son arrêt (les cartes s'envolent), en px. */
   get footerReveal(): number {
@@ -94,7 +106,7 @@ class Nav {
   /** Position en sections (2,5 = entre la 2 et la 3), les zones fixes comptant comme l'arrêt. */
   position(scroll = this.scroll): number {
     for (let i = 0; i < this.count; i++) {
-      if (scroll <= this.stopOf(i) + this.holdOf(i) || i === this.count - 1) return i + Math.min(0, this.offsetOf(i, scroll)) / this.sectionHeight;
+      if (scroll <= this.stopOf(i) + this.holdOf(i) || i === this.count - 1) return i + Math.min(0, this.offsetOf(i, scroll)) / (this.sectionHeight + this.spaces[i]);
     }
     return 0;
   }

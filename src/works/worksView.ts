@@ -6,6 +6,7 @@ import { readUnit } from '../ui/unit';
 import { Glow } from './glow';
 import { lazyVideo, loadVideo } from './lazyVideo';
 import { drum, perspectiveFor } from './scrollFx';
+import { MAGAZINE_PROJECT, magazineHold, magazinePauses } from './magazineTimeline';
 import { SocialView } from './socialView';
 import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, boxRect, type Project } from './projects';
 
@@ -96,7 +97,7 @@ export class WorksView {
     });
     for (const project of PROJECTS) {
       if (project.layout === 'social') this.social = new SocialView(this.stage, project);
-      else this.sections.push(this.buildProject(project));
+      else if (project.layout !== 'magazine') this.sections.push(this.buildProject(project)); // magazines : en 3D
     }
 
     // Rangée 1-8 + symbole (retour à l'accueil), derrière les vidéos des pages.
@@ -264,6 +265,12 @@ export class WorksView {
     landing.h = H;
 
     this.social?.layout(W, H, u, mobile);
+    // Magazines : la page reste fixe pendant que les magazines tournent et s'ouvrent.
+    if (MAGAZINE_PROJECT) {
+      nav.setSpace(MAGAZINE_PROJECT.number, config.magazines.space * H); // ils arrivent plus tard
+      nav.setHold(MAGAZINE_PROJECT.number, magazineHold(H));
+      nav.setPauses(MAGAZINE_PROJECT.number, magazinePauses()); // arrêt à chaque nouveau magazine
+    }
 
     for (const section of this.sections) {
       const project = section.project;
@@ -366,9 +373,13 @@ export class WorksView {
     const last = PROJECTS.length;
     const pos = nav.position(scroll);
     const show = smooth(0.45, 0.85, pos) * (1 - smooth(last + 0.35, last + 0.75, pos));
-    // Sur Social Media, la rangée passerait entre les petits carrés (et clignoterait pendant le défilement) :
-    // elle s'efface, comme sur Take Care où les carrés la cachent entièrement. Le bouton reste.
-    const row = this.social ? show * smooth(0.35, 0.65, Math.abs(pos - this.social.index)) : show;
+    // La rangée s'efface sur Social Media (elle passerait entre les petits carrés et clignoterait pendant le
+    // défilement) et sur Magazines (les magazines 3D passent devant le DOM : le magazine ouvert ne la
+    // cacherait pas). Comme sur Take Care, où les carrés la cachent entièrement. Le bouton reste.
+    let row = show;
+    for (const index of [this.social?.index, MAGAZINE_PROJECT?.number]) {
+      if (index !== undefined) row *= smooth(0.35, 0.65, Math.abs(pos - index));
+    }
     this.navEl.style.opacity = String(row);
     this.button.style.opacity = String(show);
     this.navEl.style.visibility = row < 0.01 ? 'hidden' : 'visible';

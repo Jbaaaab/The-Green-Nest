@@ -189,7 +189,14 @@ export class InstaRain implements Updatable {
 
   private spawn(): void {
     const i = this.slots.findIndex((s) => !s.body);
-    if (i < 0) return; // plafond atteint
+    if (i < 0) {
+      // Plafond atteint : le plus ancien encore entier commence à disparaître, et laisse sa place au
+      // suivant dans quelques images. La pluie ne s'arrête pas.
+      let oldest: Slot | null = null;
+      for (const s of this.slots) if (s.life - s.age > config.rain.fadeOutSeconds && (!oldest || s.age > oldest.age)) oldest = s;
+      if (oldest) oldest.life = oldest.age + config.rain.fadeOutSeconds;
+      return;
+    }
     const R = this.R!;
     const world = this.world!;
     const cfg = config.rain;

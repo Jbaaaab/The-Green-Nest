@@ -226,17 +226,73 @@ const SLIDES = {
   footer: { from: 'footer-photos', to: 'footer', width: 640 },
 };
 
-// Page Social Media : mosaïque de petits carrés (122,5×116,5 px, 1/4 des carrés de Take Care) triés par
-// couleur, et une grande vidéo au centre. Carrés en WebP 2x recadrés, vidéos en MP4 muet.
+// Page Social Media : mosaïque de petits carrés (122,5×116,5 px, 1/4 des carrés de Take Care), mélangés,
+// et une grande vidéo au centre. Carrés en WebP 2x recadrés, vidéos en MP4 muet.
 const SOCIAL = {
   from: 'work/social-media',
   to: 'work/social-media/tiles',
   tile: [246, 234],
   main: 'snapinsta-to-aqmvyfng8zqq41', // début du nom de la vidéo du grand rectangle central (720×960, 13 s)
   mainWidth: 720,
-  rows: 6, // rangées de la mosaïque : l'ordre des couleurs se lit colonne par colonne, de gauche à droite
-  neutral: 0.13, // en dessous de cette saturation moyenne, une image est rangée avec les neutres
+  order: 'shuffle', // 'shuffle' : mélangés (demande du DA) ; 'color' : triés par couleur (trop ordonné)
+  seed: 7, // graine du mélange : changer ce nombre pour un autre ordre
+  rows: 6, // rangées de la mosaïque (tri par couleur : se lit colonne par colonne)
+  neutral: 0.13, // tri par couleur : en dessous de cette saturation moyenne, une image est rangée avec les neutres
 };
+
+// Page Magazines : les magazines en 3D (src/scene/magazines.ts). Pour chacun : couverture, 4e de
+// couverture (une page) et doubles pages, dans l'ordre de lecture. Textures WebP (une page ≈ 700 px de large).
+// Ordre de lecture : Typeshit d'abord (demande du DA).
+const MAGAZINES = [
+  {
+    id: 'typeshit',
+    title: 'TYPESHIT',
+    from: 'work/magazine/typeshit',
+    cover: 'cover-typeshit.png',
+    back: '4couv-typeshit.png',
+    // Ordre des doubles pages à confirmer par le DA.
+    spreads: ['tpeshit-1.png', 'tpeshit-2.png', 'tpeshit-3.png', 'fashion.png', 'fashion-2.png', 'fashion-3.png', 'music.png', 'music-2.png', 'music-3.png'],
+  },
+  {
+    id: 'cpgcqd',
+    title: "C'EST PAS GRAS C'EST QUE DU BEURRE",
+    from: 'work/magazine/cpgcqd',
+    cover: 'couv.png',
+    back: '4couv.png',
+    spreads: ['4.png', '6.png', '7.png'],
+  },
+  {
+    id: 'dpp',
+    title: 'DA PUNK PROPAGANDA',
+    from: 'work/magazine/dpp',
+    cover: 'f5dcf4d2-b426-4638-ae15-3dadb9e65e35-rw-1920.png',
+    back: '9c73d0ae-f674-4664-94e7-618d3534fb78-rw-1920.png',
+    spreads: [
+      '08af0b14-487c-4a23-8d9f-fcb3a53bd9d5-rw-1920.png',
+      '58e5f32c-d836-4c11-b8b1-69b9ea619969-rw-1920.png',
+      'c9875d87-8a82-47da-85f5-b825bc047271-rw-1920.png',
+    ],
+  },
+];
+
+async function optimizeMagazines() {
+  const list = [];
+  let total = 0;
+  for (const m of MAGAZINES) {
+    const to = `work/magazine/3d/${m.id}`;
+    await mkdir(out(to), { recursive: true });
+    const image = async (file, name, width) => {
+      await imageStill(src(`${m.from}/${file}`), out(`${to}/${name}.webp`), width);
+      total += (await stat(out(`${to}/${name}.webp`))).size;
+      return `/${to}/${name}.webp`;
+    };
+    const spreads = [];
+    for (const [i, f] of m.spreads.entries()) spreads.push(await image(f, `spread-${i + 1}`, 1400));
+    list.push({ id: m.id, title: m.title, cover: await image(m.cover, 'cover', 800), back: await image(m.back, 'back', 800), spreads });
+  }
+  console.log('work/magazine/3d'.padEnd(28), `${list.length} magazines, ${kb(total)}`);
+  return list;
+}
 
 const run = promisify(execFile);
 const isVideo = (f) => /\.(mp4|mov|webm)$/i.test(f);
@@ -331,18 +387,34 @@ async function optimizeSocial() {
     tiles.push({ image: url(image), ...tile, ...(await colorOf(still)) });
   }
 
-  // Tri par couleur : les couleurs dans l'ordre de l'arc-en-ciel (du rouge au rose), puis les neutres du
-  // plus sombre au plus clair (la mosaïque finit sur du blanc, comme la page). Dans chaque colonne,
-  // du plus clair en haut au plus sombre en bas.
-  const colored = tiles.filter((t) => t.saturation >= p.neutral).sort((a, b) => ((a.hue + 20) % 360) - ((b.hue + 20) % 360));
-  const neutral = tiles.filter((t) => t.saturation < p.neutral).sort((a, b) => a.light - b.light);
-  const sorted = [...colored, ...neutral];
-  const ordered = [];
-  for (let i = 0; i < sorted.length; i += p.rows) ordered.push(...sorted.slice(i, i + p.rows).sort((a, b) => b.light - a.light));
+  let ordered;
+  if (p.order === 'color') {
+    // Tri par couleur : les couleurs dans l'ordre de l'arc-en-ciel (du rouge au rose), puis les neutres du
+    // plus sombre au plus clair. Dans chaque colonne, du plus clair en haut au plus sombre en bas.
+    const colored = tiles.filter((t) => t.saturation >= p.neutral).sort((a, b) => ((a.hue + 20) % 360) - ((b.hue + 20) % 360));
+    const neutral = tiles.filter((t) => t.saturation < p.neutral).sort((a, b) => a.light - b.light);
+    const sorted = [...colored, ...neutral];
+    ordered = [];
+    for (let i = 0; i < sorted.length; i += p.rows) ordered.push(...sorted.slice(i, i + p.rows).sort((a, b) => b.light - a.light));
+  } else {
+    // Mélangé (toujours dans le même ordre d'une génération à l'autre).
+    let seed = p.seed;
+    const random = () => {
+      seed = (seed + 0x6d2b79f5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    ordered = [...tiles];
+    for (let i = ordered.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [ordered[i], ordered[j]] = [ordered[j], ordered[i]];
+    }
+  }
 
   let total = 0;
   for (const f of await readdir(out(p.to))) total += (await stat(out(`${p.to}/${f}`))).size;
-  console.log(`${p.to}`.padEnd(28), `${tiles.length} carrés (${colored.length} en couleur, ${neutral.length} neutres), ${kb(total)}`);
+  console.log(`${p.to}`.padEnd(28), `${tiles.length} carrés (${p.order === 'color' ? 'triés par couleur' : 'mélangés'}), ${kb(total)}`);
   return {
     main: { video: url('main.mp4'), poster: url('main.webp') },
     tiles: ordered.map(({ image, video, color }) => (video ? { image, video, color } : { image, color })),
@@ -404,6 +476,7 @@ async function optimizeProjects() {
   }
 
   media.socialMedia = await optimizeSocial();
+  media.magazines = await optimizeMagazines();
 
   await writeFile(path.join(root, 'src/works/media.generated.json'), JSON.stringify(media, null, 2) + '\n');
 }

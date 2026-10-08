@@ -1,12 +1,13 @@
 import { config } from '../config';
 import { nav } from '../nav';
-import { Glow } from './glow';
+import { Glow, paletteColor } from './glow';
 import { lazyVideo, loadVideo } from './lazyVideo';
 import { SOCIAL, boxRect, type Project, type SideMedia } from './projects';
 import { drum } from './scrollFx';
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+const HALO_CELL = 4; // taille CSS d'un carré dans le halo avant agrandissement (px)
 
 type Column = { el: HTMLElement; x: number }; // x : bord gauche à l'arrêt (px écran)
 
@@ -22,6 +23,8 @@ export class SocialView {
   private grid: HTMLElement;
   private media: SideMedia[];
   private columns: Column[] = [];
+  private halo: HTMLCanvasElement | null = null; // halo de la mosaïque
+  private haloScale = { x: 1, y: 1 };
   private geo = { left: 0, top: 0, height: 0, tileW: 0, tileH: 0, gapY: 0 }; // mosaïque à l'arrêt (px écran)
   private images: HTMLImageElement[] = [];
   private videos: HTMLVideoElement[] = [];
@@ -64,8 +67,30 @@ export class SocialView {
     this.mainVideo.setAttribute('aria-label', project.title);
     box.appendChild(this.mainVideo);
     if (config.works.glow.enabled) {
-      const glow = (this.glow = new Glow(this.main));
+      const glow = (this.glow = new Glow(this.main, config.social.glowPalette));
       this.mainVideo.addEventListener('loadeddata', () => glow.paint(this.mainVideo));
+    }
+
+    // Halo de la mosaïque : une image minuscule (un pixel par carré, à sa couleur moyenne), floutée et
+    // agrandie derrière les carrés. La lumière déborde juste autour de la mosaïque et dans ses interstices.
+    if (config.works.glow.enabled) {
+      const rows = SOCIAL.rows;
+      const cols = Math.ceil(this.media.length / rows);
+      const canvas = (this.halo = document.createElement('canvas'));
+      canvas.className = 'social__glow';
+      canvas.width = cols;
+      canvas.height = rows;
+      canvas.setAttribute('aria-hidden', 'true');
+      const ctx = canvas.getContext('2d')!;
+      const palette = config.social.glowPalette;
+      this.media.forEach((m, i) => {
+        const color = m.color ?? '#f2f2f2';
+        const [r, g, b] = [1, 3, 5].map((k) => parseInt(color.slice(k, k + 2), 16));
+        ctx.fillStyle = palette ? `rgb(${paletteColor(r, g, b, palette).join(',')})` : color;
+        ctx.fillRect(Math.floor(i / rows), i % rows, 1, 1);
+      });
+      Object.assign(canvas.style, { width: `${cols * HALO_CELL}px`, height: `${rows * HALO_CELL}px` });
+      this.el.append(canvas);
     }
 
     this.el.append(this.grid, this.main);
@@ -170,6 +195,23 @@ export class SocialView {
     // La mosaïque défile jusqu'à ce que sa dernière colonne touche le bord droit du cadre.
     const count = Math.ceil(this.media.length / rows);
     this.travel = Math.max(0, count * this.pitch - gapX - width);
+
+    // Halo : couvre toute la mosaïque plus la marge des halos (mêmes proportions que les autres fenêtres).
+    if (this.halo) {
+      const { margin, blur, saturate } = config.works.glow;
+      const m = margin * u;
+      const w = count * this.pitch - gapX + 2 * m;
+      const h = height + 2 * m;
+      const cw = count * HALO_CELL;
+      const ch = rows * HALO_CELL;
+      this.haloScale = { x: w / cw, y: h / ch };
+      // Centré sur la mosaïque, agrandi depuis son centre ; le flou s'applique avant l'agrandissement.
+      Object.assign(this.halo.style, {
+        left: `${left - m + w / 2 - cw / 2}px`,
+        top: `${top - m + h / 2 - ch / 2}px`,
+        filter: `blur(${((blur * u) / Math.sqrt(this.haloScale.x * this.haloScale.y)).toFixed(3)}px) saturate(${saturate})`,
+      });
+    }
     nav.setHold(this.index, this.travel * config.social.scrollPerPx, true);
   }
 
@@ -202,6 +244,14 @@ export class SocialView {
     const { stagger } = config.social;
     const lastDelay = (SOCIAL.columns + 2) * stagger;
     const shift = -nav.holdProgress(this.index, scroll) * this.travel; // défilement horizontal
+
+    // Le halo suit la mosaïque (page et défilement) et apparaît avec elle.
+    if (this.halo) {
+      const fx = drum(this.gridCy - off - H / 2, H, vy);
+      const { x: sx, y: sy } = this.haloScale;
+      this.halo.style.transform = `translate3d(${shift}px, ${-off}px, ${fx.z}px) rotateX(${fx.rotX}rad) scale(${sx}, ${sy})`;
+      this.halo.style.opacity = String(config.works.glow.opacity * arrive * arrive);
+    }
 
     this.columns.forEach((col, c) => {
       const e = easeOutCubic(clamp01((arrive - Math.min(c, SOCIAL.columns + 2) * stagger) / (1 - lastDelay)));

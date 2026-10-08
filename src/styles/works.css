@@ -129,6 +129,14 @@ main {
 
 /* ---------- Social Media : mosaïque de petits carrés (src/works/socialView.ts) ---------- */
 
+/* Halo de la mosaïque (taille, flou et position en JS) : derrière les carrés. */
+.social__glow {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+}
+
 /* La mosaïque garde la 3D de la page : ses colonnes se courbent pendant le défilement horizontal. */
 .social__grid {
   position: absolute;

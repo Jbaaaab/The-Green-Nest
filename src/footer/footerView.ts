@@ -115,7 +115,10 @@ export class FooterView {
     place(this.text, cx - tw / 2, cy + f.text.top * u, tw);
 
     this.cards.forEach((card, i) => {
-      place(card, cx + (f.cards.dx - f.cards.w / 2) * u, cy + f.cards.tops[i] * u, f.cards.w * u, f.cards.h * u);
+      // Positions de la maquette par profondeur : celle de devant (la 4) est la plus basse, les autres
+      // dépassent au-dessus d'elle, comme sur la maquette.
+      const depth = this.cards.length - 1 - i;
+      place(card, cx + (f.cards.dx - f.cards.w / 2) * u, cy + f.cards.tops[depth] * u, f.cards.w * u, f.cards.h * u);
     });
 
     // Logo et trait rouge : pleine largeur (ils s'étirent avec l'écran, comme dans la frame de 1440).
@@ -157,17 +160,52 @@ export class FooterView {
     move(this.logo, 1);
     move(this.symbol, 1);
 
-    // Les cartes montent d'en bas une à une (1, 2, 3, 4), puis s'envolent par le haut de la pile (4, 3, 2, 1).
-    const { arrive, leave, enter, lift, rotateDeg } = config.footer.cards;
-    const n = this.cards.length;
+    // Les cartes montent d'en bas une à une (1, 2, 3, 4) au fil du scroll. Une fois la pile complète, le
+    // scroll suivant les envoie toutes d'un coup (animation, voir fly) ; en remontant, elles reviennent.
+    const { arrive, enter, rotateDeg, pause } = config.footer.cards;
+    this.fly(reveal > (pause ?? arrive.start + 4 * arrive.stagger + arrive.duration) + 0.02 ? 1 : 0);
     const step = (t: number) => (reduced ? (t > 0 ? 1 : 0) : t);
     this.cards.forEach((card, i) => {
       const a = step(easeOutCubic(clamp01((reveal - arrive.start - i * arrive.stagger) / arrive.duration)));
-      const l = step(easeInOutCubic(clamp01((reveal - leave.start - (n - 1 - i) * leave.stagger) / leave.duration)));
+      const l = this.flight[i];
       const rot = (i % 2 === 0 ? -1 : 1) * rotateDeg * (1 - a + l);
-      const y = (1 - a) * enter * H - l * lift * H;
+      const y = (1 - a) * enter * H - l * config.footer.cards.lift * H;
       move(card, 1, y !== 0 ? `translateY(${y}px) rotate(${rot}deg)` : '');
       card.style.visibility = a <= 0 || l >= 1 ? 'hidden' : '';
     });
   }
+
+  // Envol de la pile : animé dans le temps (un seul scroll suffit), toutes les cartes ensemble,
+  // celle de devant un poil avant les autres. target : 1 = parties, 0 = revenues.
+  private flight = [0, 0, 0, 0];
+  private flyTarget = 0;
+  private flyFrom = 0;
+  private flyStart = 0;
+  private flyFrame = 0;
+  private fly(target: number): void {
+    if (target === this.flyTarget) return;
+    this.flyTarget = target;
+    const { flyMs, flyStagger } = config.footer.cards;
+    if (this.reduced.matches) {
+      this.flight.fill(target);
+      return;
+    }
+    this.flyFrom = this.flyProgress;
+    this.flyStart = performance.now();
+    cancelAnimationFrame(this.flyFrame);
+    const n = this.cards.length;
+    const tick = (now: number) => {
+      const t = clamp01((now - this.flyStart) / flyMs);
+      this.flyProgress = this.flyFrom + (target - this.flyFrom) * t;
+      // Décalage : celle de devant (la 4) part en premier, et revient en dernier.
+      this.flight = this.cards.map((_, i) => {
+        const delay = (n - 1 - i) * flyStagger;
+        return easeInOutCubic(clamp01((this.flyProgress - delay) / (1 - (n - 1) * flyStagger)));
+      });
+      this.update(nav.scroll, nav.velocity);
+      if (t < 1) this.flyFrame = requestAnimationFrame(tick);
+    };
+    this.flyFrame = requestAnimationFrame(tick);
+  }
+  private flyProgress = 0;
 }

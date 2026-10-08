@@ -1,7 +1,6 @@
 import { Box3, Euler, Group, InstancedMesh, Matrix4, Mesh, MeshMatcapMaterial, MeshStandardMaterial, Quaternion, Source, Vector3, type BufferGeometry, type Material, type Texture } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import ridgeSvg from '../assets/footer/ridge.svg?raw';
 import { config } from '../config';
 import { FOOTER_SECTION, footerState } from '../footer/footerView';
 import { nav } from '../nav';
@@ -37,10 +36,10 @@ function onRed(map: Texture, red: string): Texture {
 }
 
 /**
- * Montagne de daruma du footer : elle remplace le trait rouge de la maquette (Vector 1), qui en devient
- * la crête. Un amoncellement de petits daruma, face à l'écran, posé sur le grand logo et qui monte
- * jusqu'au tracé ; ils se balancent comme des culbutos. Modèle allégé (daruma-lite.glb, ~1 300 triangles)
- * et rendu instancié : un appel de dessin par matériau, quel que soit leur nombre.
+ * Tas de daruma du footer (à la place du trait rouge de la maquette) : un amoncellement de petits daruma,
+ * face à l'écran, qui part du bas de l'écran et monte entre 1/3 et 2/3 des lettres du grand logo ; ils se
+ * balancent comme des culbutos. Modèle allégé (daruma-lite.glb, ~1 300 triangles) et rendu instancié :
+ * un appel de dessin par matériau, quel que soit leur nombre.
  * Chargés seulement à l'approche du footer.
  */
 export class DarumaMountain implements Updatable {
@@ -118,100 +117,50 @@ export class DarumaMountain implements Updatable {
     this.dirty = true;
   }
 
-  // Place les daruma le long du trait rouge, en px écran (origine au centre, y vers le bas).
+  // Tas de daruma au pied de la page, en px écran (origine au centre, y vers le bas).
   private layout(): void {
     const { width: W, height: H, unit: u, mobile } = this.viewport;
     const f = config.footer;
     const d = f.daruma;
-    const k = W / f.ridge.frame; // le trait s'étire en largeur avec l'écran
-    const viewBoxW = 1449; // largeur du viewBox du SVG Vector 1
-    // Desktop : hauteur à l'échelle --u, haut du trait sous le centre (maquette).
-    // Mobile (hors maquette) : miniature du trait (même échelle que le grand logo), à la même distance du bas.
-    const ky = mobile ? k : u;
-    const top = mobile ? H / 2 - (f.ridge.frameH / 2 - f.ridge.top) * k : f.ridge.top * u;
-
-    // Échantillonne le tracé (en px écran) avec le moteur SVG du navigateur.
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.style.cssText = 'position:absolute;width:0;height:0;visibility:hidden';
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', /\sd="([^"]+)"/.exec(ridgeSvg)![1]);
-    svg.appendChild(path);
-    document.body.appendChild(svg);
-    const total = path.getTotalLength();
-    const pts: { x: number; y: number; len: number }[] = [];
-    let len = 0;
-    for (let i = 0; i <= 600; i++) {
-      const pt = path.getPointAtLength((total * i) / 600);
-      const x = (f.ridge.left + (pt.x * f.ridge.w) / viewBoxW) * k - W / 2;
-      const y = top + pt.y * ky;
-      if (pts.length) len += Math.hypot(x - pts[pts.length - 1].x, y - pts[pts.length - 1].y);
-      pts.push({ x, y, len });
-    }
-    svg.remove();
-
     const h = (mobile ? d.mobileHeight : d.height) * u;
     const w = h * this.aspect;
 
-    // Crête : pour chaque tranche de 2 px en x, le point le plus haut du tracé.
-    const BIN = 2;
-    const bins = Math.ceil(W / BIN) + 1;
-    const crest = new Float32Array(bins).fill(Infinity);
-    for (let i = 1; i < pts.length; i++) {
-      const a = pts[i - 1];
-      const b = pts[i];
-      const steps = Math.max(1, Math.ceil(Math.abs(b.x - a.x) / BIN));
-      for (let s = 0; s <= steps; s++) {
-        const x = a.x + ((b.x - a.x) * s) / steps;
-        const j = Math.round((x + W / 2) / BIN);
-        if (j >= 0 && j < bins) crest[j] = Math.min(crest[j], a.y + ((b.y - a.y) * s) / steps);
-      }
-    }
-    // Le pic du trait croise la dernière ligne du texte : sous le bloc de texte, la crête est repoussée
-    // juste en dessous (fondu sur une largeur de daruma de chaque côté), ailleurs elle suit le trait.
-    const text = document.querySelector<HTMLElement>('.footer__text');
-    const floor = text ? f.text.top * u + text.offsetHeight + d.textGap * u : -Infinity; // depuis le centre, comme le trait
-    const half = text ? text.offsetWidth / 2 : 0;
-    const crestAt = (x: number) => {
-      const y = crest[Math.min(bins - 1, Math.max(0, Math.round((x + W / 2) / BIN)))];
-      const weight = Math.min(1, Math.max(0, (half + w - Math.abs(x)) / w));
-      return y < floor ? y + (floor - y) * weight : y;
+    // Le tas part du bas de l'écran et monte entre 1/3 et 2/3 de la hauteur visible des lettres du
+    // grand logo (relief : quelques ondulations lentes, toujours les mêmes).
+    const letters = (f.logo.h + f.logo.bottom) * (W / f.logo.frame); // hauteur visible du logo (il déborde en bas)
+    const bottom = H / 2; // bas de l'écran, depuis le centre
+    const [lo, hi] = d.heap;
+    const amps = d.waves.reduce((s, [, a]) => s + a, 0);
+    const relief = (x: number) => {
+      const t = (x + W / 2) / W;
+      const v = d.waves.reduce((s, [freq, a], i) => s + a * Math.sin(TAU * (freq * t + hash(i + 40))), 0) / amps;
+      return lo + (hi - lo) * (0.5 + 0.5 * v);
     };
-    // Sol : le haut du grand logo (la montagne est posée dessus).
-    const kLogo = W / f.logo.frame;
-    const ground = H / 2 - (f.logo.h + f.logo.bottom) * kLogo;
 
-    // Amoncellement : des colonnes serrées ; dans chacune, le premier daruma touche la crête, les
-    // suivants s'empilent en dessous (chevauchés, un peu devant) jusqu'au sol. Une colonne sur deux est
+    // Des colonnes serrées : dans chacune, le premier daruma touche le haut du tas, les suivants s'empilent
+    // en dessous (chevauchés, un peu devant) jusque sous le bord de l'écran. Une colonne sur deux est
     // décalée d'une demi-hauteur, et tout est un peu en désordre.
     this.slots = [];
     const step = d.spacing * w;
     const rowStep = d.rowStep * h;
-    for (let c = 0, x = -W / 2 + step / 2; x < W / 2 && this.slots.length < MAX; c++, x += step) {
-      const top = crestAt(x);
-      if (!Number.isFinite(top)) continue;
-      const floorY = ground + d.sink * h; // la base peut s'enfoncer un peu dans le haut des lettres
-      let lastBase = top;
+    const floorY = bottom + d.sink * h; // la base du tas est coupée par le bas de l'écran
+    for (let c = 0, x = -W / 2 - step / 2; x < W / 2 + step && this.slots.length < MAX; c++, x += step) {
+      const top = bottom - letters * relief(x);
       for (let r = 0; this.slots.length < MAX; r++) {
         const n = this.slots.length;
         const scale = h * (d.scale[0] + (d.scale[1] - d.scale[0]) * hash(n));
-        let y = r === 0 ? top : top + (r + (c % 2) * 0.5) * rowStep + (hash(n + 300) - 0.5) * 2 * d.jitter * h;
-        if (y + scale > floorY) {
-          // Plus de place : s'il reste un trou au-dessus du sol, un dernier daruma posé dessus.
-          if (r === 0 || floorY - lastBase < 0.3 * h) break;
-          y = floorY - scale;
-        }
+        const y = r === 0 ? top : top + (r + (c % 2) * 0.5) * rowStep + (hash(n + 300) - 0.5) * 2 * d.jitter * h;
+        if (r > 0 && y > floorY - 0.5 * scale) break; // plus rien de visible en dessous
         this.slots.push({
           x: x + (hash(n + 700) - 0.5) * 2 * d.jitter * w,
           y: y + scale, // y = base du daruma (son origine)
           z: r * d.depth * h + hash(n + 100) * 0.2 * h, // ceux du dessous passent devant
           scale,
           yaw: (d.faceDeg + (hash(n + 500) * 2 - 1) * d.yawDeg) * DEG,
-          tilt: r === 0 ? 0 : (hash(n + 1100) * 2 - 1) * d.tiltDeg * DEG, // dans la pile, ils penchent un peu
+          tilt: r === 0 ? 0 : (hash(n + 1100) * 2 - 1) * d.tiltDeg * DEG, // dans le tas, ils penchent un peu
           phase: hash(n + 900) * TAU,
           amp: r === 0 ? 1 : d.rock.below, // ceux du dessous, coincés, se balancent moins
         });
-        lastBase = y + scale;
-        if (lastBase >= floorY - 0.5) break;
       }
     }
     for (const { mesh } of this.meshes) mesh.count = this.slots.length;
