@@ -35,12 +35,18 @@
   isolation: isolate;
 }
 
-.brands__field video {
+.brands__field video,
+.brands__blur {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* La vidéo ultra floutée (une image minuscule agrandie) couvre la vidéo nette, qui ne sert qu'à la lire. */
+.brands__blur {
+  image-rendering: auto;
 }
 
 .brands__lines,
@@ -79,7 +85,7 @@
   display: block;
 }
 
-/* Perdu : Chaewon au centre, « YOU LOST / YOU OWE ME THE JOB NOW » par-dessus, en noir négatif. */
+/* Perdu : Chaewon au centre, « YOU LOST / NOW YOU OWE ME THE JOB » par-dessus, en noir négatif. */
 .brands__lost {
   position: absolute;
   inset: 0;
@@ -110,6 +116,13 @@
   transform: scale(1) rotate(-3deg);
 }
 
+/* La photo et son texte s'inclinent ensemble vers la souris (transform en JS). */
+.brands__lost-tilt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 .brands__lost-card img {
   display: block;
   width: 100%;
@@ -117,6 +130,7 @@
   object-fit: cover;
 }
 
+/* Même taille et même graisse que les autres textes (demande du DA). */
 .brands__lost-text {
   position: absolute;
   left: 50%;
@@ -125,14 +139,9 @@
   width: max-content;
   color: #fff;
   mix-blend-mode: difference;
+  font-size: var(--ptext-size);
   text-align: center;
   line-height: normal;
-}
-
-.brands__lost-text strong {
-  display: block;
-  font-size: var(--bio-cool-size);
-  font-weight: var(--weight-extrabold);
 }
 
 .brands__lost-text span {

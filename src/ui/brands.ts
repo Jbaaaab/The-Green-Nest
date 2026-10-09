@@ -48,6 +48,9 @@ class BrandsGame {
   private glowTimer = 0;
   private lines: HTMLCanvasElement;
   private ballLayer: HTMLCanvasElement; // en mode différence : la balle en blanc négatif
+  private blur: HTMLCanvasElement; // la vidéo, minuscule et floutée, agrandie au terrain
+  private lostTilt: HTMLElement;
+  private pointer = { x: 0, y: 0 }; // position de la souris (écran)
   private paddleEls: Record<Side, HTMLElement>;
   private text: HTMLElement;
   private lost: HTMLElement;
@@ -92,7 +95,12 @@ class BrandsGame {
     this.video = document.createElement('video');
     Object.assign(this.video, { muted: true, loop: true, playsInline: true, preload: 'none', poster: media.videotape.main.poster });
     this.video.setAttribute('aria-hidden', 'true');
-    this.field.append(this.video);
+    // Fond ultra flou (demande du DA) : la vidéo recopiée dans une image minuscule, floutée puis agrandie au
+    // terrain. Presque gratuit, même sur mobile (un flou CSS de cette taille sur une vidéo coûterait cher).
+    this.blur = document.createElement('canvas');
+    this.blur.className = 'brands__blur';
+    this.blur.setAttribute('aria-hidden', 'true');
+    this.field.append(this.video, this.blur);
     this.glow = new Glow(this.field);
     this.video.addEventListener('loadeddata', () => this.glow.paint(this.video));
 
@@ -113,16 +121,27 @@ class BrandsGame {
     for (const side of ['cpu', 'player'] as Side[]) this.paddleEls[side].style.background = config.brands[side];
     this.board.append(this.field, this.lines, this.paddleEls.cpu, this.paddleEls.player, this.text, this.ballLayer);
 
-    // Perdu : Chaewon, et la dette.
+    // Perdu : Chaewon, et la dette. La photo s'incline avec la souris (comme le terrain).
     this.lost = el('div', 'brands__lost');
     this.lost.hidden = true;
     this.lost.innerHTML = `
-      <figure class="brands__lost-card">
+      <figure class="brands__lost-card"><div class="brands__lost-tilt">
         <img src="/brands/you-lost.webp" alt="" width="368" height="445" />
-        <figcaption class="brands__lost-text"><strong>YOU LOST</strong><span>YOU OWE ME THE JOB NOW</span></figcaption>
-      </figure>
+        <figcaption class="brands__lost-text"><span>YOU LOST</span><span>NOW YOU OWE ME THE JOB</span></figcaption>
+      </div></figure>
       <button class="brands__again" type="button">Play again</button>`;
-    this.lost.addEventListener('click', () => this.replay());
+    this.lostTilt = this.lost.querySelector<HTMLElement>('.brands__lost-tilt')!;
+
+    // Un clic hors du terrain ferme la popup ; perdu, un clic sur le terrain relance la partie.
+    this.root.addEventListener('click', (e) => {
+      const t = e.target as Element;
+      if (t.closest('.brands__close')) return;
+      if (t.closest('.brands__again')) return this.replay();
+      const { x, y, w, h } = this.court;
+      const inside = e.clientX >= x && e.clientX <= x + w && e.clientY >= y && e.clientY <= y + h;
+      if (!inside) this.close();
+      else if (this.isLost) this.replay();
+    });
 
     this.closeBtn = el('button', 'brands__close') as HTMLButtonElement;
     this.closeBtn.type = 'button';
@@ -207,6 +226,9 @@ class BrandsGame {
     const { x, y, w, h } = this.court;
     Object.assign(this.field.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px` });
     this.glow.resize(w, h, u);
+    const res = config.brands.blur.size; // largeur de l'image floutée (px) : plus petit = plus flou
+    this.blur.width = w >= h ? res : Math.max(8, Math.round((res * w) / h));
+    this.blur.height = w >= h ? Math.max(8, Math.round((res * h) / w)) : res;
     this.board.style.transformOrigin = `${x + w / 2}px ${y + h / 2}px`; // il s'incline autour du centre du terrain
     const dpr = Math.min(window.devicePixelRatio, 2);
     for (const c of [this.lines, this.ballLayer]) {
@@ -319,10 +341,19 @@ class BrandsGame {
     const max = config.brands.cpuSpeed * C * dt;
     this.paddles.cpu = clamp(this.paddles.cpu + clamp(goal - this.paddles.cpu, -max, max), len / 2, C - len / 2);
 
-    // Le terrain s'incline un peu vers la balle (comme une caméra qui la suit).
-    const na = clamp((b.a - L / 2) / (L / 2), -1, 1);
-    const nc = clamp((b.c - C / 2) / (C / 2), -1, 1);
+    // Le terrain s'incline un peu vers la balle (comme une caméra qui la suit) ; perdu, vers la souris.
+    const { x: cx, y: cy, w: cw, h: ch } = this.court;
+    const [pa, pc] = this.vertical ? [this.pointer.y - cy, this.pointer.x - cx] : [this.pointer.x - cx, this.pointer.y - cy];
+    const na = clamp(((this.isLost ? pa : b.a) - L / 2) / (L / 2), -1, 1);
+    const nc = clamp(((this.isLost ? pc : b.c) - C / 2) / (C / 2), -1, 1);
     const { along: ta, cross: tc } = config.brands.tilt;
+    if (this.isLost) {
+      // La photo de Chaewon s'incline aussi, un peu plus fort, vers la souris.
+      const mx = clamp((this.pointer.x - (cx + cw / 2)) / (cw / 2), -1, 1);
+      const my = clamp((this.pointer.y - (cy + ch / 2)) / (ch / 2), -1, 1);
+      const t = config.brands.lostTilt;
+      this.lostTilt.style.transform = `perspective(${900 * this.u}px) rotateX(${(my * t).toFixed(2)}deg) rotateY(${(-mx * t).toFixed(2)}deg)`;
+    }
     const goalX = this.vertical ? na * ta : nc * tc; // rotateX : le haut ou le bas vient vers nous
     const goalY = this.vertical ? -nc * tc : -na * ta; // rotateY : la gauche ou la droite vient vers nous
     const ease = 1 - Math.exp(-config.brands.tilt.ease * dt);
@@ -482,11 +513,20 @@ class BrandsGame {
     this.last = now;
     this.step(dt);
     this.draw();
+    // Fond : l'image de la vidéo, minuscule et floutée (débordant un peu, pour que le flou ne pâlisse pas les bords).
+    if (this.video.readyState >= 2) {
+      const ctx = this.blur.getContext('2d')!;
+      const { width: bw, height: bh } = this.blur;
+      const m = Math.max(2, bw * 0.08);
+      ctx.filter = `blur(${config.brands.blur.radius}px)`;
+      ctx.drawImage(this.video, -m, -m, bw + 2 * m, bh + 2 * m);
+    }
     if (this.isOpen) this.frame = requestAnimationFrame(this.tick);
   };
 
   // La raquette du joueur suit la souris ou le doigt (en travers du terrain).
   private onPointer = (e: PointerEvent) => {
+    this.pointer = { x: e.clientX, y: e.clientY };
     this.target = this.vertical ? e.clientX - this.court.x : e.clientY - this.court.y;
   };
 

@@ -442,6 +442,14 @@ export const config = {
     },
   },
 
+  // « MAIL COPIED » (clic sur Mail : l'adresse est copiée) : enveloppe 3D façon PS3 (src/scene/mailEnvelope.ts)
+  // et texte avec un halo (src/ui/mailToast.ts), une seconde (MAIL_TOAST_MS).
+  mail: {
+    size: 90, // hauteur de l'enveloppe (px de maquette ; elle fait 1,5 fois plus large)
+    lift: 24, // au-dessus du centre de l'écran (px de maquette) ; le texte est dessous
+    spinPeriod: 0.9, // secondes par tour
+  },
+
   // Popup « Brands » (src/ui/brands.ts, demande du DA) : un pong sur un terrain de foot, le case vidéo en fond
   // (avec son halo), lignes en blanc translucide. Le joueur (raquette verte, à droite ; en bas sur mobile) suit
   // la souris ou le doigt, l'adversaire (rose) joue seul. La balle est un logo de marque en blanc négatif, qui
@@ -454,6 +462,9 @@ export const config = {
     // Le terrain s'incline vers la balle (degrés max le long et en travers ; ease : vitesse du suivi ;
     // perspective en px de maquette).
     tilt: { along: 7, cross: 4, ease: 3, perspective: 1800 },
+    lostTilt: 14, // perdu : la photo de Chaewon s'incline vers la souris (degrés max)
+    // Fond ultra flou : la vidéo réduite à `size` px de large, floutée de `radius` px, puis agrandie au terrain.
+    blur: { size: 48, radius: 2.5 },
     ballArea: 3400, // surface du logo-balle : même poids visuel quel que soit son format
     ballMax: [150, 84] as [number, number], // largeur et hauteur max du logo-balle
     mobileBall: 0.6, // logo-balle sur mobile (× la taille desktop)

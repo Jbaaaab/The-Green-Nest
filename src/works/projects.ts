@@ -119,6 +119,7 @@ const LIST: Omit<Project, 'section'>[] = [
     main: { kind: 'placeholder' }, // pas de vidéo au centre
     side: media.musicCulture.columns.flatMap((c) => c.tiles),
     columns: media.musicCulture.columns.map((c) => ({ ratio: c.ratio, rows: c.tiles.length })),
+    roles: ['Art Direction', 'Graphic Design', 'Styling', 'Clip & MV Direction'], // « Stylism » dans le message du DA
   },
   {
     id: 'social-media',
@@ -133,6 +134,7 @@ const LIST: Omit<Project, 'section'>[] = [
     layout: 'social',
     main: { kind: 'video', ...media.socialMedia.main }, // le case, dans le grand rectangle central
     side: media.socialMedia.tiles, // mélangés (npm run assets), colonne par colonne
+    roles: ['Art & Creative Direction', 'Graphic Design', 'Editing'],
   },
 ];
 

@@ -514,3 +514,76 @@ button {
     transition-duration: 0.2s;
   }
 }
+
+/* ---------- « MAIL COPIED » (src/ui/mailToast.ts) : une seconde au centre de l'écran ---------- */
+
+/* Sous le canvas 3D : l'enveloppe 3D tourne par-dessus le halo (src/scene/mailEnvelope.ts). */
+.mail-toast {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.mail-toast.is-on {
+  visibility: visible;
+  animation: mail-toast 1s ease forwards;
+}
+
+@keyframes mail-toast {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  78% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Halo flou autour de l'enveloppe : vert flash, un peu de rose. */
+.mail-toast__halo {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 24 * var(--u));
+  width: calc(240 * var(--u));
+  height: calc(170 * var(--u));
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(65, 243, 115, 0.75), rgba(255, 31, 180, 0.35) 55%, rgba(255, 255, 255, 0) 100%);
+  filter: blur(calc(18 * var(--u)));
+}
+
+/* Enveloppe en SVG seulement si la 3D n'est pas là. */
+.mail-toast__icon {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 24 * var(--u));
+  width: calc(90 * var(--u));
+  transform: translate(-50%, -50%);
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.has-mail-3d .mail-toast__icon {
+  display: none;
+}
+
+/* Le texte, comme les autres : majuscules, gras, en noir négatif. */
+.mail-toast__text {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 74 * var(--u)); /* sous le halo : noir sur blanc */
+  transform: translateX(-50%);
+  margin: 0;
+  color: #fff;
+  mix-blend-mode: difference;
+  font-size: var(--ptext-size);
+  line-height: normal;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mail-toast.is-on {
+    animation-duration: 1s;
+  }
+}

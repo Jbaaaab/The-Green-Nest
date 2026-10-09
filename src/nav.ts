@@ -157,10 +157,10 @@ class Nav {
   }
 
   /** Va (en douceur) jusqu'à l'arrêt d'une section. */
-  goTo(section: number): void {
+  goTo(section: number, hold = 0): void {
     const s = Math.max(0, Math.round(section));
-    // Au-delà du footer : tout en bas (cartes envolées).
-    this.target = s > this.count - 1 ? this.max : this.stopOf(s);
+    // Au-delà du footer : tout en bas (cartes envolées). hold : jusqu'où aller dans la zone fixe (0 → 1).
+    this.target = s > this.count - 1 ? this.max : this.stopOf(s) + hold * this.holdOf(s);
     this.animate();
   }
 

@@ -428,7 +428,15 @@ export class WorksView {
   // Rôles du projet affiché, chacun précédé d'une petite étoile.
   private setRoles(roles: string[]): void {
     const star = '<svg class="project-btn__star" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 0C5.4 3.3 6.7 4.6 10 5 6.7 5.4 5.4 6.7 5 10 4.6 6.7 3.3 5.4 0 5 3.3 4.6 4.6 3.3 5 0Z"/></svg>';
-    this.buttonRoles.innerHTML = roles.map((r) => `<span class="project-btn__role">${star}${r}</span>`).join('');
+    this.buttonRoles.replaceChildren(
+      ...roles.map((r) => {
+        const span = document.createElement('span');
+        span.className = 'project-btn__role';
+        span.innerHTML = star;
+        span.append(r); // en texte : « Clip & MV » s'affiche tel quel
+        return span;
+      }),
+    );
     this.button.classList.toggle('has-roles', roles.length > 0);
   }
 
