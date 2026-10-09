@@ -9,6 +9,7 @@ const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const HALO_CELL = 4; // taille CSS d'un pixel du halo avant agrandissement (px)
 const HALO_ROWS = 6; // résolution verticale du halo (pixels sur la hauteur de la bande)
+const HALO_PAD = 2; // marge transparente autour du halo (pixels), où le flou s'étale
 
 type Rect = { x: number; y: number; w: number; h: number };
 
@@ -197,8 +198,10 @@ export class StripView {
     const canvas = this.halo!;
     const q = plan.height / HALO_ROWS; // px écran par pixel du halo
     const cols = Math.max(1, Math.round(width / q));
-    canvas.width = cols;
-    canvas.height = HALO_ROWS;
+    // Marge transparente (HALO_PAD) autour de l'image : le flou s'y étale sans sortir de l'élément (certains
+    // navigateurs mobiles le coupent au bord : le halo s'arrêtait net).
+    canvas.width = cols + 2 * HALO_PAD;
+    canvas.height = HALO_ROWS + 2 * HALO_PAD;
     const ctx = canvas.getContext('2d')!;
     const sx = cols / width;
     const sy = HALO_ROWS / plan.height;
@@ -209,7 +212,12 @@ export class StripView {
         const [R, G, B] = [1, 3, 5].map((k) => parseInt(color.slice(k, k + 2), 16));
         ctx.fillStyle = this.cfg.glowPalette ? `rgb(${paletteColor(R, G, B, this.cfg.glowPalette).join(',')})` : color;
         const t = col.tiles[r];
-        ctx.fillRect((col.x - left - plan.gapX / 2) * sx, (t.y - plan.gapY / 2) * sy, (col.w + plan.gapX) * sx, (t.h + plan.gapY) * sy);
+        ctx.fillRect(
+          HALO_PAD + (col.x - left - plan.gapX / 2) * sx,
+          HALO_PAD + (t.y - plan.gapY / 2) * sy,
+          (col.w + plan.gapX) * sx,
+          (t.h + plan.gapY) * sy,
+        );
       }
     });
 
@@ -217,15 +225,16 @@ export class StripView {
     const m = margin * u;
     const w = width + 2 * m;
     const h = plan.height + 2 * m;
-    const cw = cols * HALO_CELL;
+    const cw = cols * HALO_CELL; // l'image, sans la marge : c'est elle qui couvre la bande
     const ch = HALO_ROWS * HALO_CELL;
+    const pad = HALO_PAD * HALO_CELL;
     this.haloScale = { x: w / cw, y: h / ch };
     // Centré sur la bande, agrandi depuis son centre ; le flou s'applique avant l'agrandissement.
     Object.assign(canvas.style, {
-      width: `${cw}px`,
-      height: `${ch}px`,
-      left: `${left - m + w / 2 - cw / 2}px`,
-      top: `${plan.top - m + h / 2 - ch / 2}px`,
+      width: `${cw + 2 * pad}px`,
+      height: `${ch + 2 * pad}px`,
+      left: `${left - m + w / 2 - cw / 2 - pad}px`,
+      top: `${plan.top - m + h / 2 - ch / 2 - pad}px`,
       filter: `blur(${((blur * u) / Math.sqrt(this.haloScale.x * this.haloScale.y)).toFixed(3)}px) saturate(${saturate})`,
     });
   }

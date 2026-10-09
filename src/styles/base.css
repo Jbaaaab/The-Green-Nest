@@ -476,11 +476,16 @@ button {
   pointer-events: none;
 }
 
+/* Plantes 3D (canvas, src/scene/loaderPlants.ts) ; en SVG seulement si la 3D ne peut pas démarrer. */
+.loader__canvas,
 .loader__plants {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.loader__plants {
   overflow: visible;
 }
 

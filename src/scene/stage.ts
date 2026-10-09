@@ -60,6 +60,15 @@ export class Stage {
     cancelAnimationFrame(this.frame);
   }
 
+  /** Arrête tout et libère le contexte WebGL (scène temporaire : l'écran de chargement). */
+  dispose(): void {
+    this.stop();
+    window.removeEventListener('resize', this.onResize);
+    document.removeEventListener('visibilitychange', this.onVisibility);
+    this.renderer.dispose();
+    this.renderer.forceContextLoss();
+  }
+
   private tick = (now: number) => {
     const delta = Math.min((now - this.last) / 1000, 0.1);
     this.last = now;

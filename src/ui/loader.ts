@@ -2,9 +2,10 @@ import { config } from '../config';
 import { readUnit } from './unit';
 
 /**
- * Écran de chargement (demande du DA) : le pourcentage au centre, « cool kids luv monstera » dessous, et des
- * plantes vert flash qui poussent depuis le bas de l'écran au fil du chargement (feuilles qui se déplient,
- * fleurs rose poison qui éclosent à la fin), comme celles du footer. En SVG : la 3D n'est pas encore là.
+ * Écran de chargement (demande du DA) : le pourcentage au centre, « cool kids love monsteras » dessous, et les
+ * plantes 3D du footer qui poussent depuis le bas de l'écran au fil du chargement (feuilles qui se déplient,
+ * fleurs rose poison qui éclosent à la fin) : src/scene/loaderPlants.ts, chargé tout de suite (Three.js sert
+ * ensuite à la bague). Si la 3D ne peut pas démarrer, les plantes sont dessinées en SVG.
  * Le pourcentage suit les vraies étapes (polices, page, module 3D, bague prête) et avance doucement entre
  * elles ; à 100 %, les fleurs s'ouvrent, puis l'écran s'efface.
  */
@@ -121,10 +122,34 @@ export function startLoader(): void {
   const root = document.querySelector<HTMLElement>('.loader');
   if (!root) return;
   const svg = root.querySelector<SVGSVGElement>('.loader__plants')!;
+  const canvas = root.querySelector<HTMLCanvasElement>('.loader__canvas')!;
   const pct = root.querySelector<HTMLElement>('.loader__pct')!;
-  let plants = grow(svg);
-  const resize = () => (plants = grow(svg));
+  const line = root.querySelector<HTMLElement>('.loader__line')!;
+
+  // Plantes 3D dès que Three.js est là ; en SVG (secours) si la 3D ne peut pas démarrer.
+  let plants: Plant[] = [];
+  let svgOn = false;
+  let stop3d: (() => void) | null = null;
+  let finished = false;
+  const resize = () => {
+    if (svgOn) plants = grow(svg);
+  };
   window.addEventListener('resize', resize);
+  const fallback = () => {
+    if (finished || svgOn) return;
+    svgOn = true;
+    canvas.remove();
+    plants = grow(svg);
+  };
+  requestAnimationFrame(() =>
+    import('../scene/loaderPlants')
+      .then(({ startLoaderPlants }) => {
+        if (finished) return;
+        const textBottom = () => line.getBoundingClientRect().bottom - window.innerHeight / 2;
+        stop3d = startLoaderPlants(canvas, () => shown, textBottom);
+      })
+      .catch(fallback),
+  );
 
   // Étapes réelles du chargement ; entre deux, le pourcentage avance doucement sans jamais s'arrêter.
   let target = 0.06;
@@ -170,10 +195,14 @@ export function startLoader(): void {
     // À 100 % : on laisse les fleurs s'ouvrir un instant, puis l'écran s'efface.
     if (shown === 1 && !doneAt) doneAt = now;
     if (doneAt && now - doneAt > 450) {
+      finished = true;
       root.classList.add('is-done');
       document.documentElement.classList.add('is-loaded');
       window.removeEventListener('resize', resize);
-      setTimeout(() => root.remove(), 800);
+      setTimeout(() => {
+        stop3d?.();
+        root.remove();
+      }, 800);
       return;
     }
     requestAnimationFrame(tick);

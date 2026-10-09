@@ -158,21 +158,27 @@ type Plant = {
   sway: number; // angle tenu (on twos)
 };
 
+/** Où planter un massif (px écran, depuis le centre, y vers le bas). */
+export type BedOptions = {
+  vp: Viewport;
+  seed: number;
+  ground: (x: number, rand: () => number) => number; // pied de la plante à l'abscisse x
+  textBottom: number; // bas du texte à ne pas recouvrir (au centre, les plantes restent dessous)
+  depth: (rand: () => number) => number; // profondeur (z) du pied
+};
+
 /**
- * Plantes du footer : des tiges vert flash sortent du tas de daruma quand on arrive sur le footer et poussent
- * tout doucement ; leurs feuilles se déplient au passage du bourgeon, une fleur rose poison éclot au bout (ou
- * la tige finit en vrille), et quelques petites fleurs s'ouvrent le long des tiges. Ensuite elles se
- * balancent un peu (on twos). Hautes sur les côtés, basses sous le texte. Rien à charger : tout est calculé
- * (laque en matcap, comme les daruma). Une tige = un appel de dessin ; feuilles, pétales et bourgeons instanciés.
+ * Un massif de plantes (vert flash, fleurs rose poison) : des tiges qui poussent, leurs feuilles qui se
+ * déplient au passage du bourgeon, une fleur qui éclot au bout (ou une vrille), quelques petites fleurs le
+ * long des tiges, puis un léger balancement. Hautes sur les côtés, basses sous le texte. Rien à charger :
+ * tout est calculé (laque en matcap). Une tige = un appel de dessin ; feuilles, pétales et bourgeons
+ * instanciés. Utilisé par le footer (FooterPlants) et l'écran de chargement (loaderPlants.ts).
  */
-export class FooterPlants implements Updatable {
-  private group = new Group();
+export class PlantBed {
+  readonly group = new Group();
+  /** Âge (s) auquel tout a poussé et fleuri. */
+  duration = 0;
   private plants: Plant[] = [];
-  private viewport: Viewport;
-  private dirty = true;
-  private start = -1; // instant de l'arrivée sur le footer (les plantes poussent à partir de là)
-  private done = false; // tout a poussé : on ne recalcule plus que le balancement
-  private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   private stemMat: MeshMatcapMaterial;
   private leaves: InstancedMesh;
   private petals: InstancedMesh;
@@ -186,19 +192,7 @@ export class FooterPlants implements Updatable {
   private z = new Vector3();
   private s = new Vector3();
 
-  static watch(stage: Stage): void {
-    let started = false;
-    nav.onScroll((scroll) => {
-      if (started || scroll < nav.stopOf(FOOTER_SECTION) - nav.sectionHeight * 1.4) return;
-      started = true;
-      const plants = new FooterPlants(stage);
-      stage.add(plants);
-      if (import.meta.env.DEV) Object.assign(window, { __plants: plants }); // pour les tests
-    });
-  }
-
-  private constructor(stage: Stage) {
-    this.viewport = stage.viewport;
+  constructor() {
     const p = config.footer.plants;
     const green: Texture = buildLacquerMatcap(linear(p.green), p.look);
     const pink: Texture = buildLacquerMatcap(linear(p.pink), p.look);
@@ -213,43 +207,30 @@ export class FooterPlants implements Updatable {
       mesh.count = 0;
       this.group.add(mesh);
     }
-    this.group.visible = false;
-    stage.scene.add(this.group);
   }
 
-  resize(vp: Viewport): void {
-    this.viewport = vp;
-    this.dirty = true;
-  }
-
-  // Tire les plantes : pieds dans le tas, réparties sur la largeur ; hauteur selon la place (sous le texte : basses).
-  private layout(): void {
+  // Tire les plantes : réparties sur la largeur ; hauteur selon la place (sous le texte : basses).
+  layout(o: BedOptions): void {
     for (const plant of this.plants) {
       this.group.remove(plant.stem);
       plant.stem.geometry.dispose();
     }
     this.plants = [];
-    const vp = this.viewport;
-    const { width: W, height: H, unit: u, mobile } = vp;
+    this.duration = 0;
+    const { width: W, height: H, unit: u, mobile } = o.vp;
     const p = config.footer.plants;
-    const f = config.footer;
     const count = mobile ? p.mobileCount : p.count;
-    const rand = random(31);
+    const rand = random(o.seed);
     const k = mobile ? 0.55 : 1; // tout est plus petit sur mobile
-    // Bas du texte du footer à l'arrêt (px depuis le centre, vers le bas) : sa place dans la page, sans le
-    // décalage de son arrivée.
-    const text = document.querySelector<HTMLElement>('.footer__text');
-    const textBottom = text?.offsetHeight ? text.offsetTop + text.offsetHeight - H / 2 : 70 * u;
-    const daruma = (mobile ? f.daruma.mobileHeight : f.daruma.height) * u;
 
     for (let i = 0; i < count; i++) {
       // Réparties sur la largeur, un peu en désordre.
       const x = -W / 2 + W * ((i + 0.15 + 0.7 * rand()) / count);
-      const ground = heapTop(x, vp) + daruma * (0.3 + 0.4 * rand()); // le pied est caché dans le tas
+      const ground = o.ground(x, rand);
       // Place disponible : sous le texte au centre, jusqu'en haut de l'écran sur les côtés (sur mobile, le
       // texte prend toute la largeur : toutes restent dessous).
       const side = mobile ? 0 : smoothstep(p.clear * u, (p.clear + 220) * u, Math.abs(x));
-      const roomCenter = ground - (textBottom + p.textGap * u);
+      const roomCenter = ground - (o.textBottom + p.textGap * u);
       const roomSides = ground - (-H / 2 + p.top * u);
       const [c0, c1] = p.height.center;
       const [s0, s1] = p.height.sides;
@@ -309,8 +290,8 @@ export class FooterPlants implements Updatable {
         });
       }
 
-      this.plants.push({
-        root: new Vector3(x, -ground, -0.4 * daruma - 6 * rand() * u),
+      const plant: Plant = {
+        root: new Vector3(x, -ground, o.depth(rand)),
         curve,
         stem,
         r0,
@@ -321,28 +302,22 @@ export class FooterPlants implements Updatable {
         grow: lerp(p.grow[0], p.grow[1], Math.min(1, height / (s1 * u * k))),
         phase: rand() * TAU,
         sway: 0,
-      });
+      };
+      this.plants.push(plant);
+      // Fin de la pousse de cette plante : fleur du bout, puis petites fleurs le long de la tige.
+      this.duration = Math.max(
+        this.duration,
+        plant.delay + plant.grow * 0.92 + p.bloom,
+        ...leaves.filter((l) => l.flower).map((l) => plant.delay + plant.grow * l.s + 1.2 + p.bloom),
+      );
     }
-    this.done = false;
   }
 
-  update(time: number): void {
-    const { pageY, visible } = footerState(nav.scroll);
-    this.group.visible = visible && pageY < this.viewport.height * 1.2;
-    if (!this.group.visible) return;
-    if (this.dirty) {
-      this.dirty = false;
-      this.layout();
-    }
-    // Les plantes commencent à pousser pendant l'arrivée sur le footer, avant les photos (config : start) ;
-    // tout de suite si le mouvement est réduit.
-    if (this.start < 0 && pageY <= this.viewport.height * config.footer.plants.start) this.start = time;
-    const reduced = this.reduced.matches;
-    const age = reduced ? 1e6 : this.start < 0 ? 0 : time - this.start;
-    this.group.position.y = -pageY;
-
-    const swayNow = steppedFrame() && !reduced;
-    if (this.done && !swayNow) return;
+  /**
+   * Pose les plantes à un âge donné (s depuis le début de la pousse) ; time : horloge du balancement ;
+   * sway : recalculer le balancement (on twos). Renvoie vrai tant que quelque chose pousse ou éclot.
+   */
+  pose(age: number, time: number, sway: boolean): boolean {
     const { deg, period } = config.footer.plants.sway;
     let growing = false;
     let nl = 0;
@@ -354,7 +329,7 @@ export class FooterPlants implements Updatable {
       const g = easeInOut(clamp01((age - plant.delay) / plant.grow));
       const bloom = easeOutCubic(clamp01((age - plant.delay - plant.grow * 0.92) / config.footer.plants.bloom));
       if (g < 1 || (plant.flower && bloom < 1)) growing = true;
-      if (swayNow) plant.sway = deg * DEG * Math.sin((TAU * time) / period + plant.phase) * smoothstep(0.6, 1, g);
+      if (sway) plant.sway = deg * DEG * Math.sin((TAU * time) / period + plant.phase) * smoothstep(0.6, 1, g);
       plant.stem.geometry.setDrawRange(0, Math.floor(g * RINGS) * RADIAL * 6);
       plant.stem.position.copy(plant.root);
       plant.stem.rotation.z = plant.sway;
@@ -411,7 +386,16 @@ export class FooterPlants implements Updatable {
     this.petals.count = np;
     this.hearts.count = nh;
     for (const mesh of [this.leaves, this.petals, this.hearts]) mesh.instanceMatrix.needsUpdate = true;
-    if (!growing && this.start >= 0) this.done = true;
+    return growing;
+  }
+
+  /** Libère la mémoire graphique (écran de chargement terminé). */
+  dispose(): void {
+    for (const plant of this.plants) plant.stem.geometry.dispose();
+    for (const mesh of [this.leaves, this.petals, this.hearts]) {
+      mesh.geometry.dispose();
+      (mesh.material as MeshMatcapMaterial).dispose();
+    }
   }
 
   // Orientation d'une lame : +Y vers dir, face (+Z) vers l'écran autant que possible, tournée de roll autour de dir.
@@ -468,4 +452,77 @@ export class FooterPlants implements Updatable {
     up: new Vector3(0, 1, 0),
     right: new Vector3(1, 0, 0),
   };
+}
+
+/**
+ * Plantes du footer (demande du DA : « pousser tout doucement en mode blossom ») : le massif sort du tas de
+ * daruma (pieds cachés dedans) et commence à pousser pendant l'arrivée sur le footer.
+ */
+export class FooterPlants implements Updatable {
+  private bed = new PlantBed();
+  private viewport: Viewport;
+  private dirty = true;
+  private start = -1; // instant de l'arrivée sur le footer (les plantes poussent à partir de là)
+  private done = false; // tout a poussé : on ne recalcule plus que le balancement
+  private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  static watch(stage: Stage): void {
+    let started = false;
+    nav.onScroll((scroll) => {
+      if (started || scroll < nav.stopOf(FOOTER_SECTION) - nav.sectionHeight * 1.4) return;
+      started = true;
+      const plants = new FooterPlants(stage);
+      stage.add(plants);
+      if (import.meta.env.DEV) Object.assign(window, { __plants: plants }); // pour les tests
+    });
+  }
+
+  private constructor(stage: Stage) {
+    this.viewport = stage.viewport;
+    this.bed.group.visible = false;
+    stage.scene.add(this.bed.group);
+  }
+
+  resize(vp: Viewport): void {
+    this.viewport = vp;
+    this.dirty = true;
+  }
+
+  // Pieds dans le tas de daruma ; au centre, sous le texte du footer (sa place dans la page, à l'arrêt).
+  private layout(): void {
+    const vp = this.viewport;
+    const { height: H, unit: u, mobile } = vp;
+    const text = document.querySelector<HTMLElement>('.footer__text');
+    const daruma = (mobile ? config.footer.daruma.mobileHeight : config.footer.daruma.height) * u;
+    this.bed.layout({
+      vp,
+      seed: 31,
+      ground: (x, rand) => heapTop(x, vp) + daruma * (0.3 + 0.4 * rand()), // le pied est caché dans le tas
+      textBottom: text?.offsetHeight ? text.offsetTop + text.offsetHeight - H / 2 : 70 * u,
+      depth: (rand) => -0.4 * daruma - 6 * rand() * u,
+    });
+    this.done = false;
+  }
+
+  update(time: number): void {
+    const { pageY, visible } = footerState(nav.scroll);
+    const group = this.bed.group;
+    group.visible = visible && pageY < this.viewport.height * 1.2;
+    if (!group.visible) return;
+    if (this.dirty) {
+      this.dirty = false;
+      this.layout();
+    }
+    // Les plantes commencent à pousser pendant l'arrivée sur le footer, avant les photos (config : start) ;
+    // tout de suite si le mouvement est réduit.
+    if (this.start < 0 && pageY <= this.viewport.height * config.footer.plants.start) this.start = time;
+    const reduced = this.reduced.matches;
+    const age = reduced ? 1e6 : this.start < 0 ? 0 : time - this.start;
+    group.position.y = -pageY;
+
+    const swayNow = steppedFrame() && !reduced;
+    if (this.done && !swayNow) return;
+    const growing = this.bed.pose(age, time, swayNow);
+    if (!growing && this.start >= 0) this.done = true;
+  }
 }

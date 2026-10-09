@@ -24,7 +24,12 @@ export function paletteColor(r: number, g: number, b: number, palette: string[])
   const t = x - i;
   return stops[i].map((v, c) => Math.round(v + (stops[i + 1][c] - v) * t));
 }
-const BOX = 24; // taille CSS de l'élément avant agrandissement (px)
+const BOX = 24; // taille CSS de la miniature avant agrandissement (px)
+// Marge transparente autour de la miniature (px du canvas) : le flou s'étale dedans, sans sortir de l'élément.
+// Sans elle, certains navigateurs mobiles (Safari) coupent le flou au bord de l'élément : le halo
+// s'arrêtait net, en rectangle (retour du DA).
+const PAD = 6;
+const CSS_PER_PX = BOX / SIZE;
 
 export class Glow {
   readonly el: HTMLCanvasElement;
@@ -33,10 +38,11 @@ export class Glow {
   constructor(parent: HTMLElement, private palette: string[] | null = null) {
     this.el = document.createElement('canvas');
     this.el.className = 'project__glow';
-    this.el.width = this.el.height = SIZE;
+    this.el.width = this.el.height = SIZE + 2 * PAD;
     this.el.setAttribute('aria-hidden', 'true');
     this.ctx = this.el.getContext('2d', { willReadFrequently: !!palette })!;
-    Object.assign(this.el.style, { width: `${BOX}px`, height: `${BOX}px`, opacity: String(config.works.glow.opacity) });
+    const size = `${(SIZE + 2 * PAD) * CSS_PER_PX}px`;
+    Object.assign(this.el.style, { width: size, height: size, opacity: String(config.works.glow.opacity) });
     parent.prepend(this.el);
   }
 
@@ -59,12 +65,12 @@ export class Glow {
     const ready = source instanceof HTMLVideoElement ? source.readyState >= 2 : source.complete && source.naturalWidth > 0;
     if (!ready) return;
     try {
-      this.ctx.drawImage(source, 0, 0, SIZE, SIZE);
+      this.ctx.drawImage(source, PAD, PAD, SIZE, SIZE);
       if (this.palette) {
-        const img = this.ctx.getImageData(0, 0, SIZE, SIZE);
+        const img = this.ctx.getImageData(PAD, PAD, SIZE, SIZE);
         const d = img.data;
         for (let i = 0; i < d.length; i += 4) d.set(paletteColor(d[i], d[i + 1], d[i + 2], this.palette), i);
-        this.ctx.putImageData(img, 0, 0);
+        this.ctx.putImageData(img, PAD, PAD);
       }
     } catch {
       // Source pas encore décodable : on réessaiera au prochain rafraîchissement.
