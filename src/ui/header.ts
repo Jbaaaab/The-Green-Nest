@@ -7,7 +7,16 @@ export function initHeader(root: ParentNode = document): void {
     window.dispatchEvent(new CustomEvent('cursor:next'));
   });
 
-  // Le logo ramène à l'accueil, « Works » ouvre le premier projet (sans recharger la page).
+  // Le logo ramène à l'accueil, « Works » ouvre le premier projet, « About » descend tout en bas, sur le
+  // footer et sa bio, cartes envolées (sans recharger la page).
+  const about = root.querySelector<HTMLAnchorElement>('.nav-about');
+  if (about) {
+    about.href = '#hello';
+    about.addEventListener('click', (e) => {
+      e.preventDefault();
+      nav.goTo(nav.count);
+    });
+  }
   root.querySelector<HTMLAnchorElement>('.brand')?.addEventListener('click', (e) => {
     e.preventDefault();
     nav.goTo(0);

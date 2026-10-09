@@ -62,26 +62,47 @@ export const config = {
         { dir: [0.2, 0.0, 1], size: 0.05, softness: 0.12, color: [1, 0.85, 0.2], intensity: 2.6 }, // éclat jaune
       ],
     },
-    // Chrome vert-bleu intense : curseurs, chiffres, et reflets des logos Instagram.
-    // Ciel bleu électrique, sol vert profond, horizon aqua très lumineux, grandes sources émeraude et bleues.
+    // Chrome vert, un poil de rose (comme les fleurs du footer) : curseurs, chiffres, reflets des plantes.
+    // Ciel vert profond, sol vert presque noir, horizon vert flash très lumineux, grandes sources vertes,
+    // et deux petites touches rose poison (#ff1fb4) qui passent sur les tranches en tournant.
+    // Vert flash #41F373 en RGB linéaire = [0.053, 0.896, 0.171] ; rose poison #ff1fb4 = [1, 0.014, 0.456].
     chrome: {
       exposure: 2.2,
-      floor: [0.0, 0.035, 0.012], // vert presque noir
-      horizon: [0.0, 0.5, 0.34], // émeraude lumineux
-      sky: [0.0, 0.02, 0.24], // bleu nuit
-      horizonLine: { color: [0.6, 1, 0.95], width: 0.05, intensity: 3 },
+      floor: [0.0, 0.03, 0.008], // vert presque noir
+      horizon: [0.03, 0.55, 0.12], // vert flash lumineux
+      sky: [0.0, 0.11, 0.03], // vert profond
+      horizonLine: { color: [0.75, 1, 0.8], width: 0.05, intensity: 3 }, // ligne menthe, presque blanche
       lights: [
-        { dir: [-0.55, 0.5, 0.65], size: 0.2, softness: 0.12, color: [0.0, 1, 0.4], intensity: 3.2 }, // émeraude, haut gauche
-        { dir: [0.6, 0.35, 0.7], size: 0.18, softness: 0.1, color: [0.0, 0.3, 1], intensity: 3.6 }, // bleu électrique, haut droite
-        { dir: [0.35, -0.4, 0.85], size: 0.14, softness: 0.1, color: [0.0, 0.95, 1], intensity: 3 }, // cyan, bas droite
-        { dir: [-0.45, -0.35, 0.82], size: 0.08, softness: 0.06, color: [0.35, 1, 0.1], intensity: 3.5 }, // vert acide
+        { dir: [-0.55, 0.5, 0.65], size: 0.2, softness: 0.12, color: [0.053, 0.896, 0.171], intensity: 3.4 }, // vert flash, haut gauche
+        { dir: [0.6, 0.35, 0.7], size: 0.17, softness: 0.1, color: [0.0, 0.62, 0.2], intensity: 3.2 }, // émeraude, haut droite
+        { dir: [0.35, -0.4, 0.85], size: 0.13, softness: 0.1, color: [0.35, 1, 0.1], intensity: 3 }, // vert acide, bas droite
+        { dir: [-0.45, -0.35, 0.82], size: 0.07, softness: 0.06, color: [1, 0.014, 0.456], intensity: 2.6 }, // rose poison, bas gauche
         { dir: [0.1, 0.55, 0.83], size: 0.05, softness: 0.05, color: [1, 1, 1], intensity: 6 }, // point blanc
         // Juste derrière la caméra : ce que les lettres reflètent quand elles sont de face.
-        { dir: [-0.15, 0.12, 1], size: 0.09, softness: 0.1, color: [0.0, 0.9, 0.5], intensity: 2.6 }, // vert
-        { dir: [0.15, -0.1, 1], size: 0.09, softness: 0.1, color: [0.0, 0.45, 1], intensity: 2.6 }, // bleu
+        { dir: [-0.15, 0.12, 1], size: 0.09, softness: 0.1, color: [0.053, 0.896, 0.171], intensity: 2.6 }, // vert flash
+        { dir: [0.15, -0.1, 1], size: 0.08, softness: 0.1, color: [0.0, 0.4, 0.12], intensity: 2.4 }, // vert sombre
         // Sur les côtés : ce que reflètent les tranches des lettres quand elles tournent.
-        { dir: [0.95, -0.1, 0.15], size: 0.25, softness: 0.2, color: [0.0, 0.15, 0.9], intensity: 2.2 }, // bleu profond
-        { dir: [-0.95, 0.1, 0.15], size: 0.25, softness: 0.2, color: [0.0, 0.8, 0.35], intensity: 2 }, // émeraude
+        { dir: [0.95, -0.1, 0.15], size: 0.25, softness: 0.2, color: [0.0, 0.35, 0.08], intensity: 2.2 }, // vert profond
+        { dir: [-0.95, 0.1, 0.15], size: 0.2, softness: 0.2, color: [1, 0.014, 0.456], intensity: 1.2 }, // rose poison
+      ],
+    },
+    // L'inverse, pour les logos Instagram : chrome rose poison, un poil de vert flash.
+    pinkChrome: {
+      exposure: 2.2,
+      floor: [0.03, 0.0, 0.012], // rose presque noir
+      horizon: [0.75, 0.02, 0.32], // rose poison lumineux
+      sky: [0.16, 0.0, 0.07], // rose profond
+      horizonLine: { color: [1, 0.8, 0.92], width: 0.05, intensity: 3 }, // ligne rose pâle, presque blanche
+      lights: [
+        { dir: [-0.55, 0.5, 0.65], size: 0.2, softness: 0.12, color: [1, 0.014, 0.456], intensity: 3.4 }, // rose poison, haut gauche
+        { dir: [0.6, 0.35, 0.7], size: 0.17, softness: 0.1, color: [0.75, 0.0, 0.5], intensity: 3.2 }, // magenta, haut droite
+        { dir: [0.35, -0.4, 0.85], size: 0.13, softness: 0.1, color: [1, 0.12, 0.3], intensity: 3 }, // rose chaud, bas droite
+        { dir: [-0.45, -0.35, 0.82], size: 0.07, softness: 0.06, color: [0.053, 0.896, 0.171], intensity: 2.6 }, // vert flash, bas gauche
+        { dir: [0.1, 0.55, 0.83], size: 0.05, softness: 0.05, color: [1, 1, 1], intensity: 6 }, // point blanc
+        { dir: [-0.15, 0.12, 1], size: 0.09, softness: 0.1, color: [1, 0.014, 0.456], intensity: 2.6 }, // rose, de face
+        { dir: [0.15, -0.1, 1], size: 0.08, softness: 0.1, color: [0.4, 0.0, 0.16], intensity: 2.4 }, // rose sombre, de face
+        { dir: [0.95, -0.1, 0.15], size: 0.25, softness: 0.2, color: [0.35, 0.0, 0.14], intensity: 2.2 }, // rose profond
+        { dir: [-0.95, 0.1, 0.15], size: 0.2, softness: 0.2, color: [0.053, 0.896, 0.171], intensity: 1.2 }, // vert flash
       ],
     },
     // Chrome à fond, reflets #41F373 (le vert de la marque) : la bague.
@@ -130,20 +151,22 @@ export const config = {
     // La bague roule comme une pièce sur une table légèrement creuse, vue de dessus (l'écran est la table).
     // tiltDeg : angle entre le plan de la bague et la verticale. 90 = à plat, 70-80 = légèrement penchée.
     tiltDeg: 75,
-    breathDeg: 11, // variation aléatoire de l'inclinaison, ± degrés (plus = plus chancelant ; 75 + 11 → 4° de la table)
-    breathPeriod: 0.9, // secondes : échelle de temps de cette variation (plus bas = plus nerveux)
+    // Demande du DA : « qu'elle chancelle fort en étant un poil plus fixe » (avant : ±11° toutes les 0,9 s).
+    breathDeg: 13, // variation aléatoire de l'inclinaison, ± degrés (plus = plus chancelant ; 75 + 13 → 2° de la table)
+    breathPeriod: 0.75, // secondes : échelle de temps de cette variation (plus bas = plus nerveux)
 
     // Un tour de précession (l'axe d'inclinaison fait le tour) à l'inclinaison de référence.
     // Comme un vrai disque d'Euler, ça accélère quand la bague s'aplatit et ralentit quand elle se redresse.
     precessionPeriod: 0.38,
 
     // Trajectoire : en roulant, la bague décrit des boucles dont le rayon change au hasard.
+    // Un poil plus fixe (demande du DA) : boucles plus petites (avant 8-150 px), rappel plus fort (avant 0,25 et 230 px).
     orbit: {
-      radiusMin: 8, // px de maquette : petites boucles serrées
-      radiusMax: 150, // px de maquette : grandes boucles qui emmènent la bague plus loin
+      radiusMin: 5, // px de maquette : petites boucles serrées
+      radiusMax: 75, // px de maquette : grandes boucles qui emmènent la bague plus loin
       changeEvery: 0.8, // secondes : vitesse à laquelle le rayon change (plus bas = plus nerveux)
-      pull: 0.25, // rappel vers le creux de la table (ring.center) ; 0 = aucun
-      maxOffset: 230, // px de maquette : au-delà, le rappel se renforce nettement
+      pull: 0.5, // rappel vers le creux de la table (ring.center) ; 0 = aucun
+      maxOffset: 120, // px de maquette : au-delà, le rappel se renforce nettement
       bigLoopSlowdown: 45, // px de maquette : plus bas = les grandes boucles ralentissent davantage
       mobileScale: 0.35, // sur mobile, boucles et écart max réduits (l'écran fait ~400 px de large)
     },
@@ -211,8 +234,9 @@ export const config = {
     restitution: 0.35, // rebond (0 = aucun, 1 = parfait)
     friction: 0.6,
     depth: 120, // profondeur de la « boîte » où s'empilent les logos, en px
-    // Laque rose (couleur du GLB) éclairée par le même HDRI que les curseurs (ambiences.chrome) :
-    // le rose reste lisible, les reflets vert-bleu glissent dessus.
+    // Chrome rose, un poil de vert : l'inverse des curseurs (demande du DA). null = laque rose (look ci-dessous).
+    chrome: 'pinkChrome' as 'pinkChrome' | null,
+    // Laque rose (couleur du GLB) éclairée par le même HDRI que les curseurs (ambiences.chrome), si chrome = null.
     look: {
       ambience: 'chrome', // HDRI des reflets (le même que les curseurs)
       key: [-0.4, 0.6, 1], // direction de la lumière qui éclaire le rose

@@ -1,8 +1,9 @@
-import { InstancedMesh, Matrix4, Quaternion, Vector3, type Material } from 'three';
+import { InstancedMesh, Matrix4, MeshMatcapMaterial, Quaternion, Vector3, type Material } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import type * as Rapier from '@dimforge/rapier3d-compat';
 import { config } from '../config';
+import { buildMatcap } from './environment';
 import { firstMesh, lacquer } from './materials';
 import type { Stage, Updatable, Viewport } from './stage';
 
@@ -146,8 +147,10 @@ export class InstaRain implements Updatable {
       .multiply(upright);
     this.dims.copy(size).divideScalar(width);
 
-    // Rose du GLB, éclairé par le même HDRI que les curseurs.
-    const material = lacquer(src.material as Material, config.rain.look);
+    // Chrome rose (l'inverse des curseurs), ou laque du rose du GLB éclairée par le même HDRI qu'eux.
+    const chrome = config.rain.chrome;
+    const source = src.material as Material;
+    const material = chrome ? new MeshMatcapMaterial({ matcap: buildMatcap(chrome), side: source.side }) : lacquer(source, config.rain.look);
 
     const max = config.rain.maxInstances;
     const mesh = new InstancedMesh(geometry, material, max);

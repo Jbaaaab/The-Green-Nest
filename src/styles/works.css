@@ -52,6 +52,13 @@ main {
   object-fit: cover;
 }
 
+/* Lien externe du projet (Longtemps, F1, Take Care) : toute la grande vidéo est cliquable. */
+.project__link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
 /* Halo lumineux derrière la fenêtre (voir src/works/glow.ts : taille, flou et opacité en JS). */
 .project__glow {
   position: absolute;
@@ -266,10 +273,10 @@ html:not(.has-3d-digits) .works-nav__item.is-current {
   height: 100%;
 }
 
-/* Mobile (hors maquette) : numéros répartis régulièrement sur la largeur. */
+/* Mobile (hors maquette) : numéros répartis régulièrement sur la largeur (--wnav-n numéros + le symbole). */
 @media (max-width: 767px) {
   .works-nav__item {
-    left: calc(var(--wnav-x0) + var(--wnav-span) * var(--k) / 8);
+    left: calc(var(--wnav-x0) + var(--wnav-span) * var(--k) / var(--wnav-n, 7));
     top: var(--wnav-top);
   }
 

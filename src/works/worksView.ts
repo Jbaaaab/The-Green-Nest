@@ -37,7 +37,7 @@ type Section = {
   el: HTMLElement | null; // l'article de la page (retiré du rendu quand elle est loin)
 };
 
-const NAV_SLOTS = 8;
+const NAV_SLOTS = Math.max(...PROJECTS.map((p) => p.number)); // un numéro par projet (1 à 7)
 const smooth = (e0: number, e1: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
   return t * t * (3 - 2 * t);
@@ -137,10 +137,14 @@ export class WorksView {
     end.addEventListener('click', () => nav.goTo(0));
     this.navEl.appendChild(end);
 
-    // Bouton vert « PROJET + » (UI seulement pour l'instant).
+    // Bouton vert « PROJET + » : ouvre le lien du projet affiché, s'il en a un (nouvel onglet).
     this.button = document.createElement('button');
     this.button.type = 'button';
     this.button.className = 'project-btn';
+    this.button.addEventListener('click', () => {
+      const link = PROJECTS.find((p) => p.section === nav.section)?.link;
+      if (link) window.open(link, '_blank', 'noopener');
+    });
     this.buttonLabel = document.createElement('span');
     this.buttonLabel.className = 'project-btn__label';
     this.button.append(this.buttonLabel);
@@ -237,6 +241,16 @@ export class WorksView {
       slides = { img, images: project.main.images, index: 0, ready: project.main.images.map(() => false) };
     } else {
       mainBox.parentElement!.classList.add('is-placeholder');
+    }
+    // Lien externe : toute la grande vidéo est cliquable (nouvel onglet).
+    if (project.link) {
+      const a = document.createElement('a');
+      a.className = 'project__link';
+      a.href = project.link;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.setAttribute('aria-label', `${project.title} (nouvel onglet)`);
+      mainBox.parentElement!.appendChild(a);
     }
 
     wins.push(this.textWin(project));
@@ -347,7 +361,10 @@ export class WorksView {
 
     // Rangée 1-8 (desktop) : calée sur le cadre des pages ; répartition régulière sur mobile (CSS).
     const row = boxRect(SINGLE.box, W, H, u);
-    this.navItems.forEach((item, i) => item.style.setProperty('--cx', `${row.left + NAV_ROW.numbers[i] * u}px`));
+    // Numéros et symbole répartis régulièrement, du « 1 » au symbole.
+    const step = (NAV_ROW.end - NAV_ROW.first) / NAV_SLOTS;
+    this.navItems.forEach((item, i) => item.style.setProperty('--cx', `${row.left + (NAV_ROW.first + i * step) * u}px`));
+    this.navEl.style.setProperty('--wnav-n', String(NAV_SLOTS)); // mobile : même répartition (CSS)
     this.navEl.style.setProperty('--end-cx', `${row.left + NAV_ROW.end * u}px`);
     this.navEl.style.setProperty('--row-y', `${row.top + NAV_ROW.y * u}px`);
     this.navEl.style.setProperty('--row-y-current', `${row.top + NAV_ROW.currentY * u}px`);
@@ -435,6 +452,9 @@ export class WorksView {
       });
       if (project) {
         this.buttonLabel.textContent = project.title;
+        this.button.classList.toggle('has-link', !!project.link);
+        if (project.link) this.button.setAttribute('aria-label', `${project.title} (nouvel onglet)`);
+        else this.button.removeAttribute('aria-label');
         this.fitButton();
       }
     }

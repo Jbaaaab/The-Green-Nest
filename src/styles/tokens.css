@@ -127,13 +127,14 @@
     /* Pages projets : pas de maquette mobile, mise à l'échelle des valeurs desktop */
     --wnav-x0: calc(16 * var(--u));
     --wnav-span: calc(100% - 44 * var(--u));
-    --wnav-top: calc(46 * var(--u));
-    --wnav-top-current: calc(38 * var(--u));
+    /* À cheval sur le haut des vidéos (cadre mobile à 66 px), comme sur desktop ; le courant au-dessus. */
+    --wnav-top: calc(59.5 * var(--u));
+    --wnav-top-current: calc(49.25 * var(--u));
     --wnav-size: calc(11.7 * var(--u));
     --wnav-current-size: calc(11.7 * var(--u));
     --wnav-font: calc(10.902 * var(--u));
     --wnav-end: calc(9.345 * var(--u));
-    --wnav-end-top: calc(46 * var(--u));
+    --wnav-end-top: calc(60.7 * var(--u));
     --ptext-size: calc(10.902 * var(--u));
     --pbtn-left: calc(10 * var(--u));
     --pbtn-bottom: calc(46 * var(--u));

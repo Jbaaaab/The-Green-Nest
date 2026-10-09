@@ -24,6 +24,7 @@ export type Project = {
   main: MainMedia;
   side: SideMedia[];
   columns?: { ratio: number; rows: number }[]; // posters : colonnes (format de leurs cases, nombre de cases), dans l'ordre de side
+  link?: string; // lien externe (nouvel onglet) : clic sur la grande vidéo ou sur le bouton vert « PROJET + »
 };
 
 const gap = (n: number) => ' '.repeat(n);
@@ -42,6 +43,7 @@ const LIST: Omit<Project, 'section'>[] = [
     layout: 'single',
     main: { kind: 'video', ...media.longtemps.main }, // le précase (6 s, en boucle)
     side: [],
+    link: 'https://www.youtube.com/channel/UCP9Gi6CObkBgustzOim7EvA',
   },
   {
     id: 'formula-one',
@@ -57,6 +59,9 @@ const LIST: Omit<Project, 'section'>[] = [
     layout: 'single',
     main: { kind: 'video', ...media.formulaOne.main }, // le case F1
     side: [],
+    // L'ancien case F1 (ancien site). Adresse Vercel de l'ancien projet : elle reste valable quand le nom de
+    // domaine passe sur ce site (designer-with-a-monstera.art/work/f1.html, elle, ne le sera plus).
+    link: 'https://monstera-site.vercel.app/work/f1.html',
   },
   {
     id: 'take-care',
@@ -71,6 +76,7 @@ const LIST: Omit<Project, 'section'>[] = [
     layout: 'mosaic',
     main: { kind: 'video', ...media.takeCare.main },
     side: media.takeCare.side,
+    link: 'https://www.instagram.com/take.care.beauty/',
   },
   {
     id: 'videotape',
@@ -245,13 +251,16 @@ export const POSTERS = {
   gapY: 25,
 };
 
-// Rangée 1-8 + symbole de fin, calée sur le cadre SINGLE (centres, en px depuis son coin haut-gauche).
-// Derrière les vidéos : sur Longtemps seuls le 1 et le symbole dépassent, de part et d'autre du cadre.
+// Rangée des numéros (un par projet, 1 à 7) + symbole de fin, calée sur le cadre SINGLE (centres, en px depuis
+// son coin haut-gauche), répartis régulièrement du « 1 » au symbole. Derrière les vidéos, à cheval sur leur
+// bord haut : la moitié des chiffres gris dépasse ; le chiffre courant (3D) est un peu au-dessus des autres.
+// Mesuré sur les maquettes (Typeshit, Social Media, Music & Culture) : centre des chiffres 0,75 px au-dessus
+// du haut des visuels, chiffre entouré 13,25 px plus haut.
 export const NAV_ROW = {
-  numbers: [-8, 159, 326, 493, 660, 818, 985, 1152],
-  end: 1326,
-  y: 23.5, // centre des numéros et du symbole
-  currentY: 21, // centre du numéro courant (19 px, un peu plus haut)
+  first: -8, // centre du « 1 »
+  end: 1326, // centre du symbole
+  y: -0.75, // centre des numéros et du symbole
+  currentY: -14, // centre du numéro courant (19 px)
 };
 
 /** Rectangle d'un cadre à l'écran, en px CSS (u = valeur de --u). */
