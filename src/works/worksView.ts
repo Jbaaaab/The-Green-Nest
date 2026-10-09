@@ -323,7 +323,8 @@ export class WorksView {
       const tw = mobile ? Math.min(project.textWidth * u, W - 40 * u) : project.textWidth * u;
       const textSpeed = config.works.parallax.text;
       const strip = project.layout === 'social' || project.layout === 'posters';
-      text.el.classList.toggle('is-centered', mobile || strip || project.layout === 'single');
+      // Texte centré sur son point d'ancrage, sauf sur mobile pour les grands cadres (texte au-dessus de la vidéo).
+      text.el.classList.toggle('is-centered', strip || (project.layout === 'single' ? !mobile : mobile));
       const sideSpeed = (i: number) => vMin + (vMax - vMin) * hash(section.index * 31 + i);
 
       if (strip) {
@@ -349,6 +350,17 @@ export class WorksView {
         set(main, b.left, b.top, b.width, b.height, 1);
         set(text, W / 2 + SINGLE.textDx * u - tw / 2, b.top + SINGLE.textCenter * u, tw, null, textSpeed);
         text.cy = H / 2;
+      } else if (project.layout === 'single') {
+        // Mobile, grands cadres (vidéos 16:9) : la vidéo entière, en 16:9 sur toute la largeur, et le texte
+        // au-dessus d'elle (demande du DA) ; le groupe est centré dans le cadre mobile.
+        const vh = (bw * 9) / 16;
+        set(text, (W - tw) / 2, by, tw, null, textSpeed);
+        const th = text.el.offsetHeight;
+        const gap = config.works.box.mobileTextGap * u;
+        const top = by + (bh - th - gap - vh) / 2;
+        set(text, (W - tw) / 2, top, tw, null, textSpeed);
+        text.cy = top + th / 2;
+        set(main, (W - bw) / 2, top + th + gap, bw, vh, 1);
       } else {
         // Mobile (hors maquette) : la vidéo seule, à la hauteur du cadre ; texte centré dessus.
         sides.forEach((w) => (w.el.hidden = true));

@@ -9,9 +9,12 @@ import { FooterView } from './footer/footerView';
 import { nav } from './nav';
 import { initHeader } from './ui/header';
 import { initClock } from './ui/clock';
+import { startLoader } from './ui/loader';
 import { initMusicPlayer } from './ui/musicPlayer';
 import { WorksView } from './works/worksView';
 
+// Écran de chargement : il suit les étapes (événements stage:module et stage:ready, plus bas et dans landing.ts).
+startLoader();
 initHeader();
 initClock();
 initMusicPlayer(document.querySelector<HTMLElement>('.music'));
@@ -36,8 +39,14 @@ if (canvas) {
     'load',
     () => {
       import('./scene/landing')
-        .then(({ initLanding3D }) => initLanding3D(canvas))
-        .catch((err) => console.error('3D indisponible :', err));
+        .then(({ initLanding3D }) => {
+          window.dispatchEvent(new Event('stage:module'));
+          return initLanding3D(canvas);
+        })
+        .catch((err) => {
+          console.error('3D indisponible :', err);
+          window.dispatchEvent(new Event('stage:ready')); // l'écran de chargement n'attend pas une 3D qui ne viendra pas
+        });
     },
     { once: true },
   );

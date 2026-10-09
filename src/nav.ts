@@ -4,8 +4,8 @@ import { PROJECTS } from './works/projects';
 /**
  * Scroll vertical fluide (inertie, façon Lenis) sur toute la page : accueil puis projets empilés.
  * - Pas d'aimant : on scrolle librement.
- * - Arrêt net quand le texte d'un projet arrive au milieu de l'écran (une page alignée) :
- *   il faut un nouveau geste pour repartir (l'inertie du trackpad ne fait pas passer l'arrêt).
+ * - Arrêt quand le texte d'un projet arrive au milieu de l'écran (une page alignée), avec un peu de
+ *   résistance seulement : un geste doux s'y arrête, un geste appuyé passe (config.works.resistance).
  * Toutes les animations lisent `scroll` (px) et `velocity` (px/s).
  */
 // Une section peut avoir, après son arrêt, une zone de scroll où sa page reste fixe (holdOf) :
@@ -164,25 +164,37 @@ class Nav {
     this.animate();
   }
 
-  // Avance la cible d'un delta, en s'arrêtant au premier arrêt rencontré (sauf celui d'où le geste
-  // est parti). Une fois arrêté, le reste du geste est ignoré : il faut relâcher et rescroller.
+  // Avance la cible d'un delta. Chaque arrêt rencontré (sauf celui d'où le geste est parti) résiste un peu
+  // (demande du DA : « un peu de résistance », c'était laborieux) : le geste y « dépense » d'abord
+  // config.works.resistance hauteurs d'écran de scroll, puis il passe. Un geste doux s'arrête donc pile sur
+  // la page ; un geste appuyé (ou un bon élan) continue jusqu'à la suivante.
   private push(delta: number): void {
-    if (this.blocked) return;
     const from = this.target;
     let to = Math.min(this.max, Math.max(0, from + delta));
+    const resistance = window.innerHeight * config.works.resistance;
     const gates = this.gates();
     for (const stop of delta < 0 ? gates.reverse() : gates) {
       if (Math.abs(stop - this.gestureFrom) < 2) continue; // l'arrêt de départ du geste est franchissable
-      const crossing = (from < stop && to >= stop) || (from > stop && to <= stop);
-      if (crossing) {
+      // Franchit l'arrêt (ou repart de l'arrêt où il s'est posé pendant ce geste).
+      const crossing = delta > 0 ? from <= stop && to > stop : from >= stop && to < stop;
+      if (!crossing) continue;
+      const key = Math.round(stop);
+      const spent = this.spent.get(key) ?? 0;
+      const beyond = Math.abs(to - stop); // ce que le geste voudrait faire au-delà de l'arrêt
+      if (spent + beyond < resistance) {
+        this.spent.set(key, spent + beyond);
         to = stop;
-        this.blocked = true;
         break;
       }
+      // Résistance épuisée : il passe, avec ce qui reste du geste.
+      this.spent.set(key, resistance);
+      to = stop + Math.sign(delta) * (spent + beyond - resistance);
     }
     this.target = to;
     this.animate();
   }
+
+  private spent = new Map<number, number>(); // résistance déjà dépensée à chaque arrêt pendant le geste en cours
 
   // Arrêts, dans l'ordre : celui de chaque section, plus les pauses dans les zones fixes.
   private gates(): number[] {
@@ -201,11 +213,9 @@ class Nav {
 
   private pauses: number[][] = SECTION_IDS.map(() => []);
 
-  private blocked = false;
-
   private startGesture(): void {
     this.gestureFrom = this.target;
-    this.blocked = false;
+    this.spent.clear();
   }
 
   private onWheel = (e: WheelEvent) => {

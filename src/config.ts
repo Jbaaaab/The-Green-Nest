@@ -250,7 +250,10 @@ export const config = {
   works: {
     // Scroll fluide avec inertie (pas d'aimant), arrêt quand le texte d'un projet arrive au milieu.
     spacing: 1.15, // distance entre deux arrêts, en hauteurs d'écran (un peu d'air entre les pages)
-    smooth: 6.5, // inertie du scroll : plus bas = plus glissé, plus haut = plus sec
+    smooth: 5.5, // inertie du scroll : plus bas = plus glissé, plus haut = plus sec (avant 6,5 : plus fluide, demande du DA)
+    // Résistance de chaque arrêt (pages, magazines, pile de cartes…), en hauteurs d'écran de scroll : le geste
+    // doit la « dépenser » pour passer. Avant : arrêt net, il fallait un nouveau geste (« laborieux », DA).
+    resistance: 0.28,
     wheelMultiplier: 1, // sensibilité molette / trackpad
     touchMultiplier: 1.6, // sensibilité au doigt
     touchMomentum: 260, // élan après un glissé au doigt
@@ -274,6 +277,7 @@ export const config = {
     // Cadre du contenu mobile, en px de maquette depuis les bords (hors maquette).
     box: {
       mobile: { side: 10, top: 66, bottom: 70 },
+      mobileTextGap: 18, // grands cadres sur mobile : écart entre le texte (au-dessus) et la vidéo 16:9
     },
 
     // Halo lumineux autour des fenêtres (façon symbolsofwealth.studio, en plus serré) :

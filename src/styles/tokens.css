@@ -52,7 +52,7 @@
   --clock-offset-x: calc(8 * var(--u)); /* l'horloge est décalée de 8 px par rapport au bouton */
   --clock-icon: calc(14 * var(--u));
   --clock-heart-x: calc(2 * var(--u));
-  --clock-heart-y: calc(9.25 * var(--u)); /* le cœur remonte sous le marcheur (icône combinée) */
+  --clock-heart-y: calc(15 * var(--u)); /* le cœur aligné sur la ligne « Seoul » (demande du DA ; avant 9,25 : sous le marcheur) */
   --clock-heart-w: calc(10 * var(--u));
   --clock-heart-h: calc(9 * var(--u));
   --clock-text-x: calc(20 * var(--u));

@@ -59,7 +59,10 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
   stage.start();
 
   canvas.style.transitionDuration = `${config.stage.fadeInMs}ms`;
-  requestAnimationFrame(() => canvas.classList.add('is-ready'));
+  requestAnimationFrame(() => {
+    canvas.classList.add('is-ready');
+    window.dispatchEvent(new Event('stage:ready')); // la bague est là : l'écran de chargement peut finir
+  });
 
   // Montagne de daruma du footer : chargée seulement à l'approche du footer.
   DarumaMountain.watch(stage);
