@@ -442,13 +442,18 @@ export const config = {
     },
   },
 
-  // Popup « Brands » (src/ui/brands.ts, demande du DA) : un pong sur un terrain blanc aux lignes vertes façon
-  // tennis. Le joueur (vert, à droite ; en bas sur mobile) suit la souris ou le doigt, l'adversaire (rose) joue
-  // seul. La balle est un logo de marque : elle change à chaque rebond (raquette ou mur) et prend la couleur du
-  // dernier qui l'a frappée. Tailles en px de maquette, vitesses en longueurs de terrain par seconde.
+  // Popup « Brands » (src/ui/brands.ts, demande du DA) : un pong sur un terrain de foot, le case vidéo en fond
+  // (avec son halo), lignes en blanc translucide. Le joueur (raquette verte, à droite ; en bas sur mobile) suit
+  // la souris ou le doigt, l'adversaire (rose) joue seul. La balle est un logo de marque en blanc négatif, qui
+  // change à chaque rebond (raquette ou mur) ; le terrain s'incline un peu vers elle. Raté : « YOU LOST ».
+  // Tailles en px de maquette, vitesses en longueurs de terrain par seconde.
   brands: {
-    player: '#41f373', // vert flash
-    cpu: '#ff1fb4', // rose poison
+    player: '#41f373', // raquette du joueur (vert flash)
+    cpu: '#ff1fb4', // raquette de l'adversaire (rose poison)
+    lines: 'rgba(255, 255, 255, 0.6)', // lignes du terrain, en transparence sur la vidéo
+    // Le terrain s'incline vers la balle (degrés max le long et en travers ; ease : vitesse du suivi ;
+    // perspective en px de maquette).
+    tilt: { along: 7, cross: 4, ease: 3, perspective: 1800 },
     ballArea: 3400, // surface du logo-balle : même poids visuel quel que soit son format
     ballMax: [150, 84] as [number, number], // largeur et hauteur max du logo-balle
     mobileBall: 0.6, // logo-balle sur mobile (× la taille desktop)

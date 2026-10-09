@@ -320,4 +320,71 @@ html:not(.has-3d-digits) .works-nav__item.is-current {
   top: 16.67%;
   width: calc(var(--pbtn-w) * 0.0811);
   height: 66.67%;
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Le « + » déplie les rôles du projet (Project.roles) : le bouton s'élargit, ils apparaissent après le titre,
+   chacun précédé d'une petite étoile ; le « + » tourne en « × ». */
+.project-btn {
+  transition: width 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.project-btn:not(.has-roles) {
+  cursor: default;
+}
+
+.project-btn__roles {
+  position: absolute;
+  left: var(--roles-x, 0);
+  top: 16.67%;
+  line-height: normal;
+  white-space: nowrap;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.project-btn__role + .project-btn__role {
+  margin-left: 0.7em;
+}
+
+.project-btn__star {
+  width: 0.78em;
+  height: 0.78em;
+  margin-right: 0.3em;
+  vertical-align: -0.02em;
+  fill: currentColor;
+}
+
+.project-btn.is-open .project-btn__roles {
+  opacity: 1;
+  transition-delay: 0.12s;
+}
+
+.project-btn.is-open .project-btn__plus {
+  transform: rotate(45deg);
+}
+
+/* Mobile (hors maquette) : la place manque à côté du titre ; les rôles s'affichent au-dessus du bouton,
+   dans une étiquette verte qui peut passer à la ligne. */
+@media (max-width: 767px) {
+  .project-btn__roles {
+    left: 0;
+    top: auto;
+    bottom: calc(100% + 4 * var(--u));
+    max-width: calc(100vw - 2 * var(--pbtn-left));
+    padding: calc(2 * var(--u)) calc(var(--pbtn-w) * 0.0676);
+    background: var(--color-green);
+    white-space: normal;
+    width: max-content;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-btn,
+  .project-btn__plus,
+  .project-btn__roles {
+    transition: none;
+  }
 }

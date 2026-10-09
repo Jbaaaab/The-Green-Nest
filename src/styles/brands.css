@@ -1,4 +1,4 @@
-/* ---------- Popup « Brands » : un pong (src/ui/brands.ts) ---------- */
+/* ---------- Popup « Brands » : un pong sur un terrain de foot (src/ui/brands.ts) ---------- */
 
 /* Sous le canvas 3D (z-index 5) : pendant le jeu, seul le curseur 3D y est dessiné, par-dessus la popup.
    Même niveau que le header et le dock, mais placée après eux : elle les recouvre. */
@@ -16,22 +16,58 @@
   opacity: 1;
 }
 
-.brands[hidden] {
+.brands[hidden],
+.brands__lost[hidden] {
   display: none;
 }
 
-.brands__court {
+/* Ce qui s'incline vers la balle : terrain, lignes, raquettes, texte, balle. Fond blanc : les éléments en mode
+   différence s'y mélangent (le transform isole le groupe). */
+.brands__board {
+  position: absolute;
+  inset: 0;
+  background: var(--color-bg);
+}
+
+/* Le case vidéo, à la taille du terrain, avec son halo (src/works/glow.ts) derrière. */
+.brands__field {
+  position: absolute;
+  isolation: isolate;
+}
+
+.brands__field video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
-/* « BRANDS / I'VE COOKED / WITH » : au centre du terrain, avec son trou (maquette). */
+.brands__lines,
+.brands__ball {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.brands__paddle {
+  position: absolute;
+}
+
+/* Logos et texte en blanc négatif (comme les textes des projets) : ils inversent la vidéo. */
+.brands__ball,
+.brands__text {
+  mix-blend-mode: difference;
+}
+
+/* « BRANDS / I'VE COOKED / WITH » : dans le rond central, avec son trou (maquette). */
 .brands__text {
   position: absolute;
   margin: 0;
   transform: translate(-50%, -50%);
+  color: #fff;
   font-size: var(--ptext-size);
   line-height: normal;
   text-align: center;
@@ -43,6 +79,72 @@
   display: block;
 }
 
+/* Perdu : Chaewon au centre, « YOU LOST / YOU OWE ME THE JOB NOW » par-dessus, en noir négatif. */
+.brands__lost {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(18 * var(--u));
+  background: rgba(255, 255, 255, 0.55);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.brands__lost.is-shown {
+  opacity: 1;
+}
+
+.brands__lost-card {
+  position: relative;
+  margin: 0;
+  height: min(calc(520 * var(--u)), 62vh);
+  aspect-ratio: 335 / 597;
+  transform: scale(0.92) rotate(-3deg);
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.2, 1.2);
+}
+
+.brands__lost.is-shown .brands__lost-card {
+  transform: scale(1) rotate(-3deg);
+}
+
+.brands__lost-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brands__lost-text {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  transform: translateX(-50%);
+  width: max-content;
+  color: #fff;
+  mix-blend-mode: difference;
+  text-align: center;
+  line-height: normal;
+}
+
+.brands__lost-text strong {
+  display: block;
+  font-size: var(--bio-cool-size);
+  font-weight: var(--weight-extrabold);
+}
+
+.brands__lost-text span {
+  display: block;
+  font-size: var(--ptext-size);
+}
+
+.brands__again {
+  font-size: var(--nav-size);
+  text-transform: uppercase;
+}
+
 /* Fermer : à la place d'Instagram / Mail. */
 .brands__close {
   position: absolute;
@@ -51,10 +153,15 @@
   font-size: var(--nav-size);
 }
 
-.brands__close::after {
+.brands__close::after,
+.brands__again::after {
   content: '';
   position: absolute;
   inset: -8px -10px;
+}
+
+.brands__again {
+  position: relative;
 }
 
 /* Le texte des magazines passe au-dessus du canvas : on le cache pendant le jeu. */
@@ -63,7 +170,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .brands {
+  .brands,
+  .brands__lost,
+  .brands__lost-card {
     transition: none;
   }
 }

@@ -137,18 +137,24 @@ export class WorksView {
     end.addEventListener('click', () => nav.goTo(0));
     this.navEl.appendChild(end);
 
-    // Bouton vert « PROJET + » : ouvre le lien du projet affiché, s'il en a un (nouvel onglet).
+    // Bouton vert « PROJET + » : le « + » déplie ce que le DA a fait sur le projet (Project.roles), précédé de
+    // petites étoiles. Desktop : au survol, et un clic le garde ouvert ; tactile : au tap. Le « + » tourne en « × ».
     this.button = document.createElement('button');
     this.button.type = 'button';
     this.button.className = 'project-btn';
-    this.button.addEventListener('click', () => {
-      const link = PROJECTS.find((p) => p.section === nav.section)?.link;
-      if (link) window.open(link, '_blank', 'noopener');
-    });
     this.buttonLabel = document.createElement('span');
     this.buttonLabel.className = 'project-btn__label';
-    this.button.append(this.buttonLabel);
+    this.buttonRoles = document.createElement('span');
+    this.buttonRoles.className = 'project-btn__roles';
+    this.buttonRoles.id = 'project-roles';
+    this.button.append(this.buttonLabel, this.buttonRoles);
     this.button.insertAdjacentHTML('beforeend', `<img class="project-btn__plus" src="${plusIcon}" alt="" width="12" height="12" />`);
+    this.button.setAttribute('aria-controls', 'project-roles');
+    this.button.setAttribute('aria-expanded', 'false');
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+    this.button.addEventListener('pointerenter', () => canHover.matches && this.openRoles(true, this.rolesPinned));
+    this.button.addEventListener('pointerleave', () => canHover.matches && this.openRoles(this.rolesPinned, this.rolesPinned));
+    this.button.addEventListener('click', () => this.openRoles(!this.rolesPinned || !this.rolesOpen, !this.rolesPinned));
 
     landing.after(this.root, this.texts, this.navEl, this.button);
 
@@ -386,11 +392,44 @@ export class WorksView {
 
   // Bouton vert : sa largeur de maquette, élargie si le titre ne tient pas (MUSIC & CULTURE), avec les mêmes
   // marges que la maquette (10 px de part et d'autre, 12 px avant le « + » de 12 px, pour un bouton de 148 px).
+  // Ouvert (desktop), il s'élargit pour montrer les rôles après le titre ; sur mobile, ils s'affichent au-dessus.
   private fitButton(): void {
+    const width = this.button.style.width;
+    this.button.style.transition = 'none';
     this.button.style.width = '';
     const base = this.button.offsetWidth;
-    const need = this.buttonLabel.offsetWidth + (44 / 148) * base;
-    if (need > base) this.button.style.width = `${need}px`;
+    const k = base / 148; // px du bouton par px de maquette
+    const label = this.buttonLabel.offsetWidth;
+    this.button.style.setProperty('--roles-x', `${10 * k + label + 12 * k}px`);
+    let need = label + 44 * k;
+    if (this.rolesOpen && !this.mobileQuery.matches) need = 10 * k + label + 12 * k + this.buttonRoles.offsetWidth + 34 * k;
+    const target = need > base ? `${need}px` : '';
+    // On part de la largeur actuelle pour que le changement soit animé (CSS).
+    this.button.style.width = width;
+    void this.button.offsetWidth;
+    this.button.style.transition = '';
+    this.button.style.width = target;
+  }
+
+  private buttonRoles: HTMLElement;
+  private rolesOpen = false;
+  private rolesPinned = false; // ouvert par un clic : reste ouvert quand la souris s'en va
+
+  private openRoles(open: boolean, pinned: boolean): void {
+    if (!this.buttonRoles.childElementCount) open = pinned = false; // projet sans rôles : le « + » ne fait rien
+    this.rolesPinned = pinned && open;
+    if (open === this.rolesOpen) return;
+    this.rolesOpen = open;
+    this.button.classList.toggle('is-open', open);
+    this.button.setAttribute('aria-expanded', String(open));
+    this.fitButton();
+  }
+
+  // Rôles du projet affiché, chacun précédé d'une petite étoile.
+  private setRoles(roles: string[]): void {
+    const star = '<svg class="project-btn__star" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 0C5.4 3.3 6.7 4.6 10 5 6.7 5.4 5.4 6.7 5 10 4.6 6.7 3.3 5.4 0 5 3.3 4.6 4.6 3.3 5 0Z"/></svg>';
+    this.buttonRoles.innerHTML = roles.map((r) => `<span class="project-btn__role">${star}${r}</span>`).join('');
+    this.button.classList.toggle('has-roles', roles.length > 0);
   }
 
   private update(scroll: number, velocity: number): void {
@@ -464,9 +503,10 @@ export class WorksView {
       });
       if (project) {
         this.buttonLabel.textContent = project.title;
-        this.button.classList.toggle('has-link', !!project.link);
-        if (project.link) this.button.setAttribute('aria-label', `${project.title} (nouvel onglet)`);
-        else this.button.removeAttribute('aria-label');
+        this.setRoles(project.roles ?? []);
+        this.rolesOpen = this.rolesPinned = false; // on change de page : replié
+        this.button.classList.remove('is-open');
+        this.button.setAttribute('aria-expanded', 'false');
         this.fitButton();
       }
     }

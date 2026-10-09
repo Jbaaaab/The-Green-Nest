@@ -24,7 +24,8 @@ export type Project = {
   main: MainMedia;
   side: SideMedia[];
   columns?: { ratio: number; rows: number }[]; // posters : colonnes (format de leurs cases, nombre de cases), dans l'ordre de side
-  link?: string; // lien externe (nouvel onglet) : clic sur la grande vidéo ou sur le bouton vert « PROJET + »
+  link?: string; // lien externe (nouvel onglet) : clic sur la grande vidéo
+  roles?: string[]; // ce que le DA a fait sur le projet : le « + » du bouton vert les déplie (textes du DA)
 };
 
 const gap = (n: number) => ' '.repeat(n);
@@ -44,6 +45,7 @@ const LIST: Omit<Project, 'section'>[] = [
     main: { kind: 'video', ...media.longtemps.main }, // le précase (6 s, en boucle)
     side: [],
     link: 'https://www.youtube.com/channel/UCP9Gi6CObkBgustzOim7EvA',
+    roles: ['3D Modeling', 'Art Direction', 'Titling'], // « Titleling » dans le message du DA : corrigé
   },
   {
     id: 'formula-one',
@@ -62,6 +64,7 @@ const LIST: Omit<Project, 'section'>[] = [
     // L'ancien case F1 (ancien site). Adresse Vercel de l'ancien projet : elle reste valable quand le nom de
     // domaine passe sur ce site (designer-with-a-monstera.art/work/f1.html, elle, ne le sera plus).
     link: 'https://monstera-site.vercel.app/work/f1.html',
+    roles: ['Art Direction', 'Motion Design'],
   },
   {
     id: 'take-care',
@@ -77,6 +80,7 @@ const LIST: Omit<Project, 'section'>[] = [
     main: { kind: 'video', ...media.takeCare.main },
     side: media.takeCare.side,
     link: 'https://www.instagram.com/take.care.beauty/',
+    roles: ['Art Direction', 'Motion Design'],
   },
   {
     id: 'videotape',
@@ -87,6 +91,7 @@ const LIST: Omit<Project, 'section'>[] = [
     layout: 'single', // comme Longtemps : le case dans le grand cadre, le texte centré dessus
     main: { kind: 'video', ...media.videotape.main },
     side: [],
+    roles: ['Creative Direction', 'Editing', 'Color Grading'],
   },
   {
     id: 'magazines',
@@ -97,6 +102,7 @@ const LIST: Omit<Project, 'section'>[] = [
     layout: 'magazine', // les magazines sont en 3D, dans le canvas : src/scene/magazines.ts
     main: { kind: 'placeholder' },
     side: [],
+    roles: ['Art Direction', 'Craft', 'Prepress'],
   },
   {
     id: 'music-culture',
