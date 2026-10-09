@@ -263,8 +263,8 @@ export const config = {
       videoFps: 8, // rafraîchissements par seconde du halo d'une vidéo
     },
 
-    // Diaporamas en attendant les vidéos (Longtemps, Formula One).
-    slideMs: 375, // durée d'une image (Longtemps)
+    // Diaporamas (main.kind 'slides', en attendant une vidéo ; plus utilisé depuis le précase de Longtemps).
+    slideMs: 375, // durée d'une image
 
     // Carrés de Take Care : leurs vidéos tournent au ralenti, à vitesse normale sous la souris,
     // et le carré survolé grandit un tout petit peu.
@@ -303,7 +303,17 @@ export const config = {
     sway: 0.07, // léger balancement au repos (radians) : les reflets glissent sur le papier
   },
 
-  // Page SOCIAL MEDIA (src/works/socialView.ts) : les posts arrivent du côté droit, colonne par colonne,
+  // Page MUSIC & CULTURE (src/works/stripView.ts) : comme Social Media, sans vidéo au centre (la pochette de
+  // 4000 km en grand, puis colonnes de carrés et d'affiches).
+  musicCulture: {
+    scrollPerPx: 1, // scroll consommé par px de défilement horizontal (plus = défilement plus lent)
+    arrive: 0.65, // les colonnes arrivent pendant la fin de l'approche de la page (fraction de la distance entre deux pages)
+    stagger: 0.06, // décalage d'arrivée entre deux colonnes (fraction de l'arrivée)
+    twist: true, // pendant le défilement horizontal, la bande se courbe comme un tambour vertical (selon la vitesse)
+    glowPalette: null as string[] | null, // halo : couleurs d'origine (voir social.glowPalette)
+  },
+
+  // Page SOCIAL MEDIA (src/works/stripView.ts) : les posts arrivent du côté droit, colonne par colonne,
   // puis la mosaïque défile vers la droite (la page reste fixe) avant que le scroll vertical reprenne.
   social: {
     scrollPerPx: 1, // scroll consommé par px de défilement horizontal (plus = défilement plus lent)
@@ -368,6 +378,34 @@ export const config = {
       rock: { deg: 7, period: 1.6, below: 0.3 }, // culbutos ; ceux du dessous, coincés, bougent moins (below)
       // Laque éclairée par le studio : le rouge reste franc, des reflets blancs glissent dessus.
       look: { ambience: 'studio', key: [-0.4, 0.6, 1], ambient: 0.5, f0: 0.25, reflection: 1.6 },
+    },
+
+    // Plantes (demande du DA : « pousser tout doucement en mode blossom ») : des tiges vert flash sortent du tas
+    // de daruma quand on arrive sur le footer ; leurs feuilles se déplient au passage du bourgeon, et une fleur
+    // rose poison éclot au bout (ou la tige finit en vrille). Hautes sur les côtés, basses sous le texte.
+    // Tailles en px de maquette, durées en secondes (src/scene/footerPlants.ts).
+    plants: {
+      count: 18, // tiges sur desktop
+      mobileCount: 8,
+      green: '#41f373', // tiges, feuilles, cœurs des fleurs
+      pink: '#ff1fb4', // pétales (rose poison)
+      stem: [3.4, 1.1] as [number, number], // rayon de la tige à la base et au bout
+      height: { center: [70, 190], sides: [320, 660] }, // hauteur au-dessus du tas : sous le texte, et sur les côtés
+      clear: 400, // demi-largeur de la zone sous le texte, où les plantes restent sous lui
+      textGap: 36, // marge entre le haut des plantes du centre et le bas du texte
+      top: 150, // les plus hautes s'arrêtent à cette distance du haut de l'écran
+      start: 0.5, // elles commencent à pousser quand le footer est à moitié arrivé (fraction de la hauteur d'écran restant à monter)
+      grow: [7, 12] as [number, number], // durée de pousse d'une tige (tirée au hasard ; les grandes poussent plus longtemps)
+      delay: [0, 2.5] as [number, number], // départs échelonnés
+      leaves: [3, 6] as [number, number], // feuilles par tige
+      leafSize: [16, 30] as [number, number], // longueur d'une feuille
+      flower: 0.7, // part des tiges qui finissent en fleur (les autres en vrille)
+      flowerSize: [30, 52] as [number, number], // diamètre d'une fleur ouverte
+      sideFlower: 0.3, // part des feuilles qui ont une petite fleur à côté
+      bloom: 2.2, // durée d'éclosion d'une fleur
+      sway: { deg: 2.2, period: 6 }, // balancement autour du pied (on twos)
+      // Laque éclairée par le même HDRI que les curseurs et la pluie (reflets vert-bleu).
+      look: { ambience: 'chrome', key: [-0.4, 0.6, 1], ambient: 0.45, f0: 0.25, reflection: 1.4 },
     },
   },
 

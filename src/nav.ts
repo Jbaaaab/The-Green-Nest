@@ -1,4 +1,5 @@
 import { config } from './config';
+import { PROJECTS } from './works/projects';
 
 /**
  * Scroll vertical fluide (inertie, façon Lenis) sur toute la page : accueil puis projets empilés.
@@ -9,9 +10,10 @@ import { config } from './config';
  */
 // Une section peut avoir, après son arrêt, une zone de scroll où sa page reste fixe (holdOf) :
 // - Magazines : les magazines 3D tournent et s'ouvrent (longueur : works/magazineTimeline.ts) ;
-// - Social Media : la mosaïque défile vers la droite (longueur donnée par socialView.ts) ;
+// - Music & Culture, Social Media : la bande défile vers la droite (longueur donnée par stripView.ts) ;
 // - le footer (« hello », la dernière) : ses cartes s'envolent (config.footer.reveal, en hauteurs d'écran).
-export const SECTION_IDS = ['', 'longtemps', 'formula-one', 'take-care', 'magazines', 'social-media', 'hello'] as const;
+// Sections : l'accueil, les projets dans l'ordre de PROJECTS (ancres #longtemps…), puis le footer.
+export const SECTION_IDS: string[] = ['', ...PROJECTS.map((p) => p.id), 'hello'];
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
@@ -127,7 +129,7 @@ class Nav {
   }
 
   init(): void {
-    const fromHash = SECTION_IDS.indexOf(location.hash.slice(1) as (typeof SECTION_IDS)[number]);
+    const fromHash = SECTION_IDS.indexOf(location.hash.slice(1));
     if (fromHash > 0) this.scroll = this.target = this.stopOf(fromHash);
     this.section = Math.max(0, fromHash);
 

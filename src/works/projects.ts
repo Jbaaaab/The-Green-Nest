@@ -19,9 +19,11 @@ export type Project = {
   title: string; // texte du bouton vert
   lines: string[]; // description, ligne par ligne
   textWidth: number; // largeur du bloc de texte, px de maquette
-  layout: 'single' | 'mosaic' | 'magazine' | 'social'; // magazine : 3D (src/scene/magazines.ts) ; social : src/works/socialView.ts
+  // magazine : 3D (src/scene/magazines.ts) ; social et posters : bandes qui défilent de côté (src/works/stripView.ts)
+  layout: 'single' | 'mosaic' | 'magazine' | 'social' | 'posters';
   main: MainMedia;
   side: SideMedia[];
+  columns?: { ratio: number; rows: number }[]; // posters : colonnes (format de leurs cases, nombre de cases), dans l'ordre de side
 };
 
 const gap = (n: number) => ' '.repeat(n);
@@ -38,7 +40,7 @@ const LIST: Omit<Project, 'section'>[] = [
     ],
     textWidth: 649,
     layout: 'single',
-    main: { kind: 'slides', images: media.longtemps.slides }, // en attendant la vidéo : images du clip
+    main: { kind: 'video', ...media.longtemps.main }, // le précase (6 s, en boucle)
     side: [],
   },
   {
@@ -71,8 +73,18 @@ const LIST: Omit<Project, 'section'>[] = [
     side: media.takeCare.side,
   },
   {
+    id: 'videotape',
+    number: 4, // juste avant Magazines (demande du DA) ; numéros dans l'ordre du scroll
+    title: 'VIDEOTAPE',
+    lines: [`LET’S WATCH A${gap(5)}VIDEOTAPE`, 'TOGETHER'], // maquette « LETS » : apostrophe ajoutée (fautes corrigées, accord du DA)
+    textWidth: 194,
+    layout: 'single', // comme Longtemps : le case dans le grand cadre, le texte centré dessus
+    main: { kind: 'video', ...media.videotape.main },
+    side: [],
+  },
+  {
     id: 'magazines',
-    number: 4,
+    number: 5,
     title: 'MAGAZINES',
     lines: [], // pas de texte pour l'instant
     textWidth: 0,
@@ -81,8 +93,24 @@ const LIST: Omit<Project, 'section'>[] = [
     side: [],
   },
   {
+    id: 'music-culture',
+    number: 6, // maquette : ⑥
+    title: 'MUSIC & CULTURE',
+    lines: [
+      'MUSIC & CULTURE',
+      `I’VE DONE THAT SHIT${gap(15)}FOR YEARS${gap(8)}WITH PASSION`,
+      `AND HEART${gap(2)}AND POOR${gap(9)}RETRIBUTION.`,
+      `NOW I WANNA WORK${gap(10)}FOR AESPA${gap(12)}AND BE RICH PLZ`,
+    ],
+    textWidth: 406,
+    layout: 'posters',
+    main: { kind: 'placeholder' }, // pas de vidéo au centre
+    side: media.musicCulture.columns.flatMap((c) => c.tiles),
+    columns: media.musicCulture.columns.map((c) => ({ ratio: c.ratio, rows: c.tiles.length })),
+  },
+  {
     id: 'social-media',
-    number: 7, // maquette 25:938 : les projets 5 et 6 viendront s'intercaler
+    number: 7, // maquette 25:938 : ⑦
     title: 'SOCIAL MEDIA',
     lines: [
       'SOCIAL MEDIA',
@@ -103,7 +131,7 @@ export const PROJECTS: Project[] = LIST.map((p, i) => ({ ...p, section: i + 1 })
  * magazine de devant. Les hors-séries Music et Fashion sont des sections de Typeshit : leur texte prend le
  * relais sur leurs doubles pages (spreads : de la n-ième à la m-ième, comptées à partir de 1, dans l'ordre de
  * MAGAZINES, scripts/optimize-assets.mjs). Sans spreads : le texte du magazine, couvertures comprises.
- * Orthographe reprise telle quelle des maquettes ; trous mesurés au pixel (une espace = 3,5 px de maquette).
+ * Fautes de la maquette corrigées (accord du DA) ; trous mesurés au pixel (une espace = 3,5 px de maquette).
  */
 export type MagazineText = { mag: string; spreads?: [number, number]; lines: string[]; textWidth: number };
 
@@ -112,10 +140,10 @@ export const MAGAZINE_TEXTS: MagazineText[] = [
     mag: 'typeshit',
     lines: [
       'TYPESHIT MAGAZINE',
-      `A BI-ANUAL MAGAZINE ABOUT${gap(9)}FASHION, TRAVEL, LIFE`,
+      `A BIANNUAL MAGAZINE ABOUT${gap(9)}FASHION, TRAVEL, LIFE`,
       `76 PAGES${gap(8)}MADE WITH PASSION.${gap(11)}TYPESHIT.`,
     ],
-    textWidth: 387,
+    textWidth: 392,
   },
   {
     mag: 'typeshit',
@@ -132,26 +160,26 @@ export const MAGAZINE_TEXTS: MagazineText[] = [
     spreads: [7, 9],
     lines: [
       `FASHION${gap(5)}HORS-SERIE`,
-      `FOCUSED ON${gap(11)}INTERESTING BRAND`,
-      `BUT YOU GUYS ONLY WATCH${gap(10)}DOLCE GABANA`,
+      `FOCUSED ON${gap(11)}INTERESTING BRANDS`,
+      `BUT YOU GUYS ONLY WATCH${gap(10)}DOLCE GABBANA`,
     ],
-    textWidth: 330,
+    textWidth: 339,
   },
   {
     mag: 'cpgcqd',
     lines: [
       'CPGCQDB MAGAZINE',
       `A ONCE${gap(10)}IN A LIFETIME${gap(10)}CULINARY STORY`,
-      `BASICALY A MAGAZINE I MADE FOR${gap(11)}MY FAMILY WITH`,
+      `BASICALLY A MAGAZINE I MADE FOR${gap(11)}MY FAMILY WITH`,
       `ALL THE${gap(5)}FAMILY RECIPES`,
     ],
-    textWidth: 383,
+    textWidth: 391,
   },
   {
     mag: 'dpp',
     lines: [
       'DA PUNK PROPAGANDA',
-      `MUISIC FANZINE${gap(12)}MADE FOR FUN`,
+      `MUSIC FANZINE${gap(12)}MADE FOR FUN`,
       `IN A${gap(8)}PUNK ROCK STYLE.`,
     ],
     textWidth: 254,
@@ -170,7 +198,9 @@ export type Box = { w: number; h: number; dx: number; dy: number };
 // Mesuré sur la maquette Longtemps 1512×949 (capture 1:1).
 export const SINGLE = {
   box: { w: 1320, h: 749, dx: 0, dy: 0.5 } as Box,
-  textTop: 347, // haut du texte, depuis le haut du cadre
+  // Milieu du bloc de texte, depuis le haut du cadre : 347 (haut des 4 lignes de Longtemps et F1) + 2 × 14 ;
+  // un texte plus court (la page vidéo, 2 lignes) reste centré au même endroit, comme sur sa maquette.
+  textCenter: 375,
   textDx: 0.5, // le texte est centré 0,5 px à droite du centre de l'écran
 };
 
@@ -196,12 +226,23 @@ export const MOSAIC = {
 // SOCIAL MEDIA (pas de maquette, d'après les indications du DA) : petits carrés de 1/4 de ceux de Take Care
 // (moitié de largeur et de hauteur), 6 rangées × 10 colonnes dans le même cadre (écarts recalculés pour le
 // remplir exactement). La mosaïque dépasse à droite et défile ; le grand rectangle de Take Care reste au centre.
+// Colonnes toujours pleines : les posts en trop (moins d'une colonne) ne sont pas affichés.
 export const SOCIAL = {
   box: MOSAIC.box,
   tile: { w: MOSAIC.square.w / 2, h: MOSAIC.square.h / 2 },
   rows: 6,
   columns: 10, // colonnes dans le cadre, à l'arrêt
   center: MOSAIC.center,
+};
+
+// MUSIC & CULTURE (maquette ⑥, d'après les indications du DA) : bande comme Social Media, dans le cadre de Take
+// Care (749 px de haut), avec ses écarts (34 px entre colonnes, 25 entre rangées). Chaque colonne a des cases de
+// même format (ratio largeur / hauteur) qui remplissent la hauteur : la pochette (1 carré de 749), 2 carrés de
+// 362, 3 affiches de 165×233 ou 2 de 256×362 (npm run assets compose les colonnes).
+export const POSTERS = {
+  box: MOSAIC.box,
+  gapX: 34,
+  gapY: 25,
 };
 
 // Rangée 1-8 + symbole de fin, calée sur le cadre SINGLE (centres, en px depuis son coin haut-gauche).

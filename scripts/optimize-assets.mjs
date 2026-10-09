@@ -216,12 +216,26 @@ const PROJECTS = {
     mainCrf: 27, // 18 s en 1600 px : un poil plus compressé pour rester léger
     side: [],
   },
+  longtemps: {
+    from: 'work/longtemps',
+    to: 'work/longtemps',
+    main: 'precase-longtemps.mov', // le précase (6 s, en boucle), dans le grand cadre ; remplace le diaporama
+    mainWidth: 1600,
+    side: [],
+  },
+  videotape: {
+    from: 'work/videos', // source locale seulement (.gitignore)
+    to: 'work/videotape',
+    main: 'VIDEO CASE.mov', // le case des vidéos (31 s), dans le grand cadre
+    mainWidth: 1600,
+    mainCrf: 30, // montage très découpé : plus compressé (8 Mo au lieu de 12 en CRF 27)
+    side: [],
+  },
 };
 
-// Diaporamas (en attendant les vidéos) : toutes les images d'un dossier, dans l'ordre alphabétique,
-// en WebP 1600 px (cadre de 1320 px). Ajoutés à media.generated.json sous { slides: [...] }.
+// Diaporamas : toutes les images d'un dossier, dans l'ordre alphabétique, en WebP. Ajoutés à
+// media.generated.json sous { slides: [...] }. (Longtemps en a eu un en attendant sa vidéo.)
 const SLIDES = {
-  longtemps: { from: 'work/longtemps', to: 'work/longtemps', width: 1600 },
   // Cartes du footer (315 px affichées) : 1xp, 2chaewon, 3duo, 4windows (la 1 est devant).
   footer: { from: 'footer-photos', to: 'footer', width: 640 },
 };
@@ -240,6 +254,80 @@ const SOCIAL = {
   rows: 6, // rangées de la mosaïque (tri par couleur : se lit colonne par colonne)
   neutral: 0.13, // tri par couleur : en dessous de cette saturation moyenne, une image est rangée avec les neutres
 };
+
+// Page Music & Culture : bande horizontale comme Social Media (src/works/stripView.ts), sans vidéo. La pochette
+// de 4000 km (Hakil) en grand d'abord, puis des colonnes de carrés (les assets carrés) et des colonnes
+// d'affiches (format A ; les 4:5 y vont aussi, un peu recadrés), selon un rythme. Colonnes toujours pleines :
+// 2 carrés par colonne (3 dans la dernière si leur nombre est impair) ; 3 affiches par colonne, et une ou deux
+// colonnes de 2 (plus grandes, en tête) pour absorber le reste. Doublons exacts retirés.
+const MUSIC_CULTURE = {
+  from: 'work/music-culture',
+  to: 'work/music-culture/grid',
+  hero: 'cover-4000-kilometres-2750.png', // la pochette, en grand, en premier
+  first: ['back-cover-4000km.png'], // en tête de leur colonne (le dos de la pochette, juste après elle)
+  skip: ['whatsapp-image-2026-07-30-at-08-22-34.jpeg'], // paysage 16:9 (carte titre de Longtemps) : ni carré ni affiche
+  pattern: ['square', 'poster', 'poster'], // rythme des colonnes après la pochette (on boucle)
+  widths: { hero: 1500, square: 740, poster: 520 }, // WebP 2x des tailles affichées (749, 362, 165-256 px)
+};
+
+async function optimizeMusicCulture() {
+  const p = MUSIC_CULTURE;
+  await mkdir(out(p.to), { recursive: true });
+  const seen = new Set();
+  const tile = async (f, width) => {
+    const name = `${slug(f)}.webp`;
+    await imageStill(src(`${p.from}/${f}`), out(`${p.to}/${name}`), width);
+    return { image: `/${p.to}/${name}`, color: (await colorOf(out(`${p.to}/${name}`))).color };
+  };
+
+  // Tri par format : carrés, affiches (et 4:5) ; les autres sont ignorés.
+  const squares = [];
+  const posters = [];
+  const files = (await readdir(src(p.from))).filter((f) => /\.(png|jpe?g)$/i.test(f)).sort();
+  for (const f of files) {
+    const sum = createHash('sha1').update(await readFile(src(`${p.from}/${f}`))).digest('hex');
+    if (seen.has(sum) || f === p.hero || p.skip.includes(f)) continue;
+    seen.add(sum);
+    const { width, height } = await sharp(src(`${p.from}/${f}`)).metadata();
+    const r = width / height;
+    if (Math.abs(r - 1) < 0.03) squares.push(f);
+    else if (r < 0.9) posters.push(f);
+    else console.warn(`music-culture : ${f} ignoré (ni carré ni affiche, ${r.toFixed(2)})`);
+  }
+  const front = (list) => [...p.first.filter((f) => list.includes(f)), ...list.filter((f) => !p.first.includes(f))];
+
+  // Découpe en colonnes pleines.
+  const cut = (list, sizes) => {
+    const cols = [];
+    let i = 0;
+    for (const n of sizes) cols.push(list.slice(i, (i += n)));
+    return cols;
+  };
+  const sq = front(squares);
+  const sqSizes = new Array(Math.floor(sq.length / 2)).fill(2);
+  if (sq.length % 2 && sqSizes.length) sqSizes[sqSizes.length - 1] = 3;
+  const po = front(posters);
+  const small = (3 - (po.length % 3)) % 3; // colonnes de 2 affiches pour que tout tombe juste
+  const poSizes = po.length >= 2 * small ? [...new Array(small).fill(2), ...new Array((po.length - 2 * small) / 3).fill(3)] : [];
+  const queues = { square: cut(sq, sqSizes), poster: cut(po, poSizes) };
+
+  // Pochette, puis les colonnes selon le rythme (quand un format est épuisé, l'autre continue).
+  const columns = [{ ratio: 1, tiles: [await tile(p.hero, p.widths.hero)] }];
+  for (let k = 0; queues.square.length || queues.poster.length; k++) {
+    let kind = p.pattern[k % p.pattern.length];
+    if (!queues[kind].length) kind = kind === 'square' ? 'poster' : 'square';
+    const col = queues[kind].shift();
+    const tiles = [];
+    for (const f of col) tiles.push(await tile(f, p.widths[kind]));
+    columns.push({ ratio: kind === 'square' ? 1 : +Math.SQRT1_2.toFixed(4), tiles });
+  }
+
+  let total = 0;
+  for (const f of await readdir(out(p.to))) total += (await stat(out(`${p.to}/${f}`))).size;
+  const count = columns.reduce((n, c) => n + c.tiles.length, 0);
+  console.log(`${p.to}`.padEnd(28), `${count} images en ${columns.length} colonnes, ${kb(total)}`);
+  return { columns };
+}
 
 // Page Magazines : les magazines en 3D (src/scene/magazines.ts). Pour chacun : couverture, 4e de
 // couverture (une page) et doubles pages, dans l'ordre de lecture. Textures WebP (une page ≈ 700 px de large).
@@ -478,6 +566,7 @@ async function optimizeProjects() {
   }
 
   media.socialMedia = await optimizeSocial();
+  media.musicCulture = await optimizeMusicCulture();
   media.magazines = await optimizeMagazines();
 
   await writeFile(path.join(root, 'src/works/media.generated.json'), JSON.stringify(media, null, 2) + '\n');

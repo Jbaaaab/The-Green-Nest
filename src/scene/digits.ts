@@ -131,7 +131,7 @@ export class Digits3D implements Updatable {
   private mask(x0: number, y0: number, x1: number, y1: number): void {
     const { width, height } = this.viewport;
     let n = 0;
-    for (const el of document.querySelectorAll<HTMLElement>('.project__main, .project__side, .social__tile.is-top')) {
+    for (const el of document.querySelectorAll<HTMLElement>('.project__main, .project__side, .strip__tile.is-top')) {
       if (n >= MAX_OCCLUDERS) break;
       if (el.hidden || el.style.visibility === 'hidden' || !el.offsetParent) continue;
       const b = el.getBoundingClientRect();

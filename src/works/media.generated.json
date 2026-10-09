@@ -65,28 +65,18 @@
     "side": []
   },
   "longtemps": {
-    "slides": [
-      "/work/longtemps/billie.webp",
-      "/work/longtemps/bureau-01.webp",
-      "/work/longtemps/bureau-02.webp",
-      "/work/longtemps/cafe-01.webp",
-      "/work/longtemps/cafe-02.webp",
-      "/work/longtemps/cafe-03.webp",
-      "/work/longtemps/chambre-01.webp",
-      "/work/longtemps/chambre-02.webp",
-      "/work/longtemps/chambre-03.webp",
-      "/work/longtemps/image-30.webp",
-      "/work/longtemps/image-31.webp",
-      "/work/longtemps/ours.webp",
-      "/work/longtemps/rer-01.webp",
-      "/work/longtemps/rer-02.webp",
-      "/work/longtemps/rue-01.webp",
-      "/work/longtemps/rue-02.webp",
-      "/work/longtemps/rue-03.webp",
-      "/work/longtemps/rue-04.webp",
-      "/work/longtemps/thibz.webp",
-      "/work/longtemps/thibz2.webp"
-    ]
+    "main": {
+      "video": "/work/longtemps/precase-longtemps.mp4",
+      "poster": "/work/longtemps/precase-longtemps.webp"
+    },
+    "side": []
+  },
+  "videotape": {
+    "main": {
+      "video": "/work/videotape/video-case.mp4",
+      "poster": "/work/videotape/video-case.webp"
+    },
+    "side": []
   },
   "footer": {
     "slides": [
@@ -540,6 +530,177 @@
       {
         "image": "/work/social-media/tiles/1.webp",
         "color": "#e86c5d"
+      }
+    ]
+  },
+  "musicCulture": {
+    "columns": [
+      {
+        "ratio": 1,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/cover-4000-kilometres-2750.webp",
+            "color": "#efdccb"
+          }
+        ]
+      },
+      {
+        "ratio": 1,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/back-cover-4000km.webp",
+            "color": "#f2e2ce"
+          },
+          {
+            "image": "/work/music-culture/grid/back-mockup.webp",
+            "color": "#c1c4c0"
+          }
+        ]
+      },
+      {
+        "ratio": 0.7071,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/1.webp",
+            "color": "#3f4f6a"
+          },
+          {
+            "image": "/work/music-culture/grid/3.webp",
+            "color": "#517d78"
+          },
+          {
+            "image": "/work/music-culture/grid/apt-poster-v3-low.webp",
+            "color": "#e47398"
+          }
+        ]
+      },
+      {
+        "ratio": 0.7071,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/bauhaus-low.webp",
+            "color": "#b39988"
+          },
+          {
+            "image": "/work/music-culture/grid/bibi-omega-low.webp",
+            "color": "#5f7e81"
+          },
+          {
+            "image": "/work/music-culture/grid/capture-decran-2025-05-23-a-14-54-45.webp",
+            "color": "#e17c5e"
+          }
+        ]
+      },
+      {
+        "ratio": 1,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/cover.webp",
+            "color": "#674543"
+          },
+          {
+            "image": "/work/music-culture/grid/mockup-tee-2.webp",
+            "color": "#b4aca9"
+          }
+        ]
+      },
+      {
+        "ratio": 0.7071,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/cover-low.webp",
+            "color": "#637e9b"
+          },
+          {
+            "image": "/work/music-culture/grid/front.webp",
+            "color": "#c9c9c7"
+          },
+          {
+            "image": "/work/music-culture/grid/halsey.webp",
+            "color": "#8d98ae"
+          }
+        ]
+      },
+      {
+        "ratio": 0.7071,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/houdi-poster-min.webp",
+            "color": "#595b40"
+          },
+          {
+            "image": "/work/music-culture/grid/poster-asap.webp",
+            "color": "#b9ac45"
+          },
+          {
+            "image": "/work/music-culture/grid/poster-juice-v3.webp",
+            "color": "#a89982"
+          }
+        ]
+      },
+      {
+        "ratio": 1,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/pixelated-kiss-poster.webp",
+            "color": "#822621"
+          },
+          {
+            "image": "/work/music-culture/grid/snapinsta-to-610138504-17877544062452508-1471944247257045174-n.webp",
+            "color": "#6a2723"
+          }
+        ]
+      },
+      {
+        "ratio": 0.7071,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/poster-kim-chaewon-min.webp",
+            "color": "#975f30"
+          },
+          {
+            "image": "/work/music-culture/grid/poster-woodstock-2969-decli-asap-v1.webp",
+            "color": "#d97e67"
+          },
+          {
+            "image": "/work/music-culture/grid/poster-woodstock-2969-decli-tyler-v1.webp",
+            "color": "#e48a71"
+          }
+        ]
+      },
+      {
+        "ratio": 0.7071,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/poster-woodstock-2969-principal-v2.webp",
+            "color": "#893941"
+          },
+          {
+            "image": "/work/music-culture/grid/poster-woodstock-2969-vectoriel.webp",
+            "color": "#ec7976"
+          },
+          {
+            "image": "/work/music-culture/grid/poster.webp",
+            "color": "#667b8e"
+          }
+        ]
+      },
+      {
+        "ratio": 0.7071,
+        "tiles": [
+          {
+            "image": "/work/music-culture/grid/time-poster.webp",
+            "color": "#c8d1d8"
+          },
+          {
+            "image": "/work/music-culture/grid/ultra-low.webp",
+            "color": "#5c5971"
+          },
+          {
+            "image": "/work/music-culture/grid/vdef.webp",
+            "color": "#b59696"
+          }
+        ]
       }
     ]
   },

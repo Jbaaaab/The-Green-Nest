@@ -145,10 +145,10 @@ main {
   transform: translateY(-50%);
 }
 
-/* ---------- Social Media : mosaïque de petits carrés (src/works/socialView.ts) ---------- */
+/* ---------- Pages en bande : Social Media, Music & Culture (src/works/stripView.ts) ---------- */
 
-/* Halo de la mosaïque (taille, flou et position en JS) : derrière les carrés. */
-.social__glow {
+/* Halo de la bande (taille, flou et position en JS) : derrière les cases. */
+.strip__glow {
   position: absolute;
   z-index: 0;
   pointer-events: none;
@@ -156,20 +156,20 @@ main {
 }
 
 /* La mosaïque garde la 3D de la page : ses colonnes se courbent pendant le défilement horizontal. */
-.social__grid {
+.strip__grid {
   position: absolute;
   inset: 0;
   z-index: 1;
   transform-style: preserve-3d;
 }
 
-.social__col {
+.strip__col {
   position: absolute;
   visibility: hidden;
   backface-visibility: hidden;
 }
 
-.social__tile {
+.strip__tile {
   position: absolute;
   left: 0;
   overflow: hidden;
@@ -177,8 +177,8 @@ main {
   background: #f2f2f2;
 }
 
-.social__tile img,
-.social__tile video {
+.strip__tile img,
+.strip__tile video {
   display: block;
   width: 100%;
   height: 100%;
@@ -186,22 +186,22 @@ main {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .social__tile {
+  .strip__tile {
     transition: scale 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
-  .social__col:hover,
-  .social__tile:hover {
+  .strip__col:hover,
+  .strip__tile:hover {
     z-index: 1;
   }
 
-  .social__tile:hover {
+  .strip__tile:hover {
     scale: var(--hover-scale, 1.04);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .social__tile {
+  .strip__tile {
     transition: none;
   }
 }
@@ -297,9 +297,11 @@ html:not(.has-3d-digits) .works-nav__item.is-current {
   visibility: hidden;
 }
 
+/* Marges et « + » proportionnels à la largeur de maquette (--pbtn-w), pas à la largeur réelle : le bouton
+   s'élargit pour les titres longs (MUSIC & CULTURE, voir worksView.ts) sans que le « + » grossisse. */
 .project-btn__label {
   position: absolute;
-  left: 6.76%;
+  left: calc(var(--pbtn-w) * 0.0676);
   top: 16.67%;
   line-height: normal;
   white-space: nowrap;
@@ -307,8 +309,8 @@ html:not(.has-3d-digits) .works-nav__item.is-current {
 
 .project-btn__plus {
   position: absolute;
-  right: 6.76%;
+  right: calc(var(--pbtn-w) * 0.0676);
   top: 16.67%;
-  width: 8.11%;
+  width: calc(var(--pbtn-w) * 0.0811);
   height: 66.67%;
 }

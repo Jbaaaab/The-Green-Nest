@@ -8,7 +8,7 @@ import { lazyVideo, loadVideo } from './lazyVideo';
 import { drum, perspectiveFor } from './scrollFx';
 import { MAGAZINE_PROJECT, magazineHold, magazinePauses } from './magazineTimeline';
 import { MagazineTexts } from './magazineTexts';
-import { SocialView } from './socialView';
+import { StripView, postersStrip, socialStrip } from './stripView';
 import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, boxRect, type Project } from './projects';
 
 type Win = {
@@ -58,7 +58,7 @@ export class WorksView {
   private root: HTMLElement;
   private stage: HTMLElement;
   private texts: HTMLElement;
-  private social: SocialView | null = null;
+  private strips: StripView[] = []; // pages en bande horizontale (Social Media, Music & Culture)
   private magazineTexts: MagazineTexts | null = null;
   private navEl: HTMLElement;
   private navItems: HTMLButtonElement[] = [];
@@ -98,9 +98,9 @@ export class WorksView {
       el: null,
     });
     for (const project of PROJECTS) {
-      if (project.layout === 'social') {
-        // Mosaïque et vidéo : socialView.ts ; le texte, comme sur les autres pages (parallaxe, twist).
-        this.social = new SocialView(this.stage, project);
+      if (project.layout === 'social' || project.layout === 'posters') {
+        // Bande et vidéo : stripView.ts ; le texte, comme sur les autres pages (parallaxe, twist).
+        this.strips.push(project.layout === 'social' ? socialStrip(this.stage, project) : postersStrip(this.stage, project));
         this.sections.push(this.buildText(project));
       } else if (project.layout === 'magazine') {
         this.magazineTexts = new MagazineTexts(this.texts, project.section); // magazines : en 3D
@@ -254,7 +254,7 @@ export class WorksView {
     return { el: text, cy: 0, h: 0, speed: 1, origin: { x: 0, y: 0 } };
   }
 
-  // Section réduite à son texte (Social Media : le reste de la page est géré par socialView.ts).
+  // Section réduite à son texte (pages en bande : le reste de la page est géré par stripView.ts).
   private buildText(project: Project): Section {
     const wins = [this.textWin(project)];
     return { index: project.section, project, wins, main: null, sideVideos: [], images: [], slides: null, videoGlows: [], loaded: true, el: null };
@@ -284,7 +284,7 @@ export class WorksView {
     landing.cy = H / 2;
     landing.h = H;
 
-    this.social?.layout(W, H, u, mobile);
+    for (const strip of this.strips) strip.layout(W, H, u, mobile);
     this.magazineTexts?.layout(W, H, u, mobile);
     // Magazines : la page reste fixe pendant que les magazines tournent et s'ouvrent.
     if (MAGAZINE_PROJECT) {
@@ -308,11 +308,12 @@ export class WorksView {
       const sides = wins.filter((w) => w.el.classList.contains('project__side'));
       const tw = mobile ? Math.min(project.textWidth * u, W - 40 * u) : project.textWidth * u;
       const textSpeed = config.works.parallax.text;
-      text.el.classList.toggle('is-centered', mobile || project.layout === 'social');
+      const strip = project.layout === 'social' || project.layout === 'posters';
+      text.el.classList.toggle('is-centered', mobile || strip || project.layout === 'single');
       const sideSpeed = (i: number) => vMin + (vMax - vMin) * hash(section.index * 31 + i);
 
-      if (project.layout === 'social') {
-        // Texte seul, centré à l'écran (maquette 25:938) ; sur mobile, au milieu du cadre comme les autres.
+      if (strip) {
+        // Texte seul, centré à l'écran (maquettes) ; sur mobile, au milieu du cadre comme les autres.
         const cy = mobile ? by + bh / 2 : H / 2;
         set(text, (W - tw) / 2, cy, tw, null, textSpeed);
         text.cy = cy;
@@ -329,10 +330,10 @@ export class WorksView {
         set(text, W / 2 + MOSAIC.box.dx * u - tw / 2, b.top + MOSAIC.textTop * u, tw, null, textSpeed);
         text.cy = H / 2;
       } else if (!mobile) {
-        // LONGTEMPS / FORMULA ONE : grand cadre centré, texte centré dessus.
+        // LONGTEMPS / FORMULA ONE / VIDEOTAPE : grand cadre centré, texte centré dessus.
         const b = boxRect(SINGLE.box, W, H, u);
         set(main, b.left, b.top, b.width, b.height, 1);
-        set(text, W / 2 + SINGLE.textDx * u - tw / 2, b.top + SINGLE.textTop * u, tw, null, textSpeed);
+        set(text, W / 2 + SINGLE.textDx * u - tw / 2, b.top + SINGLE.textCenter * u, tw, null, textSpeed);
         text.cy = H / 2;
       } else {
         // Mobile (hors maquette) : la vidéo seule, à la hauteur du cadre ; texte centré dessus.
@@ -350,7 +351,17 @@ export class WorksView {
     this.navEl.style.setProperty('--end-cx', `${row.left + NAV_ROW.end * u}px`);
     this.navEl.style.setProperty('--row-y', `${row.top + NAV_ROW.y * u}px`);
     this.navEl.style.setProperty('--row-y-current', `${row.top + NAV_ROW.currentY * u}px`);
+    this.fitButton();
     this.update(nav.scroll, nav.velocity);
+  }
+
+  // Bouton vert : sa largeur de maquette, élargie si le titre ne tient pas (MUSIC & CULTURE), avec les mêmes
+  // marges que la maquette (10 px de part et d'autre, 12 px avant le « + » de 12 px, pour un bouton de 148 px).
+  private fitButton(): void {
+    this.button.style.width = '';
+    const base = this.button.offsetWidth;
+    const need = this.buttonLabel.offsetWidth + (44 / 148) * base;
+    if (need > base) this.button.style.width = `${need}px`;
   }
 
   private update(scroll: number, velocity: number): void {
@@ -390,7 +401,7 @@ export class WorksView {
         win.el.style.transform = `${persp}translate3d(0, ${y}px, ${fx.z}px) rotateX(${fx.rotX}rad)`;
       }
     }
-    this.social?.update(scroll, velocity);
+    for (const strip of this.strips) strip.update(scroll, velocity);
     this.magazineTexts?.update(scroll);
 
     // Les apparitions de l'accueil s'effacent dès qu'on quitte l'accueil.
@@ -402,11 +413,11 @@ export class WorksView {
     const last = PROJECTS.length;
     const pos = nav.position(scroll);
     const show = smooth(0.45, 0.85, pos) * (1 - smooth(last + 0.35, last + 0.75, pos));
-    // La rangée s'efface sur Social Media (elle passerait entre les petits carrés et clignoterait pendant le
+    // La rangée s'efface sur les pages en bande (elle passerait entre les colonnes et clignoterait pendant le
     // défilement), comme sur Take Care, où les carrés la cachent entièrement. Le bouton reste.
     // Sur Magazines, elle reste (maquettes) : le magazine ouvert la recouvre, chiffre 3D compris.
     let row = show;
-    if (this.social) row *= smooth(0.35, 0.65, Math.abs(pos - this.social.index));
+    for (const strip of this.strips) row *= smooth(0.35, 0.65, Math.abs(pos - strip.index));
     this.navEl.style.opacity = String(row);
     this.button.style.opacity = String(show);
     this.navEl.style.visibility = row < 0.01 ? 'hidden' : 'visible';
@@ -422,7 +433,10 @@ export class WorksView {
         if (on) item.setAttribute('aria-current', 'page');
         else item.removeAttribute('aria-current');
       });
-      if (project) this.buttonLabel.textContent = project.title;
+      if (project) {
+        this.buttonLabel.textContent = project.title;
+        this.fitButton();
+      }
     }
 
     this.syncVideos(scroll);
@@ -434,7 +448,7 @@ export class WorksView {
     const D = nav.sectionHeight;
     const mobile = this.mobileQuery.matches;
     let activeSection: Section | null = null;
-    this.social?.sync(scroll);
+    for (const strip of this.strips) strip.sync(scroll);
     for (const section of this.sections) {
       const d = Math.abs(nav.offsetOf(section.index, scroll)) / D;
       // Sur mobile, les carrés sont masqués : leurs vidéos ne sont ni chargées ni jouées.

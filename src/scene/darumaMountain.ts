@@ -18,6 +18,23 @@ const hash = (n: number) => {
 
 type Slot = { x: number; y: number; z: number; scale: number; yaw: number; tilt: number; phase: number; amp: number };
 
+/**
+ * Haut du tas de daruma à l'abscisse x (px écran, origine au centre), en px depuis le centre de l'écran, vers
+ * le bas : il monte entre 1/3 et 2/3 de la hauteur visible des lettres du grand logo (relief : quelques
+ * ondulations lentes, toujours les mêmes). Partagé avec les plantes du footer (footerPlants.ts).
+ */
+export function heapTop(x: number, vp: Viewport): number {
+  const { width: W, height: H } = vp;
+  const f = config.footer;
+  const d = f.daruma;
+  const letters = (f.logo.h + f.logo.bottom) * (W / f.logo.frame); // hauteur visible du logo (il déborde en bas)
+  const [lo, hi] = d.heap;
+  const amps = d.waves.reduce((s, [, a]) => s + a, 0);
+  const t = (x + W / 2) / W;
+  const v = d.waves.reduce((s, [freq, a], i) => s + a * Math.sin(TAU * (freq * t + hash(i + 40))), 0) / amps;
+  return H / 2 - letters * (lo + (hi - lo) * (0.5 + 0.5 * v));
+}
+
 // Le rouge du corps n'est pas dans le GLB : la texture ne contient que les coulures dorées, sur fond
 // transparent. On la pose sur le rouge de config (une fois, dans un canvas de 512 px au plus).
 function onRed(map: Texture, red: string): Texture {
@@ -126,16 +143,8 @@ export class DarumaMountain implements Updatable {
     const w = h * this.aspect;
 
     // Le tas part du bas de l'écran et monte entre 1/3 et 2/3 de la hauteur visible des lettres du
-    // grand logo (relief : quelques ondulations lentes, toujours les mêmes).
-    const letters = (f.logo.h + f.logo.bottom) * (W / f.logo.frame); // hauteur visible du logo (il déborde en bas)
+    // grand logo (heapTop).
     const bottom = H / 2; // bas de l'écran, depuis le centre
-    const [lo, hi] = d.heap;
-    const amps = d.waves.reduce((s, [, a]) => s + a, 0);
-    const relief = (x: number) => {
-      const t = (x + W / 2) / W;
-      const v = d.waves.reduce((s, [freq, a], i) => s + a * Math.sin(TAU * (freq * t + hash(i + 40))), 0) / amps;
-      return lo + (hi - lo) * (0.5 + 0.5 * v);
-    };
 
     // Des colonnes serrées : dans chacune, le premier daruma touche le haut du tas, les suivants s'empilent
     // en dessous (chevauchés, un peu devant) jusque sous le bord de l'écran. Une colonne sur deux est
@@ -145,7 +154,7 @@ export class DarumaMountain implements Updatable {
     const rowStep = d.rowStep * h;
     const floorY = bottom + d.sink * h; // la base du tas est coupée par le bas de l'écran
     for (let c = 0, x = -W / 2 - step / 2; x < W / 2 + step && this.slots.length < MAX; c++, x += step) {
-      const top = bottom - letters * relief(x);
+      const top = heapTop(x, this.viewport);
       for (let r = 0; this.slots.length < MAX; r++) {
         const n = this.slots.length;
         const scale = h * (d.scale[0] + (d.scale[1] - d.scale[0]) * hash(n));
