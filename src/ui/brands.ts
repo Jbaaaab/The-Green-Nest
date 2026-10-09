@@ -11,7 +11,7 @@ import '../styles/brands.css';
  * En fond, le case vidéo (avec son halo flou) ; les lignes du terrain en blanc translucide ; la balle est un
  * logo en blanc négatif, qui change à chaque rebond (raquette ou mur). Le joueur (raquette verte, à droite)
  * suit la souris, l'adversaire (rose, à gauche) joue seul. Le terrain s'incline un peu vers la balle. Si le
- * joueur rate la balle : Chaewon, « YOU LOST / YOU OWE ME THE JOB NOW ». Au centre, « BRANDS / I'VE COOKED /
+ * joueur rate la balle : Chaewon (pistolet en main), « YOU LOST / YOU OWE ME THE JOB NOW ». Au centre, « BRANDS / I'VE COOKED /
  * WITH » (maquette). Sur un écran en hauteur (mobile), le terrain est vertical : le joueur en bas, au doigt.
  * Chargé seulement au premier clic sur « Brands ».
  */
@@ -118,7 +118,7 @@ class BrandsGame {
     this.lost.hidden = true;
     this.lost.innerHTML = `
       <figure class="brands__lost-card">
-        <img src="/footer/2chaewon.webp" alt="" width="335" height="597" />
+        <img src="/brands/you-lost.webp" alt="" width="368" height="445" />
         <figcaption class="brands__lost-text"><strong>YOU LOST</strong><span>YOU OWE ME THE JOB NOW</span></figcaption>
       </figure>
       <button class="brands__again" type="button">Play again</button>`;

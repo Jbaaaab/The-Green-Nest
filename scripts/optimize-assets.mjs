@@ -336,6 +336,7 @@ const BRANDS = {
   from: "work/brands i've worked with",
   to: 'brands',
   size: 256,
+  lost: 'chae-won-chaewon.png', // pas un logo : l'image de l'écran « YOU LOST » (Chaewon, pistolet en main) → you-lost.webp
   list: [
     { file: '0x0.png', name: 'Showroomprivé' },
     { file: '21MARS_logo_horizontal_noir.svg', name: '21 Mars' },
@@ -383,6 +384,7 @@ async function optimizeBrands() {
     total += res.size;
     list.push({ name: b.name, src: `/${p.to}/${name}`, ratio: +(res.width / res.height).toFixed(4) });
   }
+  await imageStill(src(`${p.from}/${p.lost}`), out(`${p.to}/you-lost.webp`), 800);
   await writeFile(path.join(root, 'src/ui/brands.generated.json'), JSON.stringify(list, null, 2) + '\n');
   console.log(`${p.to}`.padEnd(28), `${list.length} logos, ${kb(total)}`);
 }

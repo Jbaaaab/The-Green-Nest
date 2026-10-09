@@ -100,8 +100,8 @@
 .brands__lost-card {
   position: relative;
   margin: 0;
-  height: min(calc(520 * var(--u)), 62vh);
-  aspect-ratio: 335 / 597;
+  height: min(calc(460 * var(--u)), 58vh);
+  aspect-ratio: 368 / 445;
   transform: scale(0.92) rotate(-3deg);
   transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.2, 1.2);
 }
