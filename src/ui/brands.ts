@@ -520,8 +520,13 @@ class BrandsGame {
       const ctx = this.blur.getContext('2d')!;
       const { width: bw, height: bh } = this.blur;
       const m = Math.max(2, bw * 0.08);
-      ctx.filter = `blur(${config.brands.blur.radius}px)`;
+      const { radius, contrast, saturate, opacity } = config.brands.blur;
+      ctx.filter = `blur(${radius}px) contrast(${contrast}) saturate(${saturate})`;
       ctx.drawImage(this.video, -m, -m, bw + 2 * m, bh + 2 * m);
+      // Vidéo à moitié sur le blanc, peinte dans l'image : elle reste opaque et cache la vidéo nette dessous.
+      ctx.filter = 'none';
+      ctx.fillStyle = `rgba(255, 255, 255, ${1 - opacity})`;
+      ctx.fillRect(0, 0, bw, bh);
     }
     if (this.isOpen) this.frame = requestAnimationFrame(this.tick);
   };

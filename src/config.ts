@@ -442,6 +442,15 @@ export const config = {
     },
   },
 
+  // « MAIL COPIED » (clic sur Mail : l'adresse est copiée) : une enveloppe 3D façon PS3 tourne au centre de
+  // l'écran (src/scene/mailEnvelope.ts), avec un halo flou, et « MAIL COPIED » dessous qui se dissout en se
+  // floutant (src/ui/mailToast.ts) ; une seconde en tout (MAIL_TOAST_MS).
+  mail: {
+    size: 90, // hauteur de l'enveloppe (px de maquette ; elle fait 1,5 fois plus large)
+    lift: 24, // au-dessus du centre de l'écran (px de maquette) ; le texte est dessous
+    spinPeriod: 0.9, // secondes par tour
+  },
+
   // Popup « Brands » (src/ui/brands.ts, demande du DA) : un pong sur un terrain de foot, le case vidéo en fond
   // (avec son halo), lignes en blanc translucide. Le joueur (raquette verte, à droite ; en bas sur mobile) suit
   // la souris ou le doigt, l'adversaire (rose) joue seul. La balle est un logo de marque en blanc négatif, qui
@@ -455,8 +464,9 @@ export const config = {
     // perspective en px de maquette).
     tilt: { along: 7, cross: 4, ease: 3, perspective: 1800 },
     lostTilt: 14, // perdu : la photo de Chaewon s'incline vers la souris (degrés max)
-    // Fond ultra flou : la vidéo réduite à `size` px de large, floutée de `radius` px, puis agrandie au terrain.
-    blur: { size: 48, radius: 2.5 },
+    // Fond ultra flou : la vidéo réduite à `size` px de large, floutée de `radius` px, puis agrandie au terrain ;
+    // plus contrastée et saturée, et à `opacity` sur le blanc (demande du DA : les logos en négatif ressortent mieux).
+    blur: { size: 48, radius: 2.5, contrast: 1.25, saturate: 1.3, opacity: 0.5 },
     // Taille du logo-balle : même surface d'encre pour tous (px de maquette²), quel que soit son format et qu'il
     // soit plein (IKEA) ou fin (Moët Hennessy). inkPow < 1 : les logos très fins sont un peu moins agrandis.
     ballInk: 1500,

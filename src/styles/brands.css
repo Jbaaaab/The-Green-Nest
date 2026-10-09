@@ -62,8 +62,10 @@
   position: absolute;
 }
 
-/* Logos et texte en blanc négatif (comme les textes des projets) : ils inversent la vidéo. */
+/* Logos, texte et lignes en blanc négatif (comme les textes des projets) : ils inversent la vidéo, et
+   ressortent foncés sur le fond éclairci. */
 .brands__ball,
+.brands__lines,
 .brands__text {
   mix-blend-mode: difference;
 }

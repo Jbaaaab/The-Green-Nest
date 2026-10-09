@@ -1,28 +1,43 @@
 /**
- * « MAIL COPIED » (demande du DA) : au clic sur Mail, l'adresse est copiée (header.ts) et ces mots apparaissent
- * au centre de l'écran, dans le style des autres textes (noir négatif), puis se dissolvent : opacité de 100 à 0
- * en se floutant (base.css). Une seconde en tout.
+ * « MAIL COPIED » (demande du DA) : au clic sur Mail, l'adresse est copiée (header.ts). Pendant une seconde, une
+ * enveloppe 3D tourne au centre de l'écran façon PS3 (src/scene/mailEnvelope.ts, dans le canvas), avec un halo
+ * flou autour ; dessous, « MAIL COPIED » dans le style des autres textes (noir négatif), qui se dissout en se
+ * floutant (opacité 100 → 0). Sans 3D : une enveloppe SVG à la place.
  */
 export const MAIL_TOAST_MS = 1000;
 
-let toast: HTMLElement | null = null;
+let halo: HTMLElement | null = null;
+let text: HTMLElement | null = null;
 let timer = 0;
+
+// Le halo (et l'enveloppe de secours) passent sous le canvas ; le texte au-dessus (deux éléments distincts).
+function create(): void {
+  halo = document.createElement('div');
+  halo.className = 'mail-toast';
+  halo.setAttribute('aria-hidden', 'true');
+  halo.innerHTML = `
+    <span class="mail-toast__halo"></span>
+    <svg class="mail-toast__icon" viewBox="0 0 30 20"><rect x="1" y="1" width="28" height="18" rx="2"/><path d="M1.5 2 15 11.5 28.5 2"/></svg>`;
+  text = document.createElement('p');
+  text.className = 'mail-toast__text';
+  text.setAttribute('role', 'status');
+  document.body.append(halo, text);
+}
 
 export function initMailToast(): void {
   window.addEventListener('mail:copied', () => {
-    if (!toast) {
-      toast = document.createElement('p');
-      toast.className = 'mail-toast';
-      toast.setAttribute('role', 'status');
-      document.body.append(toast);
-    }
-    const el = toast;
-    el.textContent = 'MAIL COPIED';
+    if (!halo || !text) create();
+    text!.textContent = 'MAIL COPIED';
     // Relance l'animation à chaque clic.
-    el.classList.remove('is-on');
-    void el.offsetWidth;
-    el.classList.add('is-on');
+    for (const el of [halo!, text!]) {
+      el.classList.remove('is-on');
+      void el.offsetWidth;
+      el.classList.add('is-on');
+    }
     clearTimeout(timer);
-    timer = window.setTimeout(() => el.classList.remove('is-on'), MAIL_TOAST_MS);
+    timer = window.setTimeout(() => {
+      halo!.classList.remove('is-on');
+      text!.classList.remove('is-on');
+    }, MAIL_TOAST_MS);
   });
 }
