@@ -382,7 +382,13 @@ async function optimizeBrands() {
       .webp({ quality: 90, alphaQuality: 100 })
       .toFile(out(`${p.to}/${name}`));
     total += res.size;
-    list.push({ name: b.name, src: `/${p.to}/${name}`, ratio: +(res.width / res.height).toFixed(4) });
+    // Part encrée du logo (0 → 1) : le jeu s'en sert pour que tous aient le même poids visuel (un mot fin
+    // comme Moët Hennessy est agrandi, un aplat plein comme IKEA réduit).
+    const { data: px } = await sharp(out(`${p.to}/${name}`)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    let ink = 0;
+    for (let i = 3; i < px.length; i += 4) ink += px[i];
+    const coverage = +(ink / 255 / (res.width * res.height)).toFixed(4);
+    list.push({ name: b.name, src: `/${p.to}/${name}`, ratio: +(res.width / res.height).toFixed(4), coverage });
   }
   await imageStill(src(`${p.from}/${p.lost}`), out(`${p.to}/you-lost.webp`), 800);
   await writeFile(path.join(root, 'src/ui/brands.generated.json'), JSON.stringify(list, null, 2) + '\n');

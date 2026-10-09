@@ -442,14 +442,6 @@ export const config = {
     },
   },
 
-  // « MAIL COPIED » (clic sur Mail : l'adresse est copiée) : enveloppe 3D façon PS3 (src/scene/mailEnvelope.ts)
-  // et texte avec un halo (src/ui/mailToast.ts), une seconde (MAIL_TOAST_MS).
-  mail: {
-    size: 90, // hauteur de l'enveloppe (px de maquette ; elle fait 1,5 fois plus large)
-    lift: 24, // au-dessus du centre de l'écran (px de maquette) ; le texte est dessous
-    spinPeriod: 0.9, // secondes par tour
-  },
-
   // Popup « Brands » (src/ui/brands.ts, demande du DA) : un pong sur un terrain de foot, le case vidéo en fond
   // (avec son halo), lignes en blanc translucide. Le joueur (raquette verte, à droite ; en bas sur mobile) suit
   // la souris ou le doigt, l'adversaire (rose) joue seul. La balle est un logo de marque en blanc négatif, qui
@@ -465,8 +457,11 @@ export const config = {
     lostTilt: 14, // perdu : la photo de Chaewon s'incline vers la souris (degrés max)
     // Fond ultra flou : la vidéo réduite à `size` px de large, floutée de `radius` px, puis agrandie au terrain.
     blur: { size: 48, radius: 2.5 },
-    ballArea: 3400, // surface du logo-balle : même poids visuel quel que soit son format
-    ballMax: [150, 84] as [number, number], // largeur et hauteur max du logo-balle
+    // Taille du logo-balle : même surface d'encre pour tous (px de maquette²), quel que soit son format et qu'il
+    // soit plein (IKEA) ou fin (Moët Hennessy). inkPow < 1 : les logos très fins sont un peu moins agrandis.
+    ballInk: 1500,
+    inkPow: 0.85,
+    ballMax: [190, 80] as [number, number], // largeur et hauteur max du logo-balle
     mobileBall: 0.6, // logo-balle sur mobile (× la taille desktop)
     paddle: { length: 120, thickness: 10, inset: 26 }, // raquettes ; inset : écart avec la ligne de fond
     mobilePaddle: 0.7, // raquettes sur mobile (× la taille desktop)

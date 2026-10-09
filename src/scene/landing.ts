@@ -6,7 +6,6 @@ import { Cursor3D } from './cursor';
 import { DarumaMountain } from './darumaMountain';
 import { Digits3D } from './digits';
 import { FooterPlants } from './footerPlants';
-import { MailEnvelope } from './mailEnvelope';
 import { Magazines } from './magazines';
 import { InstaRain } from './instaRain';
 import { Ring } from './ring';
@@ -68,9 +67,6 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
   // Montagne de daruma du footer : chargée seulement à l'approche du footer.
   DarumaMountain.watch(stage);
   FooterPlants.watch(stage); // et ses plantes, qui poussent quand on y arrive
-
-  // Enveloppe 3D du « MAIL COPIED » (clic sur Mail).
-  stage.add(new MailEnvelope(stage));
 
   // Magazines 3D (page Magazines) : chargés seulement à l'approche de la page.
   Magazines.watch(stage);

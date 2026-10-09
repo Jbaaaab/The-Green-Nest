@@ -259,12 +259,14 @@ class BrandsGame {
     return { len: p.length * this.u * k, thick: p.thickness * this.u * k, inset: p.inset * this.u * k };
   }
 
-  // Taille du logo-balle : même surface quel que soit son format, dans les limites.
+  // Taille du logo-balle : même surface d'encre pour tous (un logo fin a un cadre plus grand qu'un logo plein),
+  // dans les limites.
   private ballSize(): void {
-    const { ballArea, ballMax } = config.brands;
-    const ratio = logos[this.ball.sprite].ratio;
+    const { ballInk, inkPow, ballMax } = config.brands;
+    const { ratio, coverage } = logos[this.ball.sprite];
     const u = this.u * this.k;
-    let w = Math.sqrt(ballArea * ratio) * u;
+    const area = ballInk / Math.pow(Math.max(0.05, coverage), inkPow); // surface du cadre
+    let w = Math.sqrt(area * ratio) * u;
     let h = w / ratio;
     if (w > ballMax[0] * u) [w, h] = [ballMax[0] * u, (ballMax[0] * u) / ratio];
     if (h > ballMax[1] * u) [w, h] = [ballMax[1] * u * ratio, ballMax[1] * u];

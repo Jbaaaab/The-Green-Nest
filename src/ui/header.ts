@@ -20,8 +20,8 @@ export function initHeader(root: ParentNode = document): void {
     nav.goTo(nav.count - 1, config.footer.cards.pause ?? 0.76);
   });
 
-  // « Mail » copie l'adresse (au lieu d'ouvrir la messagerie) : une enveloppe 3D tourne, « MAIL COPIED »
-  // (src/ui/mailToast.ts et src/scene/mailEnvelope.ts). Si la copie est impossible, le lien s'ouvre normalement.
+  // « Mail » copie l'adresse (au lieu d'ouvrir la messagerie) : « MAIL COPIED » au centre de l'écran, qui se
+  // dissout (src/ui/mailToast.ts). Si la copie est impossible, le lien s'ouvre normalement.
   initMailToast();
   const mail = root.querySelector<HTMLAnchorElement>('.contact__mail');
   mail?.addEventListener('click', (e) => {
