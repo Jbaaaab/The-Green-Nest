@@ -221,7 +221,7 @@ export class PlantBed {
     const p = config.footer.plants;
     const count = mobile ? p.mobileCount : p.count;
     const rand = random(o.seed);
-    const k = mobile ? 0.55 : 1; // tout est plus petit sur mobile
+    const k = mobile ? p.mobileScale : 1; // un peu plus petit sur mobile
 
     for (let i = 0; i < count; i++) {
       // Réparties sur la largeur, un peu en désordre.
@@ -234,7 +234,9 @@ export class PlantBed {
       const roomSides = ground - (-H / 2 + p.top * u);
       const [c0, c1] = p.height.center;
       const [s0, s1] = p.height.sides;
-      const wanted = lerp(lerp(c0, c1, rand()), lerp(s0, s1, rand()), side) * u * k;
+      const h1 = rand();
+      const h2 = rand();
+      const wanted = mobile ? lerp(p.mobileHeight[0], p.mobileHeight[1], h1) * u : lerp(lerp(c0, c1, h1), lerp(s0, s1, h2), side) * u * k;
       const height = Math.max(30 * u * k, Math.min(wanted, lerp(roomCenter, roomSides, side)));
       const flower = rand() < p.flower ? lerp(p.flowerSize[0], p.flowerSize[1], rand()) * u * k : 0;
 

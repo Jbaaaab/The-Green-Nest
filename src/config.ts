@@ -391,8 +391,9 @@ export const config = {
       // Rouge du corps : absent du GLB (la texture ne contient que les coulures dorées) → posé dessous. À valider par le DA.
       red: '#d0202a',
       height: 28, // hauteur d'un daruma (px de maquette)
-      mobileHeight: 12, // sur mobile (hors maquette) : le logo est petit, les daruma aussi
+      mobileHeight: 24, // sur mobile (hors maquette) : le logo est petit ; avant 12, trop petits (retour du DA)
       heap: [1 / 3, 2 / 3] as [number, number], // haut du tas : entre 1/3 et 2/3 de la hauteur visible des lettres du logo
+      mobileHeap: [0.6, 1] as [number, number], // mobile : les lettres sont minuscules, le tas monte plus haut (jusqu'en haut des lettres)
       waves: [[1.3, 1], [3.1, 0.6], [7.7, 0.3]] as [number, number][], // relief du tas : [ondulations sur la largeur, poids]
       spacing: 0.8, // écart entre deux colonnes de la pile (fraction de la largeur d'un daruma ; < 1 = ils se chevauchent)
       rowStep: 0.6, // écart entre deux daruma empilés (fraction de la hauteur) : celui du dessous cache le bas de l'autre
@@ -415,6 +416,10 @@ export const config = {
     plants: {
       count: 18, // tiges sur desktop
       mobileCount: 8,
+      // Mobile (avant : tout à 55 %, trop petit, retour du DA) : tiges, feuilles et fleurs à 90 % de la taille
+      // desktop, et des tiges plus hautes (toujours sous le texte).
+      mobileScale: 0.9,
+      mobileHeight: [120, 280] as [number, number],
       green: '#41f373', // tiges, feuilles, cœurs des fleurs
       pink: '#ff1fb4', // pétales (rose poison)
       stem: [3.4, 1.1] as [number, number], // rayon de la tige à la base et au bout

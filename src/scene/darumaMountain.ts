@@ -28,7 +28,7 @@ export function heapTop(x: number, vp: Viewport): number {
   const f = config.footer;
   const d = f.daruma;
   const letters = (f.logo.h + f.logo.bottom) * (W / f.logo.frame); // hauteur visible du logo (il déborde en bas)
-  const [lo, hi] = d.heap;
+  const [lo, hi] = vp.mobile ? d.mobileHeap : d.heap;
   const amps = d.waves.reduce((s, [, a]) => s + a, 0);
   const t = (x + W / 2) / W;
   const v = d.waves.reduce((s, [freq, a], i) => s + a * Math.sin(TAU * (freq * t + hash(i + 40))), 0) / amps;
