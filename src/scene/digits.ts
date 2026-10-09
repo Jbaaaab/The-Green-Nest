@@ -101,7 +101,8 @@ export class Digits3D implements Updatable {
     const slot = document.querySelector<HTMLElement>('.works-nav__item.is-current');
     // Apparaît et s'efface avec la rangée 1-8 (opacité réglée par worksView.ts).
     const show = slot ? parseFloat(slot.parentElement!.style.opacity || '0') : 0;
-    if (!slot || !this.digits.has(number) || show < 0.01) {
+    const brands = document.documentElement.classList.contains('is-brands'); // popup « Brands » ouverte
+    if (!slot || !this.digits.has(number) || show < 0.01 || brands) {
       this.root.visible = false;
       for (const m of this.occluders) m.visible = false;
       return;

@@ -218,8 +218,12 @@ class Nav {
     this.spent.clear();
   }
 
+  /** Scroll bloqué (popup « Brands » ouverte : la molette, le doigt et les flèches servent au jeu). */
+  locked = false;
+
   private onWheel = (e: WheelEvent) => {
     e.preventDefault();
+    if (this.locked) return;
     const now = performance.now();
     if (now - this.lastInput > config.works.gestureQuietMs) this.startGesture();
     this.lastInput = now;
@@ -229,6 +233,7 @@ class Nav {
   };
 
   private onTouchStart = (e: TouchEvent) => {
+    if (this.locked) return;
     this.touchY = e.touches[0].clientY;
     this.touchX = e.touches[0].clientX;
     this.touchV = 0;
@@ -260,6 +265,7 @@ class Nav {
   };
 
   private onKey = (e: KeyboardEvent) => {
+    if (this.locked) return;
     const t = e.target as HTMLElement | null;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     const page = () => Math.round(this.position(this.target));

@@ -442,6 +442,28 @@ export const config = {
     },
   },
 
+  // Popup « Brands » (src/ui/brands.ts, demande du DA) : un pong sur un terrain blanc aux lignes vertes façon
+  // tennis. Le joueur (vert, à droite ; en bas sur mobile) suit la souris ou le doigt, l'adversaire (rose) joue
+  // seul. La balle est un logo de marque : elle change à chaque rebond (raquette ou mur) et prend la couleur du
+  // dernier qui l'a frappée. Tailles en px de maquette, vitesses en longueurs de terrain par seconde.
+  brands: {
+    player: '#41f373', // vert flash
+    cpu: '#ff1fb4', // rose poison
+    ballArea: 3400, // surface du logo-balle : même poids visuel quel que soit son format
+    ballMax: [150, 84] as [number, number], // largeur et hauteur max du logo-balle
+    mobileBall: 0.6, // logo-balle sur mobile (× la taille desktop)
+    paddle: { length: 120, thickness: 10, inset: 26 }, // raquettes ; inset : écart avec la ligne de fond
+    mobilePaddle: 0.7, // raquettes sur mobile (× la taille desktop)
+    line: 2, // épaisseur des lignes du terrain
+    speed: 0.6, // vitesse de départ de la balle
+    speedUp: 1.06, // accélération à chaque frappe
+    maxSpeed: 1.4, // vitesse max (× la vitesse de départ)
+    maxAngle: 55, // angle max au renvoi (degrés), selon l'endroit où la balle touche la raquette
+    cpuSpeed: 0.95, // vitesse max de la raquette adverse (largeurs de terrain par seconde)
+    cpuError: 0.4, // erreur de visée de l'adversaire (× longueur de raquette) : il rate parfois
+    serveDelay: 0.8, // pause avant le service, après un point (s)
+  },
+
   // Apparitions de projets en fond (desktop uniquement) : des vignettes surgissent au hasard
   // sur la page, vivent ~1 s en rétrécissant, puis disparaissent.
   trail: {

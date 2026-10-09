@@ -90,12 +90,13 @@ button {
   display: none;
 }
 
-.nav-works {
+/* « Monstera » (l'à-propos, ex-Works) et « Brands » (le pong, ex-About), aux places de la maquette. */
+.nav-monstera {
   left: var(--works-x);
   top: var(--header-y);
 }
 
-.nav-about {
+.nav-brands {
   left: var(--about-x);
   top: var(--header-y);
 }
@@ -135,8 +136,8 @@ button {
 
 /* Zones de clic agrandies sans changer le visuel (cibles tactiles plus confortables). */
 .brand::after,
-.nav-works::after,
-.nav-about::after,
+.nav-monstera::after,
+.nav-brands::after,
 .contact a::after {
   content: '';
   position: absolute;

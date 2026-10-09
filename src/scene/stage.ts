@@ -81,7 +81,8 @@ export class Stage {
 
   private render(): void {
     this.renderer.clear();
-    this.renderer.render(this.scene, this.camera);
+    // Popup « Brands » ouverte (elle est sous ce canvas) : seule la couche overlay (le curseur) est dessinée.
+    if (!document.documentElement.classList.contains('is-brands')) this.renderer.render(this.scene, this.camera);
     if (this.overlay.children.length) {
       this.renderer.clearDepth();
       this.renderer.render(this.overlay, this.camera);

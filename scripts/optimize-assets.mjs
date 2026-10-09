@@ -329,6 +329,64 @@ async function optimizeMusicCulture() {
   return { columns };
 }
 
+// Popup « Brands » (src/ui/brands.ts, un pong) : les logos deviennent des masques (blanc + transparence),
+// recadrés au plus juste, 256 px max, teintés en vert ou en rose dans le jeu. « knockout » : les parties
+// claires des emblèmes multicolores sont évidées (en aplat, ils feraient une tache). Écrit src/ui/brands.generated.json.
+const BRANDS = {
+  from: "work/brands i've worked with",
+  to: 'brands',
+  size: 256,
+  list: [
+    { file: '0x0.png', name: 'Showroomprivé' },
+    { file: '21MARS_logo_horizontal_noir.svg', name: '21 Mars' },
+    { file: '242984.png', name: 'Moët Hennessy' },
+    { file: '58f373bca4fa116215a92406.png', name: 'IKEA' }, // le mot noir (la version couleur, 58f373b3…, ferait doublon)
+    { file: '5a37f0d5c488ac6062ac2aa4.png', name: 'Lipton', mode: 'knockout' },
+    { file: 'HFG.DE_BIG-ad728cf7.png', name: 'HelloFresh' },
+    { file: 'Logo_mistigriff_rose.png', name: 'Mistigriff' },
+    { file: 'Logoprintemps2022.png', name: 'Printemps' },
+    { file: 'Logos20281729.webp', name: 'Feliway' },
+    { file: 'Paris_Games_Week_(2025)_Logo.png', name: 'Paris Games Week', mode: 'knockout' },
+    { file: 'Playstation_logo_colour_and_wordmark.png', name: 'PlayStation' },
+    { file: 'Quick_2023_logo.webp', name: 'Quick', mode: 'knockout' },
+    { file: 'TAKE-CARE-LOGO-couleurs-17-2 (1).png', name: 'Take Care' },
+    { file: 'bereal-logo-png_seeklogo-484337.png', name: 'BeReal' },
+    { file: 'docariv.png', name: 'Docariv' },
+    { file: 'home.png', name: 'Home' },
+  ],
+};
+
+async function optimizeBrands() {
+  const p = BRANDS;
+  await mkdir(out(p.to), { recursive: true });
+  const list = [];
+  let total = 0;
+  for (const b of p.list) {
+    const input = src(`${p.from}/${b.file}`);
+    const { data, info } = await sharp(input, { density: 300 }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    // Masque : blanc, la transparence du logo ; en « knockout », le clair devient transparent aussi.
+    for (let i = 0; i < data.length; i += 4) {
+      let a = data[i + 3] / 255;
+      if (b.mode === 'knockout') {
+        const lum = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+        a *= Math.min(1, Math.max(0, (0.72 - lum) / 0.3));
+      }
+      data[i] = data[i + 1] = data[i + 2] = 255;
+      data[i + 3] = Math.round(a * 255);
+    }
+    const name = `${slug(b.name.normalize('NFD').replace(/[̀-ͯ]/g, ''))}.webp`; // sans accents
+    const trimmed = await sharp(data, { raw: info }).trim({ threshold: 10 }).toBuffer({ resolveWithObject: true });
+    const res = await sharp(trimmed.data, { raw: { width: trimmed.info.width, height: trimmed.info.height, channels: 4 } })
+      .resize(p.size, p.size, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 90, alphaQuality: 100 })
+      .toFile(out(`${p.to}/${name}`));
+    total += res.size;
+    list.push({ name: b.name, src: `/${p.to}/${name}`, ratio: +(res.width / res.height).toFixed(4) });
+  }
+  await writeFile(path.join(root, 'src/ui/brands.generated.json'), JSON.stringify(list, null, 2) + '\n');
+  console.log(`${p.to}`.padEnd(28), `${list.length} logos, ${kb(total)}`);
+}
+
 // Page Magazines : les magazines en 3D (src/scene/magazines.ts). Pour chacun : couverture, 4e de
 // couverture (une page) et doubles pages, dans l'ordre de lecture. Textures WebP (une page ≈ 700 px de large).
 // Ordre de lecture : Typeshit d'abord (demande du DA).
@@ -627,3 +685,4 @@ if (!only || only === 'thumbs') await optimizeThumbs();
 if (!only || only === 'galleries') await optimizeGalleries();
 if (!only || only === 'projects') await optimizeProjects();
 if (!only || only === 'music') await optimizeMusic();
+if (!only || only === 'brands') await optimizeBrands();

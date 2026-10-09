@@ -1,0 +1,69 @@
+/* ---------- Popup « Brands » : un pong (src/ui/brands.ts) ---------- */
+
+/* Sous le canvas 3D (z-index 5) : pendant le jeu, seul le curseur 3D y est dessiné, par-dessus la popup.
+   Même niveau que le header et le dock, mais placée après eux : elle les recouvre. */
+.brands {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  background: var(--color-bg);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  touch-action: none; /* le doigt pilote la raquette */
+}
+
+.brands.is-open {
+  opacity: 1;
+}
+
+.brands[hidden] {
+  display: none;
+}
+
+.brands__court {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* « BRANDS / I'VE COOKED / WITH » : au centre du terrain, avec son trou (maquette). */
+.brands__text {
+  position: absolute;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  font-size: var(--ptext-size);
+  line-height: normal;
+  text-align: center;
+  white-space: pre;
+  pointer-events: none;
+}
+
+.brands__text span {
+  display: block;
+}
+
+/* Fermer : à la place d'Instagram / Mail. */
+.brands__close {
+  position: absolute;
+  right: var(--contact-right);
+  top: var(--header-y);
+  font-size: var(--nav-size);
+}
+
+.brands__close::after {
+  content: '';
+  position: absolute;
+  inset: -8px -10px;
+}
+
+/* Le texte des magazines passe au-dessus du canvas : on le cache pendant le jeu. */
+.is-brands .project__text--magazine {
+  visibility: hidden !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brands {
+    transition: none;
+  }
+}

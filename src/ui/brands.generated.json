@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Showroomprivé",
+    "src": "/brands/showroomprive.webp",
+    "ratio": 1.5329
+  },
+  {
+    "name": "21 Mars",
+    "src": "/brands/21-mars.webp",
+    "ratio": 4.6545
+  },
+  {
+    "name": "Moët Hennessy",
+    "src": "/brands/moet-hennessy.webp",
+    "ratio": 6.7368
+  },
+  {
+    "name": "IKEA",
+    "src": "/brands/ikea.webp",
+    "ratio": 5.6889
+  },
+  {
+    "name": "Lipton",
+    "src": "/brands/lipton.webp",
+    "ratio": 2.3273
+  },
+  {
+    "name": "HelloFresh",
+    "src": "/brands/hellofresh.webp",
+    "ratio": 3.0843
+  },
+  {
+    "name": "Mistigriff",
+    "src": "/brands/mistigriff.webp",
+    "ratio": 4.2667
+  },
+  {
+    "name": "Printemps",
+    "src": "/brands/printemps.webp",
+    "ratio": 9.1429
+  },
+  {
+    "name": "Feliway",
+    "src": "/brands/feliway.webp",
+    "ratio": 5.4222
+  },
+  {
+    "name": "Paris Games Week",
+    "src": "/brands/paris-games-week.webp",
+    "ratio": 1.7902
+  },
+  {
+    "name": "PlayStation",
+    "src": "/brands/playstation.webp",
+    "ratio": 2.188
+  },
+  {
+    "name": "Quick",
+    "src": "/brands/quick.webp",
+    "ratio": 0.6641
+  },
+  {
+    "name": "Take Care",
+    "src": "/brands/take-care.webp",
+    "ratio": 4.0635
+  },
+  {
+    "name": "BeReal",
+    "src": "/brands/bereal.webp",
+    "ratio": 4.4138
+  },
+  {
+    "name": "Docariv",
+    "src": "/brands/docariv.webp",
+    "ratio": 3.4091
+  },
+  {
+    "name": "Home",
+    "src": "/brands/home.webp",
+    "ratio": 3.3684
+  }
+]
