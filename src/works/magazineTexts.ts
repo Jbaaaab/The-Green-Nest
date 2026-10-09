@@ -1,4 +1,5 @@
 import { nav } from '../nav';
+import { tint } from '../ui/tint';
 import { magazineSlide, magazineTextIndex } from './magazineTimeline';
 import { MAGAZINE_TEXTS } from './projects';
 
@@ -22,6 +23,7 @@ export class MagazineTexts {
       el.className = 'project__win project__text project__text--magazine is-centered';
       el.innerHTML = `<p class="project__lines">${t.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
       layer.appendChild(el);
+      tint(el);
       return el;
     });
   }

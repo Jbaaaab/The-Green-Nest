@@ -2,6 +2,7 @@ import plusIcon from '../assets/icons/plus.svg';
 import endIcon from '../assets/icons/works-end.svg';
 import { config } from '../config';
 import { nav } from '../nav';
+import { tint } from '../ui/tint';
 import { readUnit } from '../ui/unit';
 import { Glow } from './glow';
 import { lazyVideo, loadVideo } from './lazyVideo';
@@ -271,6 +272,7 @@ export class WorksView {
     text.className = 'project__win project__text';
     text.innerHTML = `<p class="project__lines">${project.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
     this.texts.appendChild(text);
+    tint(text);
     return { el: text, cy: 0, h: 0, speed: 1, origin: { x: 0, y: 0 } };
   }
 

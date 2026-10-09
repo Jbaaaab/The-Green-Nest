@@ -3,13 +3,15 @@ import { nav } from '../nav';
 import media from '../works/media.generated.json';
 import { Glow } from '../works/glow';
 import logos from './brands.generated.json';
+import { NEGATIVE_LAYERS, negativeColor, tint } from './tint';
 import { readUnit } from './unit';
 import '../styles/brands.css';
 
 /**
  * Popup « Brands » (demande du DA) : les marques avec lesquelles il a travaillé, en pong, sur un terrain de foot.
- * En fond, le case vidéo (avec son halo flou) ; les lignes du terrain en blanc translucide ; la balle est un
- * logo en blanc négatif, qui change à chaque rebond (raquette ou mur). Le joueur (raquette verte, à droite)
+ * En fond, le case vidéo (avec son halo flou) ; les lignes du terrain en transparence ; la balle est un
+ * logo, qui change à chaque rebond (raquette ou mur). Lignes, logo et textes sont « en négatif », en dégradé
+ * blanc → vert → noir selon le fond (src/ui/tint.ts). Le joueur (raquette verte, à droite)
  * suit la souris, l'adversaire (rose, à gauche) joue seul. Le terrain s'incline un peu vers la balle. Si le
  * joueur rate la balle : Chaewon (pistolet en main), « YOU LOST / YOU OWE ME THE JOB NOW ». Au centre, « BRANDS / I'VE COOKED /
  * WITH » (maquette). Sur un écran en hauteur (mobile), le terrain est vertical : le joueur en bas, au doigt.
@@ -47,8 +49,13 @@ class BrandsGame {
   private glow: Glow;
   private glowTimer = 0;
   private lines: HTMLCanvasElement;
-  private ballLayer: HTMLCanvasElement; // en mode différence : la balle en blanc négatif
+  private linesMask = document.createElement('canvas'); // les lignes en blanc, recolorées à chaque image
+  private ballLayer: HTMLCanvasElement;
   private blur: HTMLCanvasElement; // la vidéo, minuscule et floutée, agrandie au terrain
+  // Le fond flou passé en négatif (dégradé blanc → vert → noir), même taille : la couleur des lignes et du logo.
+  private shade = document.createElement('canvas');
+  private shadeCtx = this.shade.getContext('2d')!;
+  private outside = `rgb(${negativeColor(255, 255, 255).join(', ')})`; // hors du terrain, le fond est blanc
   private lostTilt: HTMLElement;
   private pointer = { x: 0, y: 0 }; // position de la souris (écran)
   private paddleEls: Record<Side, HTMLElement>;
@@ -120,6 +127,7 @@ class BrandsGame {
     this.paddleEls = { cpu: el('div', 'brands__paddle'), player: el('div', 'brands__paddle') };
     for (const side of ['cpu', 'player'] as Side[]) this.paddleEls[side].style.background = config.brands[side];
     this.board.append(this.field, this.lines, this.paddleEls.cpu, this.paddleEls.player, this.text, this.ballLayer);
+    tint(this.text);
 
     // Perdu : Chaewon, et la dette. La photo s'incline avec la souris (comme le terrain).
     this.lost = el('div', 'brands__lost');
@@ -131,6 +139,7 @@ class BrandsGame {
       </div></figure>
       <button class="brands__again" type="button">Play again</button>`;
     this.lostTilt = this.lost.querySelector<HTMLElement>('.brands__lost-tilt')!;
+    tint(this.lost.querySelector<HTMLElement>('.brands__lost-text')!);
 
     // Un clic hors du terrain ferme la popup ; perdu, un clic sur le terrain relance la partie.
     this.root.addEventListener('click', (e) => {
@@ -158,7 +167,7 @@ class BrandsGame {
     this.root.append(this.board, this.lost, this.closeBtn, list);
     document.body.append(this.root);
 
-    // Logos : masques blancs (la balle est dessinée telle quelle, en mode différence).
+    // Logos : masques blancs, recolorés au dessin.
     this.sprites = logos.map(() => null);
     logos.forEach((logo, i) => {
       const img = new Image();
@@ -229,9 +238,11 @@ class BrandsGame {
     const res = config.brands.blur.size; // largeur de l'image floutée (px) : plus petit = plus flou
     this.blur.width = w >= h ? res : Math.max(8, Math.round((res * w) / h));
     this.blur.height = w >= h ? Math.max(8, Math.round((res * h) / w)) : res;
+    this.shade.width = this.blur.width;
+    this.shade.height = this.blur.height;
     this.board.style.transformOrigin = `${x + w / 2}px ${y + h / 2}px`; // il s'incline autour du centre du terrain
     const dpr = Math.min(window.devicePixelRatio, 2);
-    for (const c of [this.lines, this.ballLayer]) {
+    for (const c of [this.lines, this.linesMask, this.ballLayer]) {
       c.width = Math.round(W * dpr);
       c.height = Math.round(H * dpr);
       c.getContext('2d')!.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -405,9 +416,10 @@ class BrandsGame {
     return this.vertical ? [x + c, y + a] : [x + a, y + c];
   }
 
-  // Les lignes du terrain de foot, en blanc translucide (interrompues autour du texte du centre).
+  // Les lignes du terrain de foot, en blanc translucide (interrompues autour du texte du centre) : un masque,
+  // recoloré à chaque image (paintLines).
   private drawLines(): void {
-    const ctx = this.lines.getContext('2d')!;
+    const ctx = this.linesMask.getContext('2d')!;
     const u = this.u;
     const L = this.along();
     const C = this.cross();
@@ -478,13 +490,52 @@ class BrandsGame {
     ctx.restore();
   }
 
+  // Le fond flou passé en négatif (dégradé blanc → vert → noir), par les mêmes modes de fusion que les textes :
+  // tout reste dans la carte graphique (relire les pixels à chaque image coûterait cher).
+  private updateShade(): void {
+    const ctx = this.shadeCtx;
+    const { width: w, height: h } = this.shade;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#fff'; // pas encore d'image : le blanc
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(this.blur, 0, 0);
+    for (const [mode, color] of NEGATIVE_LAYERS) {
+      ctx.globalCompositeOperation = mode;
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, w, h);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // Recolore ce qui est déjà dessiné dans ctx (en blanc) : la couleur du fond en négatif, agrandie au terrain
+  // (pad : déborde un peu, pour les lignes à cheval sur le bord) ; hors du terrain, sur le blanc.
+  private shadeLayer(ctx: CanvasRenderingContext2D, pad: number): void {
+    const { x, y, w, h } = this.court;
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = this.outside;
+    ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.globalCompositeOperation = 'source-atop';
+    ctx.drawImage(this.shade, x - pad, y - pad, w + 2 * pad, h + 2 * pad);
+    ctx.restore();
+  }
+
+  private paintLines(): void {
+    const ctx = this.lines.getContext('2d')!;
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(this.linesMask, 0, 0, W, H);
+    this.shadeLayer(ctx, config.brands.line * this.u);
+  }
+
   private draw(): void {
     const ctx = this.ballLayer.getContext('2d')!;
     const W = window.innerWidth;
     const H = window.innerHeight;
     ctx.clearRect(0, 0, W, H);
 
-    // Raquettes : vert (joueur), rose (adversaire), hors du calque en différence pour garder leurs couleurs.
+    // Raquettes : vert (joueur), rose (adversaire), dans leurs couleurs.
     const { len, thick, inset } = this.paddle();
     const L = this.along();
     for (const side of ['cpu', 'player'] as Side[]) {
@@ -499,7 +550,7 @@ class BrandsGame {
       });
     }
 
-    // La balle : le logo en blanc (le calque est en mode différence : blanc négatif) ; « pop » à chaque rebond.
+    // La balle : le logo, recoloré comme les lignes ; « pop » à chaque rebond.
     const img = this.sprites[this.ball.sprite];
     if (img) {
       const s = 1 + 0.2 * this.ball.pop;
@@ -507,6 +558,7 @@ class BrandsGame {
       const w = this.ball.w * s;
       const h = this.ball.h * s;
       ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
+      this.shadeLayer(ctx, 0);
     }
   }
 
@@ -514,7 +566,6 @@ class BrandsGame {
     const dt = Math.min(0.033, (now - this.last) / 1000);
     this.last = now;
     this.step(dt);
-    this.draw();
     // Fond : l'image de la vidéo, minuscule et floutée (débordant un peu, pour que le flou ne pâlisse pas les bords).
     if (this.video.readyState >= 2) {
       const ctx = this.blur.getContext('2d')!;
@@ -528,6 +579,9 @@ class BrandsGame {
       ctx.fillStyle = `rgba(255, 255, 255, ${1 - opacity})`;
       ctx.fillRect(0, 0, bw, bh);
     }
+    this.updateShade();
+    this.paintLines();
+    this.draw();
     if (this.isOpen) this.frame = requestAnimationFrame(this.tick);
   };
 

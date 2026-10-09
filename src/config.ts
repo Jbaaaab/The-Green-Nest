@@ -456,6 +456,15 @@ export const config = {
   // la souris ou le doigt, l'adversaire (rose) joue seul. La balle est un logo de marque en blanc négatif, qui
   // change à chaque rebond (raquette ou mur) ; le terrain s'incline un peu vers elle. Raté : « YOU LOST ».
   // Tailles en px de maquette, vitesses en longueurs de terrain par seconde.
+  // Négatifs (textes des projets et des magazines, pong, « MAIL COPIED », « YOU LOST ») : au lieu du négatif pur
+  // (gris sur du gris quand le fond est gris), un dégradé blanc → vert → noir plus tranché (demande du DA,
+  // src/ui/tint.ts) : blanc sur le sombre, vert flash sur le gris foncé, noir sur le clair.
+  negative: {
+    contrast: 2.5, // pente : 1 = négatif pur ; plus haut = plus tranché (moins de gris entre le blanc et le noir)
+    green: 0.4, // clarté du fond (0 noir, 1 blanc) où le texte est vert flash pile
+    color: '#41f373', // la teinte du dégradé
+  },
+
   brands: {
     player: '#41f373', // raquette du joueur (vert flash)
     cpu: '#ff1fb4', // raquette de l'adversaire (rose poison)

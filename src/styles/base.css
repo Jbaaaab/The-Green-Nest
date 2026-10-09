@@ -602,3 +602,23 @@ button {
     filter: blur(calc(12 * var(--u)));
   }
 }
+
+/* ---------- Négatif en dégradé blanc → vert → noir (src/ui/tint.ts) ---------- */
+
+/* Jumeaux d'un élément en négatif (blanc, mode différence) : deux calques gris raidissent le négatif, le
+   dernier lui donne la teinte verte en gardant sa clarté. Blanc sur le sombre, vert sur le gris foncé, noir sur
+   le clair : plus lisible que le négatif pur sur les fonds gris (demande du DA). Teintes et pente : config.negative. */
+.is-tint[data-tint='burn'] {
+  mix-blend-mode: color-burn !important;
+  color: var(--neg-burn) !important;
+}
+
+.is-tint[data-tint='dodge'] {
+  mix-blend-mode: color-dodge !important;
+  color: var(--neg-dodge) !important;
+}
+
+.is-tint[data-tint='hue'] {
+  mix-blend-mode: color !important;
+  color: var(--neg-tint) !important;
+}

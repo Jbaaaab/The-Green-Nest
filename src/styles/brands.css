@@ -62,10 +62,8 @@
   position: absolute;
 }
 
-/* Logos, texte et lignes en blanc négatif (comme les textes des projets) : ils inversent la vidéo, et
-   ressortent foncés sur le fond éclairci. */
-.brands__ball,
-.brands__lines,
+/* Texte en négatif, comme ceux des projets (blanc en différence, avec ses jumeaux en dégradé blanc → vert →
+   noir : src/ui/tint.ts). Les logos et les lignes, eux, sont recolorés directement dans leur canvas. */
 .brands__text {
   mix-blend-mode: difference;
 }

@@ -4,10 +4,13 @@
  * flou autour ; dessous, « MAIL COPIED » dans le style des autres textes (noir négatif), qui se dissout en se
  * floutant (opacité 100 → 0). Sans 3D : une enveloppe SVG à la place.
  */
+import { tint } from './tint';
+
 export const MAIL_TOAST_MS = 1000;
 
 let halo: HTMLElement | null = null;
 let text: HTMLElement | null = null;
+let twins: HTMLElement[] = []; // le texte en dégradé blanc → vert → noir (src/ui/tint.ts)
 let timer = 0;
 
 // Le halo (et l'enveloppe de secours) passent sous le canvas ; le texte au-dessus (deux éléments distincts).
@@ -22,22 +25,21 @@ function create(): void {
   text.className = 'mail-toast__text';
   text.setAttribute('role', 'status');
   document.body.append(halo, text);
+  twins = tint(text);
 }
 
 export function initMailToast(): void {
   window.addEventListener('mail:copied', () => {
     if (!halo || !text) create();
     text!.textContent = 'MAIL COPIED';
-    // Relance l'animation à chaque clic.
-    for (const el of [halo!, text!]) {
-      el.classList.remove('is-on');
-      void el.offsetWidth;
-      el.classList.add('is-on');
-    }
+    // Relance l'animation à chaque clic (les jumeaux du texte aussi : ils doivent la jouer en même temps).
+    const els = [halo!, text!, ...twins];
+    for (const el of els) el.classList.remove('is-on');
+    void text!.offsetWidth;
+    for (const el of els) el.classList.add('is-on');
     clearTimeout(timer);
     timer = window.setTimeout(() => {
-      halo!.classList.remove('is-on');
-      text!.classList.remove('is-on');
+      for (const el of els) el.classList.remove('is-on');
     }, MAIL_TOAST_MS);
   });
 }
