@@ -1,7 +1,8 @@
 /* ---------- Pages projets (Works) ---------- */
 
-/* L'accueil devient une « fenêtre » plein écran qui repart sur le côté. */
-main {
+/* L’accueil devient une « fenêtre » plein écran qui repart sur le côté (le <main>, et ses jumeaux en négatif quand
+   la bague passe derrière la bio : src/ui/tint.ts). */
+.landing {
   position: absolute;
   inset: 0;
   z-index: 1;

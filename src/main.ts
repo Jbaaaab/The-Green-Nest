@@ -5,12 +5,14 @@ import './styles/base.css';
 import './styles/works.css';
 import './styles/footer.css';
 
+import { config } from './config';
 import { FooterView } from './footer/footerView';
 import { nav } from './nav';
 import { initHeader } from './ui/header';
 import { initClock } from './ui/clock';
 import { startLoader } from './ui/loader';
 import { initMusicPlayer } from './ui/musicPlayer';
+import { tint } from './ui/tint';
 import { WorksView } from './works/worksView';
 
 // Écran de chargement : il suit les étapes (événements stage:module et stage:ready, plus bas et dans landing.ts).
@@ -23,8 +25,20 @@ initMusicPlayer(document.querySelector<HTMLElement>('.music'));
 // par un lien direct (#take-care…), sinon dès que le navigateur a fini d'afficher l'accueil.
 nav.init();
 if (import.meta.env.DEV) Object.assign(window, { __nav: nav }); // pour les tests
+const main = document.querySelector('main')!;
+
+// La bague derrière la bio, en négatif au-dessus du canvas : sur mobile seulement (choix du DA,
+// config.ring.behindText). Les jumeaux en négatif existent partout, mais ne s'affichent qu'avec la classe.
+const behind = config.ring.behindText;
+if (behind.desktop || behind.mobile) {
+  tint(main, 'div');
+  const mobile = window.matchMedia('(max-width: 767px)');
+  const apply = () => document.documentElement.classList.toggle('ring-behind', mobile.matches ? behind.mobile : behind.desktop);
+  apply();
+  mobile.addEventListener('change', apply);
+}
+
 const buildWorks = () => {
-  const main = document.querySelector('main')!;
   new WorksView(main, () => document.querySelector('.trail'));
   new FooterView(main); // le footer, tout en bas du scroll
 };

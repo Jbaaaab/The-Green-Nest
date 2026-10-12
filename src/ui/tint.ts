@@ -65,8 +65,12 @@ export const NEGATIVE_LAYERS: [GlobalCompositeOperation, string][] = [
   ['color', config.negative.color],
 ];
 
-/** Ajoute les jumeaux de el (voir plus haut) ; les renvoie (pour relancer une animation CSS avec l'original). */
-export function tint(el: HTMLElement): HTMLElement[] {
+/**
+ * Ajoute les jumeaux de el (voir plus haut) ; les renvoie (pour relancer une animation CSS avec l'original).
+ * tag : la balise des jumeaux (un div pour un <main>, qui doit rester unique). Le texte réservé aux lecteurs
+ * d'écran (.sr-only) n'est pas recopié.
+ */
+export function tint(el: HTMLElement, tag = el.tagName): HTMLElement[] {
   if (!ready) {
     ready = true;
     const root = document.documentElement.style;
@@ -76,9 +80,7 @@ export function tint(el: HTMLElement): HTMLElement[] {
   }
   const layers = CURVE.k > 1 ? ['burn', 'dodge', 'hue'] : ['hue'];
   const twins = layers.map((layer) => {
-    const twin = el.cloneNode(true) as HTMLElement;
-    twin.removeAttribute('id');
-    twin.removeAttribute('role');
+    const twin = document.createElement(tag);
     twin.setAttribute('aria-hidden', 'true');
     twin.dataset.tint = layer;
     return twin;
@@ -91,10 +93,15 @@ export function tint(el: HTMLElement): HTMLElement[] {
       twin.hidden = el.hidden;
     }
   };
+  const copy = () => {
+    for (const twin of twins) {
+      twin.innerHTML = el.innerHTML;
+      for (const hidden of twin.querySelectorAll('.sr-only')) hidden.remove();
+    }
+  };
   sync();
+  copy();
   new MutationObserver(sync).observe(el, { attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
-  new MutationObserver(() => {
-    for (const twin of twins) twin.innerHTML = el.innerHTML;
-  }).observe(el, { childList: true, subtree: true, characterData: true });
+  new MutationObserver(copy).observe(el, { childList: true, subtree: true, characterData: true });
   return twins;
 }

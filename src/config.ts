@@ -141,6 +141,9 @@ export const config = {
 
   ring: {
     url: '/models/bague.glb',
+    // La bague tourne derrière la bio, qui passe au-dessus du canvas en négatif (dégradé blanc → vert → noir,
+    // comme les textes des projets) ; sinon elle est devant. Choix du DA : devant sur desktop, derrière sur mobile.
+    behindText: { desktop: false, mobile: true },
 
     // Diamètre à l'écran, en px de maquette (mesuré sur le rendu Figma 1512 et ta capture 1920).
     diameter: { desktop: 264, mobile: 200 },
