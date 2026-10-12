@@ -27,6 +27,7 @@ export class Stage {
   private last = 0;
   private elapsed = 0;
   private frame = 0;
+  private freezeTo: HTMLCanvasElement | null = null;
 
   constructor(readonly canvas: HTMLCanvasElement) {
     // stencil : sert à masquer le chiffre 3D derrière les vidéos des pages (voir digits.ts).
@@ -79,10 +80,27 @@ export class Stage {
     if (this.running) this.frame = requestAnimationFrame(this.tick);
   };
 
+  /** Fige la prochaine image de la scène (sans la couche overlay) dans target : l'animation du Mail. */
+  snapshot(target: HTMLCanvasElement): void {
+    this.freezeTo = target;
+  }
+
   private render(): void {
     this.renderer.clear();
-    // Popup « Brands » ouverte (elle est sous ce canvas) : seule la couche overlay (le curseur) est dessinée.
-    if (!document.documentElement.classList.contains('is-brands')) this.renderer.render(this.scene, this.camera);
+    const target = this.freezeTo;
+    if (target) {
+      // Copiée juste après le rendu (après, le navigateur peut vider le tampon), puis effacée.
+      this.freezeTo = null;
+      this.renderer.render(this.scene, this.camera);
+      target.width = this.canvas.width;
+      target.height = this.canvas.height;
+      target.getContext('2d')?.drawImage(this.canvas, 0, 0);
+      this.renderer.clear();
+    }
+    // Popup « Brands » ouverte (elle est sous ce canvas) ou animation du Mail (la scène est figée sous son
+    // voile) : seule la couche overlay (le curseur, l'enveloppe) est dessinée.
+    const page = document.documentElement.classList;
+    if (!page.contains('is-brands') && !page.contains('is-mail')) this.renderer.render(this.scene, this.camera);
     if (this.overlay.children.length) {
       this.renderer.clearDepth();
       this.renderer.render(this.overlay, this.camera);

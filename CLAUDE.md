@@ -101,7 +101,7 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 - Au centre, le texte de la maquette « BRANDS / I’VE … COOKED / WITH » (trou de 10 espaces) ; les lignes s'interrompent autour.
 - La popup est **sous le canvas 3D** : pendant le jeu, la scène 3D n'est plus dessinée (classe `is-brands`), seul le curseur 3D reste par-dessus (CLICK! sur « Close »). Scroll du site bloqué (`nav.locked`). Fermer : un clic hors du terrain, « Close » (à la place d'Instagram / Mail) ou Échap.
 - **L'icône curseur** : elle change le curseur (voir la section Curseur).
-- **À droite** : Instagram → https://www.instagram.com/designer_with_a_monstera/, et Mail → **copie `hello@designer-with-a-monstera.art`** (demande du DA ; le lien `mailto:` ne sert que si la copie est impossible) : pendant une seconde, une **enveloppe 3D** tourne au centre de l'écran façon PS3, en chrome comme les chiffres (`src/scene/mailEnvelope.ts`, couche overlay, `config.mail`), avec un **halo flou** vert et rose, et **« MAIL COPIED » dessous**, dans le style des autres textes (noir négatif, au-dessus du canvas), qui **se dissout en se floutant** (opacité 100 → 0) (`src/ui/mailToast.ts`, `base.css`). Sans 3D : une enveloppe SVG.
+- **À droite** : Instagram → https://www.instagram.com/designer_with_a_monstera/, et Mail → **copie `hello@designer-with-a-monstera.art`** (demande du DA ; le lien `mailto:` ne sert que si la copie est impossible) : pendant **deux secondes** (`config.mail.duration`, avant 1 s), **tout l'écran s'assombrit et se floute** (voile noir à 60 %, flou de 14 px : `config.mail.veil`), une **enveloppe 3D** tourne **pile au centre** façon PS3, en chrome comme les chiffres (`src/scene/mailEnvelope.ts`, couche overlay), avec un **halo flou** vert et rose, et **« MAIL COPIED » dessous**, dans le style des autres textes (négatif : vert flash sur le voile, au-dessus de tout), qui **se dissout en se floutant** (`src/ui/mailToast.ts`, `base.css`). Pour flouter aussi la bague sans flouter l'enveloppe (un seul canvas) : au clic, la scène 3D est **figée** dans `.mail-freeze` (`Stage.snapshot`), sous le voile ; le canvas passe au-dessus du voile (classe `is-mail`) et n'y dessine plus que l'enveloppe et le curseur ; à 80 % de la durée (`MAIL_SCENE_BACK`), l'enveloppe est repartie, la 3D revient en direct sous le voile qui s'efface. Sans 3D : une enveloppe SVG blanche.
 
 ### Bio
 
@@ -233,6 +233,7 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 ## Performance et qualité
 
+- **Miniature du lien partagé** (demande du DA) : « COOL » (`assets-src/cool.png`), aplati sur le blanc en JPEG 1080×1080 de 46 Ko (`public/og.jpg`, `OG` dans `scripts/optimize-assets.mjs`, `npm run assets og`), déclaré dans `index.html` (`og:image` et `twitter:image`, adresse complète sur le domaine). Les messageries gardent un aperçu en cache : un lien déjà partagé peut garder l'ancien.
 - Lighthouse mobile : viser 85 ou plus en performance. **Mesuré : 95-96** (accessibilité 95, bonnes pratiques 100, SEO 100). Seul point a11y restant : Instagram/Mail empilés à 14 px (cibles tactiles < 24 px), choix de maquette.
 - Démarrage 3D découpé en petites tâches (`yieldToMain`, `compileAsync`) ; rien de lourd calculé dans le navigateur.
 - Le texte s'affiche avant la 3D, et la 3D apparaît en fondu une fois chargée.

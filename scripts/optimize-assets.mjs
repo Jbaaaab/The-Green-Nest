@@ -687,7 +687,23 @@ async function optimizeMusic() {
   console.log(`${MUSIC.to}`.padEnd(28), `${MUSIC.tracks.length + 1} fichiers, ${kb(total)}`);
 }
 
+// Miniature du lien partagé (og:image, index.html ; demande du DA) : « COOL », aplati sur le blanc (une
+// transparence sort en noir sur certaines messageries), en JPEG léger (WhatsApp ignore les images trop lourdes).
+const OG = { from: 'cool.png', to: 'og.jpg', size: 1080, background: '#ffffff', quality: 88 };
+
+async function optimizeOg() {
+  const output = out(OG.to);
+  if (await newer(output, src(OG.from))) return;
+  await sharp(src(OG.from))
+    .resize(OG.size, OG.size, { fit: 'contain', background: OG.background })
+    .flatten({ background: OG.background })
+    .jpeg({ quality: OG.quality, mozjpeg: true })
+    .toFile(output);
+  console.log(OG.to.padEnd(28), kb((await stat(output)).size));
+}
+
 const only = process.argv[2];
+if (!only || only === 'og') await optimizeOg();
 if (!only || only === 'models') await optimizeModels();
 if (!only || only === 'thumbs') await optimizeThumbs();
 if (!only || only === 'galleries') await optimizeGalleries();

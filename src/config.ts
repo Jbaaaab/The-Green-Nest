@@ -445,12 +445,14 @@ export const config = {
     },
   },
 
-  // « MAIL COPIED » (clic sur Mail : l'adresse est copiée) : une enveloppe 3D façon PS3 tourne au centre de
-  // l'écran (src/scene/mailEnvelope.ts), avec un halo flou, et « MAIL COPIED » dessous qui se dissout en se
-  // floutant (src/ui/mailToast.ts) ; une seconde en tout (MAIL_TOAST_MS).
+  // « MAIL COPIED » (clic sur Mail : l'adresse est copiée) : tout l'écran s'assombrit et se floute, une
+  // enveloppe 3D façon PS3 tourne au centre (src/scene/mailEnvelope.ts), avec un halo flou, et « MAIL COPIED »
+  // dessous, qui se dissout en se floutant (src/ui/mailToast.ts).
   mail: {
+    duration: 2000, // ms, de l'arrivée du voile à son départ (avant : 1 s ; demande du DA : « deux fois plus longtemps »)
+    veil: { dark: 0.6, blur: 14 }, // voile : noir à 60 % (le texte en négatif y sort vert flash), flou de 14 px de maquette
     size: 90, // hauteur de l'enveloppe (px de maquette ; elle fait 1,5 fois plus large)
-    lift: 24, // au-dessus du centre de l'écran (px de maquette) ; le texte est dessous
+    lift: 0, // au-dessus du centre de l'écran (px de maquette) : 0 = pile au centre (demande du DA) ; le texte est dessous
     spinPeriod: 0.9, // secondes par tour
   },
 

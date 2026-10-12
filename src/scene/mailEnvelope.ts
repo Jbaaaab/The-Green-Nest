@@ -1,7 +1,7 @@
 import { ExtrudeGeometry, Group, Mesh, MeshMatcapMaterial, Shape } from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { config } from '../config';
-import { MAIL_TOAST_MS } from '../ui/mailToast';
+import { MAIL_SCENE_BACK, MAIL_TOAST_MS, mailFreeze } from '../ui/mailToast';
 import { buildMatcap } from './environment';
 import { steppedFrame, type Stage, type Updatable, type Viewport } from './stage';
 
@@ -11,9 +11,10 @@ const easeOutBack = (t: number) => 1 + 2.4 * Math.pow(t - 1, 3) + 1.4 * Math.pow
 
 /**
  * Enveloppe 3D du « MAIL COPIED » (demande du DA) : façon écran de chargement PS3, comme les chiffres de la
- * rangée (chrome, rotation continue sur elle-même, léger flottement), au centre de l'écran pendant une seconde
- * après la copie de l'adresse. Dans la couche overlay du canvas (toujours devant), au-dessus du halo et du
- * texte (src/ui/mailToast.ts). Rotations « on twos ».
+ * rangée (chrome, rotation continue sur elle-même, léger flottement), pile au centre de l'écran après la copie
+ * de l'adresse. Dans la couche overlay du canvas (toujours devant), au-dessus du voile sombre et flou et de son
+ * halo (src/ui/mailToast.ts) ; au clic, le reste de la scène est figé sous le voile (Stage.snapshot). Elle repart
+ * avant le voile, quand la scène revient (MAIL_SCENE_BACK). Rotations « on twos ».
  */
 export class MailEnvelope implements Updatable {
   private root = new Group();
@@ -21,9 +22,11 @@ export class MailEnvelope implements Updatable {
   private start = -1;
   private pending = false;
   private viewport: Viewport;
+  private stage: Stage;
   private reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   constructor(stage: Stage) {
+    this.stage = stage;
     this.viewport = stage.viewport;
     const material = new MeshMatcapMaterial({ matcap: buildMatcap(config.works.digitAmbience) });
     // Le corps : un rectangle aux bords arrondis (1,5 × 1, à plat).
@@ -59,7 +62,12 @@ export class MailEnvelope implements Updatable {
     this.root.add(this.spinner);
     this.root.visible = false;
     stage.overlay.add(this.root);
-    window.addEventListener('mail:copied', () => (this.pending = true));
+    // mailToast.ts écoute avant (il crée le voile et .mail-freeze) : la scène y est figée au prochain rendu.
+    window.addEventListener('mail:copied', () => {
+      this.pending = true;
+      const freeze = mailFreeze();
+      if (freeze) this.stage.snapshot(freeze);
+    });
     document.documentElement.classList.add('has-mail-3d'); // l'enveloppe SVG de secours n'est plus utile
   }
 
@@ -73,18 +81,18 @@ export class MailEnvelope implements Updatable {
       this.start = time;
     }
     const t = this.start < 0 ? -1 : time - this.start;
-    if (t < 0 || t > MAIL_TOAST_MS / 1000) {
+    const d = (MAIL_TOAST_MS / 1000) * MAIL_SCENE_BACK; // elle repart quand la scène revient sous le voile
+    if (t < 0 || t > d) {
       this.start = -1;
       this.root.visible = false;
       return;
     }
-    // Arrive en rebondissant, repart en rétrécissant ; tout tient dans la seconde.
-    const d = MAIL_TOAST_MS / 1000;
+    // Arrive en rebondissant, repart en rétrécissant.
     const s = easeOutBack(clamp01(t / 0.2)) * (1 - Math.pow(clamp01((t - d + 0.22) / 0.22), 2));
     const u = this.viewport.unit;
     this.root.visible = true;
     this.root.scale.setScalar(config.mail.size * u * s);
-    this.root.position.set(0, config.mail.lift * u, 0); // un peu au-dessus du centre (le texte est dessous)
+    this.root.position.set(0, config.mail.lift * u, 0); // pile au centre (le texte est dessous)
     if (this.reduced.matches) {
       this.spinner.rotation.set(0, 0, 0);
     } else if (steppedFrame()) {

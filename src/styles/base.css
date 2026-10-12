@@ -537,34 +537,66 @@ button {
   }
 }
 
-/* ---------- « MAIL COPIED » (src/ui/mailToast.ts) : enveloppe 3D, halo, texte qui se dissout ---------- */
+/* ---------- « MAIL COPIED » (src/ui/mailToast.ts) : voile sombre et flou, enveloppe 3D, texte qui se dissout ---------- */
 
-/* Sous le canvas 3D : l’enveloppe 3D tourne par-dessus le halo (src/scene/mailEnvelope.ts). */
+/* Pendant l'animation (classe is-mail), tout l'écran s'assombrit et se floute (demande du DA). La scène 3D
+   (bague, chiffres…) est figée dans .mail-freeze, sous le voile, pour être floutée avec la page ; le canvas
+   passe au-dessus du voile et n'y dessine plus que l'enveloppe et le curseur (src/scene/stage.ts). Quand la
+   classe s'en va (80 % de la durée), la scène revient en direct sous le voile et l'image figée s'efface. */
+.mail-freeze {
+  position: fixed;
+  inset: 0;
+  z-index: 7;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0.35s ease,
+    visibility 0s 0.35s;
+}
+
+.is-mail .mail-freeze {
+  visibility: visible;
+  opacity: 1;
+  transition: none;
+}
+
+.is-mail .stage {
+  z-index: 8;
+}
+
+/* Le voile (après .mail-freeze dans la page : au-dessus d'elle), avec le halo et l'enveloppe de secours. */
 .mail-toast {
   position: fixed;
   inset: 0;
-  z-index: 4;
+  z-index: 7;
   pointer-events: none;
   visibility: hidden;
+  background: rgba(0, 0, 0, var(--mail-dark));
+  -webkit-backdrop-filter: blur(calc(var(--mail-blur) * var(--u)));
+  backdrop-filter: blur(calc(var(--mail-blur) * var(--u)));
 }
 
 .mail-toast.is-on {
   visibility: visible;
-  animation: mail-halo 1s ease forwards;
+  animation: mail-veil var(--mail-ms) ease forwards;
 }
 
-@keyframes mail-halo {
+/* Il s'efface à partir de 80 % de la durée (MAIL_SCENE_BACK), quand la 3D revient dessous. */
+@keyframes mail-veil {
   0% { opacity: 0; }
   12% { opacity: 1; }
-  78% { opacity: 1; }
+  80% { opacity: 1; }
   100% { opacity: 0; }
 }
 
-/* Halo flou autour de l’enveloppe : vert flash, un peu de rose. */
+/* Halo flou autour de l’enveloppe, pile au centre : vert flash, un peu de rose. */
 .mail-toast__halo {
   position: absolute;
   left: 50%;
-  top: calc(50% - 24 * var(--u));
+  top: 50%;
   width: calc(240 * var(--u));
   height: calc(170 * var(--u));
   transform: translate(-50%, -50%);
@@ -573,15 +605,15 @@ button {
   filter: blur(calc(18 * var(--u)));
 }
 
-/* Enveloppe en SVG seulement si la 3D n’est pas là. */
+/* Enveloppe en SVG seulement si la 3D n’est pas là (blanche sur le voile). */
 .mail-toast__icon {
   position: absolute;
   left: 50%;
-  top: calc(50% - 24 * var(--u));
+  top: 50%;
   width: calc(90 * var(--u));
   transform: translate(-50%, -50%);
   fill: none;
-  stroke: #000;
+  stroke: #fff;
   stroke-width: 1.4;
   stroke-linejoin: round;
 }
@@ -590,13 +622,13 @@ button {
   display: none;
 }
 
-/* « MAIL COPIED » sous l’enveloppe, comme les autres textes (majuscules, gras, noir négatif) ; au-dessus du
-   canvas. Il reste net un instant, puis se dissout en se floutant (opacité 100 → 0). */
+/* « MAIL COPIED » sous l’enveloppe, comme les autres textes (majuscules, gras, négatif : blanc sur le voile) ;
+   au-dessus de tout. Il apparaît, reste net (deux fois plus longtemps qu'avant), puis se dissout en se floutant. */
 .mail-toast__text {
   position: fixed;
   left: 50%;
-  top: calc(50% + 74 * var(--u));
-  z-index: 6;
+  top: calc(50% + 70 * var(--u));
+  z-index: 9;
   margin: 0;
   transform: translateX(-50%);
   color: #fff;
@@ -610,15 +642,20 @@ button {
 
 .mail-toast__text.is-on {
   visibility: visible;
-  animation: mail-text 1s ease-in forwards;
+  animation: mail-text var(--mail-ms) ease-in forwards;
 }
 
 @keyframes mail-text {
-  0%,
-  30% {
+  0% {
+    opacity: 0;
+    filter: blur(0);
+  }
+  8%,
+  60% {
     opacity: 1;
     filter: blur(0);
   }
+  90%,
   100% {
     opacity: 0;
     filter: blur(calc(12 * var(--u)));
