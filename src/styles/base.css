@@ -179,6 +179,12 @@ button {
   display: none;
 }
 
+/* Desktop : les retours à la ligne sont forcés aux places de la maquette (index.html) ; le bloc prend la largeur
+   de sa plus longue ligne (avec « ACROSS », elle dépasse les 839 px de la maquette). */
+.bio--desktop {
+  width: max-content;
+}
+
 /* La bague derrière la bio (config.ring.behindText, classe posée par main.ts : sur mobile seulement) : la bio
    passe au-dessus du canvas 3D, en négatif comme les textes des projets (noire sur le blanc, blanche ou verte
    sur la bague : src/ui/tint.ts). Sans la classe, ses jumeaux en négatif restent cachés. */

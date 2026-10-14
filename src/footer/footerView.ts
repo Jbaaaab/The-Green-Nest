@@ -53,9 +53,9 @@ export class FooterView {
     this.text = document.createElement('p');
     this.text.className = 'footer__text';
     this.text.innerHTML =
-      '<span class="footer__hi">Hi /안녕하세요/ I am Designer with a Monstera /돰/ !</span>' +
+      '<span class="footer__hi">Hi /안녕하세요/ I am Designer With A Monstera /돰/!</span>' +
       '<span class="footer__blank" aria-hidden="true"> </span>' +
-      `<span class="footer__bio">DESIGNER WITH A MONSTERA IS AN ART DIRECTOR${gap(20)}AND DESIGNER BASED IN PARIS, WORKING 360${gap(22)}IN MUSIC, FASHION, AND ADVERTISING.${gap(23)}HIS WORK FOCUSES ON MAKING THINGS LOOK <strong class="footer__cool">COOL</strong><span class="footer__wide"> </span>FOR PEOPLE AND BRANDS.</span>`;
+      `<span class="footer__bio">DESIGNER WITH A MONSTERA IS AN ART DIRECTOR${gap(20)}AND DESIGNER BASED IN PARIS, WORKING 360°${gap(22)}ACROSS MUSIC, FASHION, AND ADVERTISING.${gap(23)}HIS WORK FOCUSES ON MAKING THINGS LOOK <strong class="footer__cool">COOL</strong><span class="footer__wide"> </span>FOR PEOPLE AND BRANDS.</span>`;
 
     // Cartes : calques inversés par rapport à la maquette, la photo 1 au fond et la 4 devant
     // (dans le DOM, la carte du fond vient en premier : dessinée dessous).

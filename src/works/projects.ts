@@ -37,10 +37,10 @@ const LIST: Omit<Project, 'section'>[] = [
     title: 'LONGTEMPS',
     lines: [
       'LONGTEMPS',
-      `AN EXPERIMENTAL MUSIC VIDEO${gap(12)}FROM THE GROUP “LUCA”`,
-      `ALL CREATED ANIMATED IN 3D,${gap(17)}IN BLENDER, IN COLLABORATION WITH LEO MOURRAY COLINE REVERBEL AND MARTINA DOLL.${gap(7)}PRODUCTED BY 3 JOURS DE MARCHE`,
+      `AN EXPERIMENTAL MUSIC VIDEO${gap(12)}FOR THE BAND “LUCA”`,
+      `ALL CREATED AND ANIMATED IN 3D,${gap(17)}IN BLENDER, IN COLLABORATION WITH LEO MOURRAY, COLINE REVERBEL AND MARTINA DOLL.${gap(7)}PRODUCED BY 3 JOURS DE MARCHE`,
     ],
-    textWidth: 649,
+    textWidth: 662, // 649 sur la maquette : élargi pour que « LEO MOURRAY, » reste sur sa ligne (corrections de texte)
     layout: 'single',
     main: { kind: 'video', ...media.longtemps.main }, // le précase (6 s, en boucle)
     side: [],
@@ -53,8 +53,8 @@ const LIST: Omit<Project, 'section'>[] = [
     title: 'FORMULA ONE',
     lines: [
       'FORMULA ONE',
-      `A FULL ASSET REBRANDING${gap(13)}FOR DIGITAL AND LIVE TV PRODUCTION`,
-      `PRODUCTED IN COLLABORATION${gap(11)}WITH MAXENCE AUBERT AND MATHIS COURVILLERS`,
+      `A FULL REBRAND${gap(13)}FOR DIGITAL AND LIVE TV PRODUCTION`,
+      `PRODUCED IN COLLABORATION${gap(11)}WITH MAXENCE AUBERT AND MATHIS COURVILLERS`,
       `MADE BY FANS WITH LOVE${gap(11)}AND SICKNESS`,
     ],
     textWidth: 667,
@@ -72,8 +72,9 @@ const LIST: Omit<Project, 'section'>[] = [
     title: 'TAKE CARE',
     lines: [
       'TAKE CARE BEAUTY',
-      'A SANRIO’S LICENCE BEAUTY PRODUCT BRAND',
-      `BEEN${gap(10)}ART DIRECTING AND CRAFTING FOR THEM${gap(8)}FOR ONE YEAR`,
+      'A SANRIO-LICENSED', // coupé en deux lignes (bloc étroit) : « BRAND » seul sur sa ligne sinon
+      'BEAUTY BRAND',
+      `I’VE BEEN${gap(10)}ART DIRECTING AND CRAFTING FOR THEM${gap(8)}FOR A YEAR`,
     ],
     textWidth: 209,
     layout: 'mosaic',
@@ -111,7 +112,7 @@ const LIST: Omit<Project, 'section'>[] = [
     lines: [
       'MUSIC & CULTURE',
       `I’VE DONE THAT SHIT${gap(15)}FOR YEARS${gap(8)}WITH PASSION`,
-      `AND HEART${gap(2)}AND POOR${gap(9)}RETRIBUTION.`,
+      `AND HEART${gap(2)}AND POOR${gap(9)}PAY.`,
       `NOW I WANNA WORK${gap(10)}FOR AESPA${gap(12)}AND BE RICH PLZ`,
     ],
     textWidth: 406,
@@ -154,16 +155,16 @@ export const MAGAZINE_TEXTS: MagazineText[] = [
     mag: 'typeshit',
     lines: [
       'TYPESHIT MAGAZINE',
-      `A BIANNUAL MAGAZINE ABOUT${gap(9)}FASHION, TRAVEL, LIFE`,
+      `A BIANNUAL MAGAZINE ABOUT${gap(9)}FASHION, TRAVEL AND LIFE`,
       `76 PAGES${gap(8)}MADE WITH PASSION.${gap(11)}TYPESHIT.`,
     ],
-    textWidth: 392,
+    textWidth: 422, // 392 sur la maquette : élargi pour que « LIFE » reste sur sa ligne (corrections de texte)
   },
   {
     mag: 'typeshit',
     spreads: [4, 6],
     lines: [
-      'MUSIC HORS-SERIE',
+      'MUSIC HORS-SÉRIE',
       `FOCUSED ON${gap(12)}A SELECTION OF GOOD MUSIC`,
       `CAUSE I HAVE GOATED${gap(14)}MUSIC TASTE`,
     ],
@@ -173,21 +174,21 @@ export const MAGAZINE_TEXTS: MagazineText[] = [
     mag: 'typeshit',
     spreads: [7, 9],
     lines: [
-      `FASHION${gap(5)}HORS-SERIE`,
+      `FASHION${gap(5)}HORS-SÉRIE`,
       `FOCUSED ON${gap(11)}INTERESTING BRANDS`,
-      `BUT YOU GUYS ONLY WATCH${gap(10)}DOLCE GABBANA`,
+      `BUT YOU GUYS ONLY WATCH${gap(10)}DOLCE & GABBANA`,
     ],
-    textWidth: 339,
+    textWidth: 354, // 339 sur la maquette : élargi pour que « GABBANA » reste sur sa ligne (corrections de texte)
   },
   {
     mag: 'cpgcqd',
     lines: [
       'CPGCQDB MAGAZINE',
-      `A ONCE${gap(10)}IN A LIFETIME${gap(10)}CULINARY STORY`,
-      `BASICALLY A MAGAZINE I MADE FOR${gap(11)}MY FAMILY WITH`,
-      `ALL THE${gap(5)}FAMILY RECIPES`,
+      `A${gap(10)}ONCE-IN-A-LIFETIME${gap(10)}CULINARY STORY`, // trou avant « ONCE » : il ne peut plus couper le mot composé
+      `BASICALLY A MAGAZINE I MADE FOR${gap(11)}MY FAMILY, WITH`,
+      `ALL OUR${gap(5)}RECIPES`,
     ],
-    textWidth: 391,
+    textWidth: 396, // 391 sur la maquette : élargi pour que « WITH » reste sur sa ligne (corrections de texte)
   },
   {
     mag: 'dpp',

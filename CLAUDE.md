@@ -107,7 +107,8 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 
 - Le texte vient de Figma, avec ses trous volontaires entre les mots. **Les trous sont voulus, reproduis-les fidèlement.**
 - C'est du vrai texte DOM, pour le SEO et l'accessibilité.
-- Desktop : 17,67 px (COOL : 22,65 px), bloc de 839 px de large, centré à l'écran (1 px plus haut).
+- Desktop : 17,67 px (COOL : 22,65 px), bloc de 839 px de large sur la maquette, centré à l'écran (1 px plus haut). **Retours à la ligne forcés** (`<br />` après « PARIS, » et « FOCUSES », aux places de la maquette) et bloc à la largeur de sa plus longue ligne (`.bio--desktop`, `max-content`) : avec « 360° ACROSS » (corrections de texte), la ligne 2 dépasse les 839 px.
+- **Corrections d'anglais** (brief du DA, octobre 2026, branche `fix/typos`) : textes des projets, des magazines, de la bio (accueil, footer, meta). Règle : **les trous ne bougent pas** ; quand une correction rallonge une ligne, on garde les retours à la ligne de la maquette en élargissant le bloc juste ce qu'il faut (commentaires « élargi pour… » dans `projects.ts` : Longtemps 662, Typeshit 422, Fashion hors-série 354, CPGCQDB 396). Seules exceptions : « A ONCE-IN-A-LIFETIME » (le trou passe avant « ONCE », il ne peut plus couper le mot composé) et Take Care (bloc étroit : « A SANRIO-LICENSED / BEAUTY BRAND » sur deux lignes, sinon « BRAND » restait seul). Volontaires, à ne pas corriger : BIANNUAL, CAUSE I HAVE GOATED MUSIC TASTE, MADE BY FANS WITH LOVE AND SICKNESS, LET’S WATCH A VIDEOTAPE TOGETHER, NOW I WANNA WORK FOR AESPA AND BE RICH PLZ, NOT ALWAYS SATISFYING THO TBH, /안녕하세요/, /돰/. Forme du nom : « Designer With A Monstera ».
 
 ### Bague (élément central)
 
@@ -187,7 +188,7 @@ Renomme les dossiers et fichiers sans espaces, sans `&` ni accents (en kebab-cas
 - **Se comporte comme Social Media** (même code : `src/works/stripView.ts`, `postersStrip`), **sans vidéo au centre**. Section `#music-culture` entre MAGAZINES et SOCIAL MEDIA.
 - **La pochette de 4000 km (Hakil) en grand d'abord** (carré de 749 px, toute la hauteur du cadre de Take Care), puis des colonnes qui remplissent la hauteur, avec les écarts de Take Care (34 et 25 px, `POSTERS`) : **colonnes carrées** (les assets carrés, 2 carrés de 362 px ; le dos de 4000 km juste après la pochette) et **colonnes d'affiches format A** (3 affiches de 165×233 ; une ou deux colonnes de 2, 256×362, absorbent le reste), au rythme carrés / affiches / affiches. Colonnes toujours pleines. Les 4:5 vont dans les affiches (un peu recadrés). Composition faite par `npm run assets` (`MUSIC_CULTURE` dans `scripts/optimize-assets.mjs` : `hero`, `first`, `skip`, `pattern`) → `media.musicCulture.columns`, WebP 2x dans `public/work/music-culture/grid/`.
 - Ignorés : le doublon `halsey.jpg` / `v1-low.jpg`, et la carte titre de Longtemps (paysage 16:9, ni carré ni affiche).
-- Texte de la maquette (« MUSIC & CULTURE / I’VE DONE THAT SHIT… »), centré à l'écran, en noir négatif. Le trait pâle sous « AND POOR … RETRIBUTION. » de la capture a été pris pour un artefact Figma (pas reproduit). Rangée 1-8 masquée, comme sur Social Media. Réglages : `config.musicCulture`.
+- Texte de la maquette (« MUSIC & CULTURE / I’VE DONE THAT SHIT… »), centré à l'écran, en noir négatif. Le trait pâle sous « AND POOR … RETRIBUTION. » (devenu « PAY. ») de la capture a été pris pour un artefact Figma (pas reproduit). Rangée 1-8 masquée, comme sur Social Media. Réglages : `config.musicCulture`.
 - Mobile (hors maquette) : la pochette tient dans la largeur, la bande est centrée dans la hauteur.
 
 ### Social Media (projet ⑦ ; maquette 25:938 pour le texte et le numéro, la mosaïque reste celle d'après les indications du DA)
