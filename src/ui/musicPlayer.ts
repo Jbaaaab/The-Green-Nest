@@ -1,4 +1,5 @@
 import { config } from '../config';
+import { onLang, t } from '../i18n';
 import tracks from './tracks.generated.json';
 
 type Track = { src: string; title: string; artist: string };
@@ -16,7 +17,7 @@ export function initMusicPlayer(root: HTMLElement | null): void {
   const next = root.querySelector<HTMLButtonElement>('.music__next')!;
   const label = root.querySelector<HTMLElement>('.music__label')!;
   const title = root.querySelector<HTMLElement>('.music__title')!;
-  const idleText = title.textContent ?? 'Music player';
+  const idleText = () => t('music.idle'); // « Music player » / « Musique » (src/i18n.ts)
 
   const audio = new Audio();
   audio.preload = 'none';
@@ -65,9 +66,16 @@ export function initMusicPlayer(root: HTMLElement | null): void {
   const setPlaying = (on: boolean) => {
     root.classList.toggle('is-playing', on);
     toggle.setAttribute('aria-pressed', String(on));
-    toggle.setAttribute('aria-label', on ? 'Arrêter la musique' : 'Lancer la musique');
-    if (!on) setTitle(idleText);
+    toggle.setAttribute('aria-label', t(on ? 'music.stop' : 'music.play'));
+    if (!on) setTitle(idleText());
   };
+  setPlaying(false);
+  // Changement de langue : le libellé au repos et celui du bouton (les titres des morceaux ne changent pas).
+  onLang(() => {
+    const on = root.classList.contains('is-playing');
+    toggle.setAttribute('aria-label', t(on ? 'music.stop' : 'music.play'));
+    if (!on) setTitle(idleText());
+  });
 
   const start = (src: string) => {
     audio.src = src;

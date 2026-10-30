@@ -1,7 +1,7 @@
 import { nav } from '../nav';
 import { tint } from '../ui/tint';
 import { magazineSlide, magazineTextIndex } from './magazineTimeline';
-import { MAGAZINE_TEXTS } from './projects';
+import { MAGAZINE_TEXTS, localText } from './projects';
 
 /**
  * Textes de la page MAGAZINES (maquettes 25:631, 25:838, 25:888, 51:475, 51:525), en « noir négatif » comme
@@ -18,20 +18,28 @@ export class MagazineTexts {
     layer: HTMLElement,
     private index: number, // section de la page Magazines
   ) {
-    this.els = MAGAZINE_TEXTS.map((t) => {
+    this.els = MAGAZINE_TEXTS.map(() => {
       const el = document.createElement('div');
       el.className = 'project__win project__text project__text--magazine is-centered';
-      el.innerHTML = `<p class="project__lines">${t.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
       layer.appendChild(el);
       tint(el);
       return el;
+    });
+    this.render();
+  }
+
+  /** Les textes dans la langue courante (src/i18n.ts) ; la mise en page suit (layout). */
+  render(): void {
+    MAGAZINE_TEXTS.forEach((t, i) => {
+      this.els[i].innerHTML = `<p class="project__lines">${localText(t).lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
     });
   }
 
   layout(W: number, H: number, u: number, mobile: boolean): void {
     this.W = W;
     MAGAZINE_TEXTS.forEach((t, i) => {
-      const tw = mobile ? Math.min(t.textWidth * u, W - 40 * u) : t.textWidth * u;
+      const { textWidth } = localText(t);
+      const tw = mobile ? Math.min(textWidth * u, W - 40 * u) : textWidth * u;
       Object.assign(this.els[i].style, { left: `${(W - tw) / 2}px`, top: `${H / 2}px`, width: `${tw}px` });
     });
   }

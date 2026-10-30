@@ -214,8 +214,10 @@ export const config = {
   cursor: {
     dir: '/cursors', // GLB optimisés par npm run assets
     ambience: 'chrome', // reflets (voir ambiences)
-    default: 'wow', // curseur au chargement ; l'icône du header fait défiler click → great → iluvyou → iwannahire → super → wow
-    hover: 'click', // au survol d'un lien ou d'un bouton
+    default: 'wow', // curseur au chargement
+    // Au survol d'un lien ou d'un bouton ; en le quittant, le curseur revient sous une autre forme, au hasard
+    // (great, iluvyou, iwannahire, super, wow ; demande du DA, l'icône du header qui les faisait défiler est retirée).
+    hover: 'click',
     height: 18, // hauteur des lettres, en px de maquette
     offset: { x: 0, y: 0 }, // décalage du mot par rapport à la pointe de la souris, en px de maquette
     follow: 18, // vitesse de suivi (plus haut = colle plus à la souris)

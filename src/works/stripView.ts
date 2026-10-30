@@ -2,7 +2,7 @@ import { config } from '../config';
 import { nav } from '../nav';
 import { Glow, paletteColor } from './glow';
 import { lazyVideo, loadVideo } from './lazyVideo';
-import { POSTERS, SOCIAL, boxRect, type Project, type SideMedia } from './projects';
+import { POSTERS, SOCIAL, boxRect, local, type Project, type SideMedia } from './projects';
 import { drum } from './scrollFx';
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -73,10 +73,11 @@ export class StripView {
     private cfg: StripConfig,
   ) {
     this.index = project.section;
+    this.project = project;
     this.el = document.createElement('article');
     this.el.className = `project project--strip project--${project.layout}`;
     this.el.dataset.id = project.id;
-    this.el.setAttribute('aria-label', project.title);
+    this.el.setAttribute('aria-label', local(project).title);
     this.el.style.display = 'none';
 
     // Colonnes : construites seulement quand on quitte l'accueil (voir sync).
@@ -100,7 +101,7 @@ export class StripView {
       box.className = 'project__media';
       main.appendChild(box);
       const video = (this.mainVideo = lazyVideo(project.main.video, project.main.poster, 1));
-      video.setAttribute('aria-label', project.title);
+      video.setAttribute('aria-label', local(project).title);
       box.appendChild(video);
       if (config.works.glow.enabled) {
         const glow = (this.glow = new Glow(main, cfg.glowPalette));
@@ -109,6 +110,15 @@ export class StripView {
       this.el.append(main);
     }
     stage.appendChild(this.el);
+  }
+
+  private project: Project;
+
+  /** Changement de langue (src/i18n.ts) : le titre de la page pour les lecteurs d'écran. */
+  relabel(): void {
+    const title = local(this.project).title;
+    this.el.setAttribute('aria-label', title);
+    this.mainVideo?.setAttribute('aria-label', title);
   }
 
   // Une colonne par élément (c'est la colonne qui bouge).

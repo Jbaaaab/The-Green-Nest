@@ -9,6 +9,7 @@
  * dessinés, puis le texte. Vers la fin (MAIL_SCENE_BACK), la 3D revient en direct sous le voile qui s'efface.
  */
 import { config } from '../config';
+import { tr } from '../i18n';
 import { tint } from './tint';
 
 export const MAIL_TOAST_MS = config.mail.duration;
@@ -49,7 +50,7 @@ export const mailFreeze = () => freeze;
 export function initMailToast(): void {
   window.addEventListener('mail:copied', () => {
     if (!veil || !text) create();
-    text!.textContent = 'MAIL COPIED';
+    text!.textContent = tr({ en: 'MAIL COPIED', fr: 'MAIL COPIÉ' });
     // Relance l'animation à chaque clic (les jumeaux du texte aussi : ils doivent la jouer en même temps).
     const els = [veil!, text!, ...twins];
     for (const el of els) el.classList.remove('is-on');

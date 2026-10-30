@@ -1,4 +1,5 @@
 import { config } from '../config';
+import { onLang, tr, type Localized } from '../i18n';
 import { nav } from '../nav';
 import media from '../works/media.generated.json';
 import { Glow } from '../works/glow';
@@ -20,7 +21,11 @@ import '../styles/brands.css';
 type Side = 'player' | 'cpu';
 
 const gap = (n: number) => ' '.repeat(n);
-const LINES = ['BRANDS', `I’VE${gap(10)}COOKED`, 'WITH']; // trou mesuré sur la maquette (10 espaces)
+// Trou mesuré sur la maquette (10 espaces) ; en français, au même endroit.
+const LINES: Localized<string[]> = {
+  en: ['BRANDS', `I’VE${gap(10)}COOKED`, 'WITH'],
+  fr: ['MARQUES', `AVEC QUI${gap(10)}J’AI`, 'CUISINÉ'],
+};
 const DEG = Math.PI / 180;
 const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x));
 
@@ -95,7 +100,6 @@ class BrandsGame {
     this.root.hidden = true;
     this.root.setAttribute('role', 'dialog');
     this.root.setAttribute('aria-modal', 'true');
-    this.root.setAttribute('aria-label', 'Brands I’ve cooked with');
 
     this.board = el('div', 'brands__board');
     this.field = el('div', 'brands__field');
@@ -119,11 +123,6 @@ class BrandsGame {
     this.lines = canvas('brands__lines');
     this.ballLayer = canvas('brands__ball');
     this.text = el('p', 'brands__text');
-    for (const line of LINES) {
-      const span = document.createElement('span');
-      span.textContent = line;
-      this.text.append(span);
-    }
     this.paddleEls = { cpu: el('div', 'brands__paddle'), player: el('div', 'brands__paddle') };
     for (const side of ['cpu', 'player'] as Side[]) this.paddleEls[side].style.background = config.brands[side];
     this.board.append(this.field, this.lines, this.paddleEls.cpu, this.paddleEls.player, this.text, this.ballLayer);
@@ -154,7 +153,6 @@ class BrandsGame {
 
     this.closeBtn = el('button', 'brands__close') as HTMLButtonElement;
     this.closeBtn.type = 'button';
-    this.closeBtn.textContent = 'Close';
     this.closeBtn.addEventListener('click', () => this.close());
 
     // Les marques, lisibles par les lecteurs d'écran et les moteurs de recherche.
@@ -165,6 +163,11 @@ class BrandsGame {
       list.append(li);
     }
     this.root.append(this.board, this.lost, this.closeBtn, list);
+    this.renderTexts();
+    onLang(() => {
+      this.renderTexts();
+      if (this.isOpen) this.layout(); // le rond central suit la taille du texte
+    });
     document.body.append(this.root);
 
     // Logos : masques blancs, recolorés au dessin.
@@ -214,6 +217,23 @@ class BrandsGame {
       if (!this.isOpen) this.root.hidden = true;
     }, 300);
     this.trigger?.focus({ preventScroll: true });
+  }
+
+  // Textes dans la langue courante (src/i18n.ts). Les jumeaux en négatif (tint) suivent les originaux.
+  private renderTexts(): void {
+    this.root.setAttribute('aria-label', tr({ en: 'Brands I’ve cooked with', fr: 'Les marques avec qui j’ai cuisiné' }));
+    this.text.replaceChildren(
+      ...tr(LINES).map((line) => {
+        const span = document.createElement('span');
+        span.textContent = line;
+        return span;
+      }),
+    );
+    const [lost, owe] = this.lost.querySelectorAll<HTMLElement>('.brands__lost-text:not(.is-tint) > span');
+    lost.textContent = tr({ en: 'YOU LOST', fr: 'T’AS PERDU' });
+    owe.textContent = tr({ en: 'NOW YOU OWE ME THE JOB', fr: 'MAINTENANT TU ME DOIS LE JOB' });
+    this.lost.querySelector('.brands__again')!.textContent = tr({ en: 'Play again', fr: 'Rejouer' });
+    this.closeBtn.textContent = tr({ en: 'Close', fr: 'Fermer' });
   }
 
   // Terrain : le cadre des pages projets sur desktop (1320×749), le cadre mobile sinon (vertical).

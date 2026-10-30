@@ -1,21 +1,19 @@
 import { config } from '../config';
+import { initLang } from '../i18n';
 import { nav } from '../nav';
 import { initMailToast } from './mailToast';
 
 export function initHeader(root: ParentNode = document): void {
-  // Le bouton curseur du header émet `cursor:next`, écouté par le curseur 3D.
-  const cursorBtn = root.querySelector<HTMLButtonElement>('.cursor-btn');
-  cursorBtn?.addEventListener('click', () => {
-    window.dispatchEvent(new CustomEvent('cursor:next'));
-  });
+  // « FR » / « EN » : la langue du site (src/i18n.ts).
+  initLang();
 
-  // Le logo ramène à l'accueil ; « Monstera » (l'à-propos) descend jusqu'aux photos du footer, la pile de
-  // cartes complète (sans recharger la page).
+  // Le logo ramène à l'accueil ; « About » (ex-Monstera) descend jusqu'aux photos du footer, la pile de cartes
+  // complète (sans recharger la page), en attendant la page About.
   root.querySelector<HTMLAnchorElement>('.brand')?.addEventListener('click', (e) => {
     e.preventDefault();
     nav.goTo(0);
   });
-  root.querySelector<HTMLAnchorElement>('.nav-monstera')?.addEventListener('click', (e) => {
+  root.querySelector<HTMLAnchorElement>('.nav-about')?.addEventListener('click', (e) => {
     e.preventDefault();
     nav.goTo(nav.count - 1, config.footer.cards.pause ?? 0.76);
   });

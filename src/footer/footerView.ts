@@ -1,12 +1,25 @@
 import logoUrl from '../assets/footer/logo-full.svg';
 import symbolUrl from '../assets/footer/symbol.svg';
 import { config } from '../config';
+import { onLang, tr, type Localized } from '../i18n';
 import { nav } from '../nav';
 import { readUnit } from '../ui/unit';
 import media from '../works/media.generated.json';
 import { drum, perspectiveFor } from '../works/scrollFx';
 
 const gap = (n: number) => ' '.repeat(n);
+
+// Texte (vrai texte, en majuscules par le CSS) : les trous de la bio sont voulus, comme sur l'accueil.
+const TEXT: Localized = {
+  en:
+    '<span class="footer__hi">Hi /안녕하세요/ I am Designer With A Monstera /돰/!</span>' +
+    '<span class="footer__blank" aria-hidden="true"> </span>' +
+    `<span class="footer__bio">DESIGNER WITH A MONSTERA IS AN ART DIRECTOR${gap(20)}AND DESIGNER BASED IN PARIS, WORKING 360°${gap(22)}ACROSS MUSIC, FASHION, AND ADVERTISING.${gap(23)}HIS WORK FOCUSES ON MAKING THINGS LOOK <strong class="footer__cool">COOL</strong><span class="footer__wide"> </span>FOR PEOPLE AND BRANDS.</span>`,
+  fr:
+    '<span class="footer__hi">Salut /안녕하세요/ je suis Designer With A Monstera /돰/\u00a0!</span>' +
+    '<span class="footer__blank" aria-hidden="true"> </span>' +
+    `<span class="footer__bio">DESIGNER WITH A MONSTERA EST DIRECTEUR ARTISTIQUE${gap(20)}ET DESIGNER BASÉ À PARIS. IL TRAVAILLE À 360°${gap(22)}DANS LA MUSIQUE, LA MODE ET LA PUBLICITÉ.${gap(23)}SON TRAVAIL\u00a0: RENDRE LES CHOSES <strong class="footer__cool">COOL</strong><span class="footer__wide"> </span>POUR LES GENS ET LES MARQUES.</span>`,
+};
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -47,15 +60,10 @@ export class FooterView {
     this.root = document.createElement('section');
     this.root.className = 'footer';
     this.root.id = 'hello';
-    this.root.setAttribute('aria-label', 'Hello');
 
-    // Texte (vrai texte, en majuscules par le CSS) : les trous de la bio sont voulus, comme sur l'accueil.
     this.text = document.createElement('p');
     this.text.className = 'footer__text';
-    this.text.innerHTML =
-      '<span class="footer__hi">Hi /안녕하세요/ I am Designer With A Monstera /돰/!</span>' +
-      '<span class="footer__blank" aria-hidden="true"> </span>' +
-      `<span class="footer__bio">DESIGNER WITH A MONSTERA IS AN ART DIRECTOR${gap(20)}AND DESIGNER BASED IN PARIS, WORKING 360°${gap(22)}ACROSS MUSIC, FASHION, AND ADVERTISING.${gap(23)}HIS WORK FOCUSES ON MAKING THINGS LOOK <strong class="footer__cool">COOL</strong><span class="footer__wide"> </span>FOR PEOPLE AND BRANDS.</span>`;
+    this.text.innerHTML = tr(TEXT);
 
     // Cartes : calques inversés par rapport à la maquette, la photo 1 au fond et la 4 devant
     // (dans le DOM, la carte du fond vient en premier : dessinée dessous).
@@ -80,7 +88,6 @@ export class FooterView {
     this.symbol = document.createElement('button');
     this.symbol.type = 'button';
     this.symbol.className = 'footer__symbol';
-    this.symbol.setAttribute('aria-label', 'Retour en haut');
     this.symbol.innerHTML = `<img src="${symbolUrl}" alt="" width="20" height="20" />`;
     this.symbol.addEventListener('click', () => nav.goTo(0));
 
@@ -91,8 +98,20 @@ export class FooterView {
     if (pause !== null) nav.setPauses(FOOTER_SECTION, [pause]);
 
     window.addEventListener('resize', () => this.layout());
+    // Changement de langue (src/i18n.ts) : le texte et les libellés.
+    onLang(() => {
+      this.text.innerHTML = tr(TEXT);
+      this.relabel();
+      this.layout();
+    });
+    this.relabel();
     this.layout();
     nav.onScroll((scroll, velocity) => this.update(scroll, velocity));
+  }
+
+  private relabel(): void {
+    this.root.setAttribute('aria-label', tr({ en: 'Hello', fr: 'Salut' }));
+    this.symbol.setAttribute('aria-label', tr({ en: 'Back to top', fr: 'Retour en haut' }));
   }
 
   // Place les éléments à leur position de maquette (footer à l'arrêt), à l'échelle --u.

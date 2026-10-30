@@ -16,6 +16,7 @@ import {
 } from 'three';
 import { config } from '../config';
 import { FOOTER_SECTION, footerState } from '../footer/footerView';
+import { onLang } from '../i18n';
 import { nav } from '../nav';
 import { heapTop } from './darumaMountain';
 import { buildLacquerMatcap } from './environment';
@@ -483,6 +484,7 @@ export class FooterPlants implements Updatable {
     this.viewport = stage.viewport;
     this.bed.group.visible = false;
     stage.scene.add(this.bed.group);
+    onLang(() => (this.dirty = true)); // le texte du footer change de hauteur : les plantes restent dessous
   }
 
   resize(vp: Viewport): void {

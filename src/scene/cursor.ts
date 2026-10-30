@@ -16,8 +16,9 @@ const TAU = Math.PI * 2;
  * Rendu dans la couche overlay du canvas principal : pas de second contexte WebGL,
  * et la boucle de rendu tourne déjà pour la bague.
  *
- * - au repos : le curseur choisi (WOW! au chargement), changé par l'icône du header ;
- * - au survol d'un élément cliquable : CLICK!.
+ * - au repos : WOW! au chargement ;
+ * - au survol d'un élément cliquable : CLICK! ; ensuite, il revient sous une autre forme tirée au hasard
+ *   (demande du DA ; l'icône curseur du header, qui les faisait défiler, a été retirée).
  */
 export class Cursor3D implements Updatable {
   private root = new Group(); // position
@@ -28,7 +29,6 @@ export class Cursor3D implements Updatable {
 
   private rest: CursorName = config.cursor.default;
   private hovering = false;
-  private suppressed: Element | null = null; // élément dont on ignore le survol (juste après un changement)
   private current: CursorName | null = null;
 
   private target = new Vector2();
@@ -70,7 +70,9 @@ export class Cursor3D implements Updatable {
   update(_time: number, delta: number): void {
     const cfg = config.cursor;
 
-    // Mot affiché : CLICK! au survol d'un élément cliquable, sinon le curseur de repos.
+    // Mot affiché : CLICK! au survol d'un élément cliquable, sinon le curseur de repos. En quittant CLICK!, le
+    // curseur de repos change : une autre forme, tirée au hasard (jamais la même deux fois de suite).
+    if (this.current === cfg.hover && !this.hovering) this.rest = this.another();
     const wanted: CursorName = this.hovering ? cfg.hover : this.rest;
     if (wanted !== this.current) {
       if (this.current) this.words.get(this.current)!.visible = false;
@@ -105,23 +107,17 @@ export class Cursor3D implements Updatable {
     window.addEventListener('blur', () => (this.hasPointer = false));
 
     document.addEventListener('pointerover', (e) => {
-      const el = (e.target as Element).closest?.(CLICKABLE) ?? null;
-      this.hovering = !!el && el !== this.suppressed;
+      this.hovering = !!(e.target as Element).closest?.(CLICKABLE);
     });
     document.addEventListener('pointerout', (e) => {
-      const to = (e.relatedTarget as Element | null)?.closest?.(CLICKABLE) ?? null;
-      const from = (e.target as Element).closest?.(CLICKABLE) ?? null;
-      if (from && from === this.suppressed && to !== from) this.suppressed = null;
-      if (!to) this.hovering = false;
+      if (!(e.relatedTarget as Element | null)?.closest?.(CLICKABLE)) this.hovering = false;
     });
+  }
 
-    // L'icône du header passe au curseur suivant, affiché tout de suite même si on la survole encore.
-    window.addEventListener('cursor:next', () => {
-      const i = CURSORS.indexOf(this.rest);
-      this.rest = CURSORS[(i + 1) % CURSORS.length];
-      this.suppressed = document.querySelector('.cursor-btn');
-      this.hovering = false;
-    });
+  // Une autre forme de repos que l'actuelle, au hasard (jamais CLICK!, réservé au survol).
+  private another(): CursorName {
+    const options = CURSORS.filter((c) => c !== config.cursor.hover && c !== this.rest);
+    return options[Math.floor(Math.random() * options.length)];
   }
 }
 

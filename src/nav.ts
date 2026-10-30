@@ -14,6 +14,8 @@ import { PROJECTS } from './works/projects';
 // - le footer (« hello », la dernière) : ses cartes s'envolent (config.footer.reveal, en hauteurs d'écran).
 // Sections : l'accueil, les projets dans l'ordre de PROJECTS (ancres #longtemps…), puis le footer.
 export const SECTION_IDS: string[] = ['', ...PROJECTS.map((p) => p.id), 'hello'];
+// Anciennes ancres encore valables : le case des vidéos (#videotape) est devenu le showreel.
+const ALIASES: Record<string, string> = { videotape: 'showreel' };
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
@@ -129,7 +131,9 @@ class Nav {
   }
 
   init(): void {
-    const fromHash = SECTION_IDS.indexOf(location.hash.slice(1));
+    const hash = location.hash.slice(1);
+    if (ALIASES[hash]) history.replaceState(null, '', `#${ALIASES[hash]}`);
+    const fromHash = SECTION_IDS.indexOf(ALIASES[hash] ?? hash);
     if (fromHash > 0) this.scroll = this.target = this.stopOf(fromHash);
     this.section = Math.max(0, fromHash);
 

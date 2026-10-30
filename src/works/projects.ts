@@ -1,3 +1,4 @@
+import { lang } from '../i18n';
 import media from './media.generated.json';
 
 /**
@@ -5,6 +6,8 @@ import media from './media.generated.json';
  * 25:838, 25:888, 51:475, 51:525 ; SOCIAL MEDIA 25:938 pour son texte et son numéro, la mosaïque restant
  * celle d'après les indications du DA).
  * Les trous dans les textes sont voulus (comme sur la bio) : nombres d'espaces repris de Figma.
+ * Version française (bouton FR, src/i18n.ts) : `fr`, avec les mêmes trous aux mêmes places ; largeur du bloc
+ * mesurée pour que chaque ligne tienne sur sa ligne, comme en anglais.
  */
 export type MainMedia =
   | { kind: 'video'; video: string; poster: string }
@@ -26,14 +29,41 @@ export type Project = {
   columns?: { ratio: number; rows: number }[]; // posters : colonnes (format de leurs cases, nombre de cases), dans l'ordre de side
   link?: string; // lien externe (nouvel onglet) : clic sur la grande vidéo
   roles?: string[]; // ce que le DA a fait sur le projet : le « + » du bouton vert les déplie (textes du DA)
+  fr: ProjectText; // version française
 };
+
+/** Ce qui change avec la langue. */
+export type ProjectText = { title?: string; lines: string[]; textWidth: number; roles?: string[] };
+
+/** Le projet dans la langue courante (titre, texte, largeur du bloc, rôles). */
+export const local = (p: Project): Project => (lang === 'fr' ? { ...p, ...p.fr } : p);
 
 const gap = (n: number) => ' '.repeat(n);
 
+// Ordre du scroll (demande du DA) : le Showreel d'abord, puis Longtemps, F1, Take Care, Magazines, Music &
+// Culture, Social Media. Numéros dans le même ordre.
 const LIST: Omit<Project, 'section'>[] = [
   {
-    id: 'longtemps',
+    // Le case des vidéos (ex-VIDEOTAPE, 4e) devenu le showreel, en premier (demande du DA) : « SHOWREEL » au-dessus
+    // du texte de la maquette.
+    id: 'showreel',
     number: 1,
+    title: 'SHOWREEL',
+    lines: ['SHOWREEL', `LET’S WATCH A${gap(5)}VIDEOTAPE`, 'TOGETHER'], // maquette « LETS » : apostrophe ajoutée (fautes corrigées, accord du DA)
+    textWidth: 194,
+    layout: 'single', // comme Longtemps : le case dans le grand cadre, le texte centré dessus
+    main: { kind: 'video', ...media.videotape.main },
+    side: [],
+    roles: ['Creative Direction', 'Editing', 'Color Grading'],
+    fr: {
+      lines: ['SHOWREEL', `ON REGARDE UNE${gap(5)}CASSETTE`, 'ENSEMBLE'],
+      textWidth: 207,
+      roles: ['Direction de création', 'Montage', 'Étalonnage'],
+    },
+  },
+  {
+    id: 'longtemps',
+    number: 2,
     title: 'LONGTEMPS',
     lines: [
       'LONGTEMPS',
@@ -46,10 +76,19 @@ const LIST: Omit<Project, 'section'>[] = [
     side: [],
     link: 'https://www.youtube.com/channel/UCP9Gi6CObkBgustzOim7EvA',
     roles: ['3D Modeling', 'Art Direction', 'Titling'], // « Titleling » dans le message du DA : corrigé
+    fr: {
+      lines: [
+        'LONGTEMPS',
+        `UN CLIP EXPÉRIMENTAL${gap(12)}POUR LE GROUPE «\u00a0LUCA\u00a0»`,
+        `ENTIÈREMENT CRÉÉ ET ANIMÉ EN 3D,${gap(17)}SOUS BLENDER, EN COLLABORATION AVEC LEO MOURRAY, COLINE REVERBEL ET MARTINA DOLL.${gap(7)}PRODUIT PAR 3 JOURS DE MARCHE`,
+      ],
+      textWidth: 698, // comme en anglais : « LEO MOURRAY, » reste sur la première ligne
+      roles: ['Modélisation 3D', 'Direction artistique', 'Titrage'],
+    },
   },
   {
     id: 'formula-one',
-    number: 2,
+    number: 3,
     title: 'FORMULA ONE',
     lines: [
       'FORMULA ONE',
@@ -65,10 +104,20 @@ const LIST: Omit<Project, 'section'>[] = [
     // domaine passe sur ce site (designer-with-a-monstera.art/work/f1.html, elle, ne le sera plus).
     link: 'https://monstera-site.vercel.app/work/f1.html',
     roles: ['Art Direction', 'Motion Design'],
+    fr: {
+      lines: [
+        'FORMULA ONE',
+        `UN REBRANDING COMPLET${gap(13)}POUR LE DIGITAL ET LA TV EN DIRECT`,
+        `PRODUIT EN COLLABORATION${gap(11)}AVEC MAXENCE AUBERT ET MATHIS COURVILLERS`,
+        `FAIT PAR DES FANS AVEC AMOUR${gap(11)}ET MALADIE`,
+      ],
+      textWidth: 667,
+      roles: ['Direction artistique', 'Motion design'],
+    },
   },
   {
     id: 'take-care',
-    number: 3,
+    number: 4,
     title: 'TAKE CARE',
     lines: [
       'TAKE CARE BEAUTY',
@@ -82,17 +131,16 @@ const LIST: Omit<Project, 'section'>[] = [
     side: media.takeCare.side,
     link: 'https://www.instagram.com/take.care.beauty/',
     roles: ['Art Direction', 'Motion Design'],
-  },
-  {
-    id: 'videotape',
-    number: 4, // juste avant Magazines (demande du DA) ; numéros dans l'ordre du scroll
-    title: 'VIDEOTAPE',
-    lines: [`LET’S WATCH A${gap(5)}VIDEOTAPE`, 'TOGETHER'], // maquette « LETS » : apostrophe ajoutée (fautes corrigées, accord du DA)
-    textWidth: 194,
-    layout: 'single', // comme Longtemps : le case dans le grand cadre, le texte centré dessus
-    main: { kind: 'video', ...media.videotape.main },
-    side: [],
-    roles: ['Creative Direction', 'Editing', 'Color Grading'],
+    fr: {
+      lines: [
+        'TAKE CARE BEAUTY',
+        'UNE MARQUE BEAUTÉ',
+        'SOUS LICENCE SANRIO',
+        `J’Y FAIS${gap(10)}LA DIRECTION ARTISTIQUE ET LES CRÉAS${gap(8)}DEPUIS UN AN`,
+      ],
+      textWidth: 209,
+      roles: ['Direction artistique', 'Motion design'],
+    },
   },
   {
     id: 'magazines',
@@ -104,6 +152,7 @@ const LIST: Omit<Project, 'section'>[] = [
     main: { kind: 'placeholder' },
     side: [],
     roles: ['Art Direction', 'Craft', 'Prepress'],
+    fr: { lines: [], textWidth: 0, roles: ['Direction artistique', 'Fabrication', 'Prépresse'] },
   },
   {
     id: 'music-culture',
@@ -121,6 +170,17 @@ const LIST: Omit<Project, 'section'>[] = [
     side: media.musicCulture.columns.flatMap((c) => c.tiles),
     columns: media.musicCulture.columns.map((c) => ({ ratio: c.ratio, rows: c.tiles.length })),
     roles: ['Art Direction', 'Graphic Design', 'Styling', 'Clip & MV Direction'], // « Stylism » dans le message du DA
+    fr: {
+      title: 'MUSIQUE & CULTURE',
+      lines: [
+        'MUSIQUE & CULTURE',
+        `J’AI FAIT CE TAF${gap(15)}PENDANT DES ANNÉES${gap(8)}AVEC PASSION`,
+        `ET DU CŒUR${gap(2)}ET UNE PAIE${gap(9)}DE MISÈRE.`,
+        `LÀ JE VEUX BOSSER${gap(10)}POUR AESPA${gap(12)}ET ÊTRE RICHE STP`,
+      ],
+      textWidth: 439,
+      roles: ['Direction artistique', 'Design graphique', 'Stylisme', 'Réalisation de clips'],
+    },
   },
   {
     id: 'social-media',
@@ -136,6 +196,16 @@ const LIST: Omit<Project, 'section'>[] = [
     main: { kind: 'video', ...media.socialMedia.main }, // le case, dans le grand rectangle central
     side: media.socialMedia.tiles, // mélangés (npm run assets), colonne par colonne
     roles: ['Art & Creative Direction', 'Graphic Design', 'Editing'],
+    fr: {
+      title: 'RÉSEAUX SOCIAUX',
+      lines: [
+        'RÉSEAUX SOCIAUX',
+        `J’AI FAIT CE TAF${gap(11)}PENDANT DES ANNÉES AUSSI`,
+        `PAS TOUJOURS${gap(6)}SATISFAISANT CELA DIT${gap(7)}TBH.`,
+      ],
+      textWidth: 343,
+      roles: ['Direction artistique & de création', 'Design graphique', 'Montage'],
+    },
   },
 ];
 
@@ -148,7 +218,10 @@ export const PROJECTS: Project[] = LIST.map((p, i) => ({ ...p, section: i + 1 })
  * MAGAZINES, scripts/optimize-assets.mjs). Sans spreads : le texte du magazine, couvertures comprises.
  * Fautes de la maquette corrigées (accord du DA) ; trous mesurés au pixel (une espace = 3,5 px de maquette).
  */
-export type MagazineText = { mag: string; spreads?: [number, number]; lines: string[]; textWidth: number };
+export type MagazineText = { mag: string; spreads?: [number, number]; lines: string[]; textWidth: number; fr: ProjectText };
+
+/** Le texte de magazine dans la langue courante. */
+export const localText = (m: MagazineText): MagazineText => (lang === 'fr' ? { ...m, ...m.fr } : m);
 
 export const MAGAZINE_TEXTS: MagazineText[] = [
   {
@@ -159,6 +232,14 @@ export const MAGAZINE_TEXTS: MagazineText[] = [
       `76 PAGES${gap(8)}MADE WITH PASSION.${gap(11)}TYPESHIT.`,
     ],
     textWidth: 422, // 392 sur la maquette : élargi pour que « LIFE » reste sur sa ligne (corrections de texte)
+    fr: {
+      lines: [
+        'TYPESHIT MAGAZINE',
+        `UN MAGAZINE SEMESTRIEL SUR${gap(9)}LA MODE, LE VOYAGE ET LA VIE`,
+        `76 PAGES${gap(8)}FAITES AVEC PASSION.${gap(11)}TYPESHIT.`,
+      ],
+      textWidth: 450,
+    },
   },
   {
     mag: 'typeshit',
@@ -169,6 +250,14 @@ export const MAGAZINE_TEXTS: MagazineText[] = [
       `CAUSE I HAVE GOATED${gap(14)}MUSIC TASTE`,
     ],
     textWidth: 332,
+    fr: {
+      lines: [
+        'HORS-SÉRIE MUSIQUE',
+        `CENTRÉ SUR${gap(12)}UNE SÉLECTION DE BONNE MUSIQUE`,
+        `PARCE QUE J’AI DES GOÛTS${gap(14)}MUSICAUX DE GOAT`,
+      ],
+      textWidth: 373,
+    },
   },
   {
     mag: 'typeshit',
@@ -179,6 +268,14 @@ export const MAGAZINE_TEXTS: MagazineText[] = [
       `BUT YOU GUYS ONLY WATCH${gap(10)}DOLCE & GABBANA`,
     ],
     textWidth: 354, // 339 sur la maquette : élargi pour que « GABBANA » reste sur sa ligne (corrections de texte)
+    fr: {
+      lines: [
+        `HORS-SÉRIE${gap(5)}MODE`,
+        `CENTRÉ SUR${gap(11)}DES MARQUES INTÉRESSANTES`,
+        `MAIS VOUS NE REGARDEZ QUE${gap(10)}DOLCE & GABBANA`,
+      ],
+      textWidth: 367,
+    },
   },
   {
     mag: 'cpgcqd',
@@ -189,6 +286,15 @@ export const MAGAZINE_TEXTS: MagazineText[] = [
       `ALL OUR${gap(5)}RECIPES`,
     ],
     textWidth: 396, // 391 sur la maquette : élargi pour que « WITH » reste sur sa ligne (corrections de texte)
+    fr: {
+      lines: [
+        'CPGCQDB MAGAZINE',
+        `UNE HISTOIRE${gap(10)}CULINAIRE${gap(10)}UNIQUE AU MONDE`,
+        `EN GROS UN MAGAZINE FAIT POUR${gap(11)}MA FAMILLE, AVEC`,
+        `TOUTES NOS${gap(5)}RECETTES`,
+      ],
+      textWidth: 396,
+    },
   },
   {
     mag: 'dpp',
@@ -198,6 +304,14 @@ export const MAGAZINE_TEXTS: MagazineText[] = [
       `IN A${gap(8)}PUNK ROCK STYLE.`,
     ],
     textWidth: 254,
+    fr: {
+      lines: [
+        'DA PUNK PROPAGANDA',
+        `FANZINE MUSICAL${gap(12)}FAIT POUR LE FUN`,
+        `DANS UN${gap(8)}STYLE PUNK ROCK.`,
+      ],
+      textWidth: 286,
+    },
   },
 ];
 

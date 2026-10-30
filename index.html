@@ -36,11 +36,10 @@
           <img class="brand__icon" src="/src/assets/icons/logo.svg" alt="" width="12" height="12" />
           <span class="brand__full">DESIGNER WITH A MONSTERA</span><span class="brand__short">DWAM<span class="sr-only"> — Designer With A Monstera</span></span>
         </a>
-        <a class="nav-monstera" href="#hello">Monstera</a>
-        <button class="nav-brands" type="button" aria-haspopup="dialog">Brands</button>
-        <button class="cursor-btn" type="button" aria-label="Changer de curseur">
-          <img src="/src/assets/icons/cursor-hand.png" alt="" />
-        </button>
+        <a class="nav-about" href="#hello" data-i18n="nav.about">About</a>
+        <button class="nav-brands" type="button" aria-haspopup="dialog" data-i18n="nav.brands">Brands</button>
+        <!-- Langue (src/i18n.ts) : le bouton affiche l'autre langue (FR sur le site anglais, EN sur le site français). -->
+        <button class="nav-lang" type="button" lang="fr" aria-label="Version française" data-i18n="nav.lang" data-i18n-label="nav.lang.label">FR</button>
         <nav class="contact" aria-label="Contact">
           <a class="contact__insta" href="https://www.instagram.com/designer_with_a_monstera/" target="_blank" rel="noopener">Instagram</a>
           <a class="contact__mail" href="mailto:hello@designer-with-a-monstera.art">Mail</a>
@@ -49,26 +48,29 @@
 
       <main class="landing">
         <h1 class="sr-only">Designer With A Monstera</h1>
-        <!-- Les trous entre les mots sont voulus (maquette Figma) : ne pas les retirer. -->
-        <p class="bio bio--desktop">DESIGNER WITH A MONSTERA IS AN ART DIRECTOR                    AND DESIGNER BASED IN PARIS,<br />WORKING 360°                      ACROSS MUSIC, FASHION, AND ADVERTISING.                       HIS WORK FOCUSES<br />ON MAKING THINGS LOOK <strong class="bio__cool">COOL</strong> FOR PEOPLE AND BRANDS.</p>
-        <p class="bio bio--mobile">DESIGNER WITH A MONSTERA <br />IS AN ART DIRECTOR                    AND DESIGNER       BASED IN PARIS, <br />WORKING 360°                      ACROSS <br />MUSIC, FASHION, AND ADVERTISING.                       HIS WORK FOCUSES ON MAKING THINGS LOOK <strong class="bio__cool">COOL</strong> FOR PEOPLE AND BRANDS.</p>
+        <!-- Les trous entre les mots sont voulus (maquette Figma) : ne pas les retirer. Version française : src/i18n.ts. -->
+        <p class="bio bio--desktop" data-i18n="bio.desktop">DESIGNER WITH A MONSTERA IS AN ART DIRECTOR                    AND DESIGNER BASED IN PARIS,<br />WORKING 360°                      ACROSS MUSIC, FASHION, AND ADVERTISING.                       HIS WORK FOCUSES<br />ON MAKING THINGS LOOK <strong class="bio__cool">COOL</strong> FOR PEOPLE AND BRANDS.</p>
+        <p class="bio bio--mobile" data-i18n="bio.mobile">DESIGNER WITH A MONSTERA <br />IS AN ART DIRECTOR                    AND DESIGNER       BASED IN PARIS, <br />WORKING 360°                      ACROSS <br />MUSIC, FASHION, AND ADVERTISING.                       HIS WORK FOCUSES ON MAKING THINGS LOOK <strong class="bio__cool">COOL</strong> FOR PEOPLE AND BRANDS.</p>
       </main>
 
       <canvas class="stage" aria-hidden="true"></canvas>
 
       <footer class="dock">
+        <!-- Trois villes (maquette About) : le marcheur sur Paris, un cœur sur NYC et sur Seoul. -->
         <p class="clock">
           <img class="clock__walk" src="/src/assets/icons/walking.svg" alt="" width="14" height="14" />
-          <img class="clock__heart" src="/src/assets/icons/heart.svg" alt="" width="10" height="9" />
+          <img class="clock__heart clock__heart--nyc" src="/src/assets/icons/heart.svg" alt="" width="10" height="9" />
+          <img class="clock__heart clock__heart--seoul" src="/src/assets/icons/heart.svg" alt="" width="10" height="9" />
           <span class="clock__line">Paris <time data-tz="Europe/Paris">--:--</time></span>
-          <span class="clock__line">Seoul <time data-tz="Asia/Seoul">--:--</time></span>
+          <span class="clock__line">NYC <time data-tz="America/New_York">--:--</time></span>
+          <span class="clock__line"><span data-i18n="clock.seoul">Seoul</span> <time data-tz="Asia/Seoul">--:--</time></span>
         </p>
-        <div class="music" role="group" aria-label="Music player">
-          <button class="music__toggle" type="button" aria-label="Lancer la musique" aria-pressed="false">
+        <div class="music" role="group" aria-label="Music player" data-i18n-label="music.label">
+          <button class="music__toggle" type="button" aria-label="Play music" aria-pressed="false">
             <img class="music__icon" src="/src/assets/icons/play.svg" alt="" width="11" height="11" />
             <span class="music__eq" aria-hidden="true"><i></i><i></i><i></i></span>
           </button>
-          <button class="music__next" type="button" title="Morceau suivant">
+          <button class="music__next" type="button" title="Next track" data-i18n-title="music.next">
             <span class="music__label"><span class="music__title">Music player</span></span>
           </button>
         </div>

@@ -30,10 +30,9 @@
   --nav-size: calc(14 * var(--u));
   --works-x: calc(25% + 35 * var(--u));
   --about-x: calc(37.5% + 23 * var(--u));
-  --cursor-btn-x: calc(50% + 10 * var(--u));
-  --cursor-btn-y: calc(46 * var(--u));
-  --cursor-btn-w: calc(13 * var(--u));
-  --cursor-btn-h: calc(14 * var(--u));
+  /* Bouton de langue (maquette About, frame 1440) : dans la 7e colonne de la grille (75 %), comme Works et About
+     dans les leurs (le « F » à 1178 px, bord gauche du texte à 1177 = 75 % + 97). */
+  --lang-x: calc(75% + 97 * var(--u));
   --contact-right: calc(12.5% - 120 * var(--u)); /* bord droit aligné sur 87,5 % + 120 px (= bord droit du dock) */
   --contact-y: calc(51 * var(--u));
   --contact-size: calc(12 * var(--u));
@@ -52,15 +51,18 @@
   --clock-offset-x: calc(8 * var(--u)); /* l'horloge est décalée de 8 px par rapport au bouton */
   --clock-icon: calc(14 * var(--u));
   --clock-heart-x: calc(2 * var(--u));
-  --clock-heart-y: calc(15 * var(--u)); /* le cœur aligné sur la ligne « Seoul » (demande du DA ; avant 9,25 : sous le marcheur) */
+  --clock-heart-y: calc(15 * var(--u)); /* 1er cœur aligné sur la 2e ligne (NYC), le 2e une ligne plus bas (Seoul) */
+  --clock-line: calc(12 * var(--u)); /* pas des lignes de l'horloge (Paris, NYC, Seoul) */
   --clock-heart-w: calc(10 * var(--u));
   --clock-heart-h: calc(9 * var(--u));
   --clock-text-x: calc(20 * var(--u));
   --clock-text-y: calc(3 * var(--u));
-  --clock-h: calc(27 * var(--u));
+  --clock-h: calc(39 * var(--u)); /* 3 lignes : NYC ajouté au-dessus de Seoul (maquette About) */
   --music-w: calc(120 * var(--u));
   --music-h: calc(20 * var(--u));
-  --music-gap: calc(36.5 * var(--u)); /* du haut de l'horloge au haut du bouton */
+  /* Du haut de l'horloge au haut du bouton : 36,5 + une ligne (NYC). Comme sur la maquette About, le bouton ne
+     bouge pas et l'horloge grandit vers le haut. */
+  --music-gap: calc(48.5 * var(--u));
   --music-icon: calc(11 * var(--u));
   --music-icon-x: calc(9 * var(--u));
   --music-icon-y: calc(4 * var(--u));
@@ -91,6 +93,7 @@
     --nav-size: calc(10.902 * var(--u));
     --works-x: calc(95 * var(--u));
     --about-x: calc(170 * var(--u));
+    --lang-x: calc(245 * var(--u)); /* hors maquette : même écart que de About à Brands */
     --contact-right: calc(10 * var(--u));
     --contact-y: calc(10 * var(--u));
     --contact-size: calc(9.345 * var(--u));
@@ -105,11 +108,12 @@
     --clock-icon: calc(10.902 * var(--u));
     --clock-heart-x: calc(1.56 * var(--u));
     --clock-heart-y: calc(11.68 * var(--u));
+    --clock-line: calc(9.345 * var(--u));
     --clock-heart-w: calc(7.79 * var(--u));
     --clock-heart-h: calc(7.01 * var(--u));
     --clock-text-x: calc(15.57 * var(--u));
     --clock-text-y: calc(2.34 * var(--u));
-    --clock-h: calc(21.03 * var(--u));
+    --clock-h: calc(30.375 * var(--u));
     --music-w: calc(93.449 * var(--u));
     --music-h: calc(15.575 * var(--u));
     --music-icon: calc(8.566 * var(--u));

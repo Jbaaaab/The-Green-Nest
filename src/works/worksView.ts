@@ -1,6 +1,7 @@
 import plusIcon from '../assets/icons/plus.svg';
 import endIcon from '../assets/icons/works-end.svg';
 import { config } from '../config';
+import { onLang, tr } from '../i18n';
 import { nav } from '../nav';
 import { tint } from '../ui/tint';
 import { readUnit } from '../ui/unit';
@@ -10,7 +11,7 @@ import { drum, perspectiveFor } from './scrollFx';
 import { MAGAZINE_PROJECT, magazineHold, magazinePauses } from './magazineTimeline';
 import { MagazineTexts } from './magazineTexts';
 import { StripView, postersStrip, socialStrip } from './stripView';
-import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, boxRect, type Project } from './projects';
+import { MOSAIC, NAV_ROW, PROJECTS, SINGLE, boxRect, local, type Project } from './projects';
 
 type Win = {
   el: HTMLElement;
@@ -75,7 +76,6 @@ export class WorksView {
   constructor(landing: HTMLElement, private trail: () => HTMLElement | null) {
     this.root = document.createElement('section');
     this.root.className = 'works';
-    this.root.setAttribute('aria-label', 'Works');
     this.root.style.setProperty('--hover-scale', String(config.works.hover.scale));
     this.stage = document.createElement('div');
     this.stage.className = 'works-stage';
@@ -111,7 +111,6 @@ export class WorksView {
     // Rangée 1-8 + symbole (retour à l'accueil), derrière les vidéos des pages.
     this.navEl = document.createElement('nav');
     this.navEl.className = 'works-nav';
-    this.navEl.setAttribute('aria-label', 'Projets');
     for (let n = 1; n <= NAV_SLOTS; n++) {
       const item = document.createElement('button');
       item.type = 'button';
@@ -120,7 +119,6 @@ export class WorksView {
       item.innerHTML = `<span class="works-nav__num">${n}</span>`;
       const project = PROJECTS.find((p) => p.number === n);
       if (project) {
-        item.setAttribute('aria-label', `${n} — ${project.title}`);
         item.addEventListener('click', () => nav.goTo(project.section));
       } else {
         item.classList.add('is-empty');
@@ -133,7 +131,7 @@ export class WorksView {
     const end = document.createElement('button');
     end.type = 'button';
     end.className = 'works-nav__end';
-    end.setAttribute('aria-label', "Retour à l'accueil");
+    this.navEnd = end;
     end.innerHTML = `<img src="${endIcon}" alt="" width="12" height="12" />`;
     end.addEventListener('click', () => nav.goTo(0));
     this.navEl.appendChild(end);
@@ -161,6 +159,19 @@ export class WorksView {
 
     window.addEventListener('resize', () => this.layout());
     document.addEventListener('visibilitychange', () => this.syncVideos(nav.scroll));
+    // Changement de langue (src/i18n.ts) : textes, largeurs des blocs, bouton vert et libellés.
+    onLang(() => {
+      for (const section of this.sections) {
+        const text = section.project ? section.wins[section.wins.length - 1] : null;
+        if (text?.origin) text.el.innerHTML = this.linesHtml(section.project!);
+      }
+      this.magazineTexts?.render();
+      for (const strip of this.strips) strip.relabel();
+      this.relabel();
+      this.current = -1; // remet le titre et les rôles du bouton vert
+      this.layout();
+    });
+    this.relabel();
     this.layout();
     nav.onScroll((scroll, velocity) => this.update(scroll, velocity));
   }
@@ -256,8 +267,8 @@ export class WorksView {
       a.href = project.link;
       a.target = '_blank';
       a.rel = 'noopener';
-      a.setAttribute('aria-label', `${project.title} (nouvel onglet)`);
       mainBox.parentElement!.appendChild(a);
+      this.links.push({ a, project });
     }
 
     wins.push(this.textWin(project));
@@ -270,10 +281,29 @@ export class WorksView {
   private textWin(project: Project): Win {
     const text = document.createElement('div');
     text.className = 'project__win project__text';
-    text.innerHTML = `<p class="project__lines">${project.lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
+    text.innerHTML = this.linesHtml(project);
     this.texts.appendChild(text);
     tint(text);
     return { el: text, cy: 0, h: 0, speed: 1, origin: { x: 0, y: 0 } };
+  }
+
+  private linesHtml(project: Project): string {
+    return `<p class="project__lines">${local(project).lines.map((l) => `<span>${l}</span>`).join('')}</p>`;
+  }
+
+  // Libellés pour les lecteurs d'écran, dans la langue courante.
+  private navEnd!: HTMLButtonElement;
+  private links: { a: HTMLAnchorElement; project: Project }[] = [];
+  private relabel(): void {
+    this.root.setAttribute('aria-label', tr({ en: 'Works', fr: 'Projets' }));
+    this.navEl.setAttribute('aria-label', tr({ en: 'Projects', fr: 'Projets' }));
+    this.navEnd.setAttribute('aria-label', tr({ en: 'Back to home', fr: 'Retour à l’accueil' }));
+    this.navItems.forEach((item, i) => {
+      const project = PROJECTS.find((p) => p.number === i + 1);
+      if (project) item.setAttribute('aria-label', `${i + 1} — ${local(project).title}`);
+    });
+    const newTab = tr({ en: '(new tab)', fr: '(nouvel onglet)' });
+    for (const { a, project } of this.links) a.setAttribute('aria-label', `${local(project).title} ${newTab}`);
   }
 
   // Section réduite à son texte (pages en bande : le reste de la page est géré par stripView.ts).
@@ -328,7 +358,8 @@ export class WorksView {
       const text = wins[wins.length - 1];
       const main = wins.find((w) => w.el.classList.contains('project__main'))!;
       const sides = wins.filter((w) => w.el.classList.contains('project__side'));
-      const tw = mobile ? Math.min(project.textWidth * u, W - 40 * u) : project.textWidth * u;
+      const { textWidth } = local(project);
+      const tw = mobile ? Math.min(textWidth * u, W - 40 * u) : textWidth * u;
       const textSpeed = config.works.parallax.text;
       const strip = project.layout === 'social' || project.layout === 'posters';
       // Texte centré sur son point d'ancrage, sauf sur mobile pour les grands cadres (texte au-dessus de la vidéo).
@@ -512,8 +543,8 @@ export class WorksView {
         else item.removeAttribute('aria-current');
       });
       if (project) {
-        this.buttonLabel.textContent = project.title;
-        this.setRoles(project.roles ?? []);
+        this.buttonLabel.textContent = local(project).title;
+        this.setRoles(local(project).roles ?? []);
         this.rolesOpen = this.rolesPinned = false; // on change de page : replié
         this.button.classList.remove('is-open');
         this.button.setAttribute('aria-expanded', 'false');

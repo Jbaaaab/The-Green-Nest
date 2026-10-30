@@ -90,8 +90,9 @@ button {
   display: none;
 }
 
-/* « Monstera » (l'à-propos, ex-Works) et « Brands » (le pong, ex-About), aux places de la maquette. */
-.nav-monstera {
+/* « About » (ex-Monstera, ex-Works), « Brands » (le pong, ex-About) et « FR » (la langue), aux places de la
+   maquette About. */
+.nav-about {
   left: var(--works-x);
   top: var(--header-y);
 }
@@ -101,20 +102,10 @@ button {
   top: var(--header-y);
 }
 
-.cursor-btn {
-  left: var(--cursor-btn-x);
-  top: var(--cursor-btn-y);
-  width: var(--cursor-btn-w);
-  height: var(--cursor-btn-h);
-  transform: rotate(180deg);
-}
-
-.cursor-btn img {
-  position: absolute;
-  left: 9.47%;
-  top: 0;
-  width: 88.76%;
-  height: 96.73%;
+.nav-lang {
+  left: var(--lang-x);
+  top: var(--header-y);
+  line-height: normal;
 }
 
 .contact {
@@ -136,8 +127,9 @@ button {
 
 /* Zones de clic agrandies sans changer le visuel (cibles tactiles plus confortables). */
 .brand::after,
-.nav-monstera::after,
+.nav-about::after,
 .nav-brands::after,
+.nav-lang::after,
 .contact a::after {
   content: '';
   position: absolute;
@@ -309,8 +301,15 @@ button {
   height: var(--clock-heart-h);
 }
 
+.clock__heart--seoul {
+  top: calc(var(--clock-heart-y) + var(--clock-line));
+}
+
+/* Pas fixe (12 px de maquette) : les cœurs restent alignés sur leurs lignes. */
 .clock__line {
   display: block;
+  height: var(--clock-line);
+  line-height: var(--clock-line);
 }
 
 .music {
@@ -447,10 +446,6 @@ button {
     display: inline;
   }
 
-  .cursor-btn {
-    display: none;
-  }
-
   .bio--desktop {
     display: none;
   }
@@ -475,13 +470,6 @@ button {
     left: auto;
     right: var(--music-right);
     bottom: var(--music-bottom);
-  }
-}
-
-/* Pas de curseur 3D sur écran tactile : le bouton qui le change disparaît aussi. */
-@media (pointer: coarse) {
-  .cursor-btn {
-    display: none;
   }
 }
 

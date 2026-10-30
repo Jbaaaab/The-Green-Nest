@@ -83,7 +83,10 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
   // Curseur 3D : seulement avec une vraie souris. Le curseur natif n'est caché qu'une fois les GLB chargés.
   if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
     Cursor3D.load(stage)
-      .then((cursor) => stage.add(cursor))
+      .then((cursor) => {
+        stage.add(cursor);
+        if (import.meta.env.DEV) Object.assign(window, { __cursor: cursor }); // pour les tests
+      })
       .catch((err) => console.error('Curseur 3D indisponible :', err));
   }
 }
