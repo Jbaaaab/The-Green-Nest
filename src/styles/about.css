@@ -1,0 +1,329 @@
+/* ---------- Page About (src/about/aboutView.ts ; maquette ABOUT 148:58) ---------- */
+
+.about {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+  perspective: var(--persp, 2000px); /* twist au scroll, comme l'accueil */
+  perspective-origin: 50% 50%;
+}
+
+/* La page n'existe qu'à /about (classe posée par src/router.ts). */
+:root:not(.is-about) .about {
+  display: none;
+}
+
+.about__stack,
+.about__early {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+/* « YOU’RE HERE EARLY » : une graisse au-dessus de la maquette (ExtraBold, demande du DA). */
+.about__early {
+  inset: auto;
+  margin: 0;
+  text-align: center;
+  font-size: calc(18.89 * var(--u));
+  font-weight: var(--weight-extrabold);
+  line-height: normal;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.about__early.is-in {
+  opacity: 1;
+}
+
+/* Cartes : les photos du footer, empilées (calques comme au footer : la 1 au fond, la 4 devant). */
+.about__card {
+  position: absolute;
+  display: block;
+  object-fit: cover;
+  background: #f2f2f2;
+  backface-visibility: hidden;
+}
+
+/* Minicase : sur la photo de devant, au survol d'une étape. */
+.about__case {
+  position: absolute;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--case-fade, 0.15s) ease;
+}
+
+.about__case.is-on {
+  opacity: 1;
+}
+
+.about__case > * {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+
+.about__case > .is-current {
+  opacity: 1;
+}
+
+/* ---------- Frise ---------- */
+
+.about__rail {
+  position: absolute;
+  z-index: 1;
+}
+
+.about__track {
+  position: relative;
+  height: 100%;
+}
+
+/* Trait noir (1,5 px) : il se dessine de gauche à droite (scaleX, posé par aboutView.ts). */
+.about__line {
+  position: absolute;
+  background: #000;
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+.about__steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-step {
+  position: absolute;
+  pointer-events: auto;
+  line-height: normal;
+}
+
+.about-step:focus-visible {
+  outline-offset: calc(4 * var(--u));
+}
+
+/* Étapes du bas : un point vert de 8 px sur le trait, titre (14 px) 24 px sous le haut du point, description
+   (12 px, Medium) 53 px sous lui (maquette : point à 508, titres à 532, descriptions à 561). */
+.about-step--below {
+  padding-top: calc(24 * var(--u));
+}
+
+.about-step--right {
+  text-align: right;
+}
+
+.about-step__dot {
+  position: absolute;
+  top: 0;
+  width: calc(8 * var(--u));
+  height: calc(8 * var(--u));
+  border-radius: 50%;
+  background: var(--color-green);
+  transform: scale(0);
+  transition: transform 0.4s cubic-bezier(0.34, 1.7, 0.64, 1);
+}
+
+/* Étapes du haut : le titre (12 px) finit 29 px au-dessus du trait, le trait vert (27 px) monte jusqu'à 2 px
+   sous lui (maquette : titres finis à 483, trait vert de 485 à 512). */
+.about-step--above {
+  padding-bottom: calc(29 * var(--u));
+  transform: translateY(-100%);
+}
+
+.about-step__tick {
+  position: absolute;
+  left: calc(-0.75 * var(--u));
+  bottom: 0;
+  width: calc(1.5 * var(--u));
+  height: calc(27 * var(--u));
+  background: var(--color-green);
+  transform: scaleY(0);
+  transform-origin: 50% 100%;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.about-step__title,
+.about-step__desc {
+  margin: 0;
+  white-space: pre; /* lignes de la maquette, trous compris */
+  opacity: 0;
+  transform: translateY(calc(5 * var(--u)));
+  transition:
+    opacity 0.5s ease 0.05s,
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.05s;
+}
+
+.about-step__title {
+  font-size: calc(14 * var(--u));
+  font-weight: var(--weight-bold);
+}
+
+.about-step--below .about-step__title {
+  min-height: calc(29 * var(--u));
+}
+
+.about-step--above .about-step__title {
+  font-size: calc(12 * var(--u));
+}
+
+.about-step__desc {
+  font-size: calc(12 * var(--u));
+  font-weight: 500;
+  transition-delay: 0.12s;
+}
+
+.about-step.is-in .about-step__dot,
+.about-step.is-in .about-step__tick {
+  transform: none;
+}
+
+.about-step.is-in .about-step__title,
+.about-step.is-in .about-step__desc {
+  opacity: 1;
+  transform: none;
+}
+
+/* Carré vert (étapes du haut) : son coin bas-droit sur le coin haut-gauche du titre, au survol. */
+.about-step__note {
+  position: absolute;
+  right: 100%;
+  bottom: 100%;
+  display: flex;
+  align-items: center;
+  width: calc(var(--note-w) * var(--u));
+  min-height: calc(var(--note-h) * var(--u));
+  margin: 0;
+  padding: calc(var(--note-pad) * var(--u));
+  background: var(--color-green);
+  color: #000;
+  font-size: calc(var(--note-size) * var(--u));
+  font-weight: var(--weight-bold);
+  line-height: var(--note-leading);
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.6);
+  transform-origin: 100% 100%;
+  transition:
+    opacity 0.18s ease,
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.about-step.is-active .about-step__note {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Frise des logos (entre About 1 et About 2) : en noir, elle défile vers la gauche ---------- */
+
+.about__band {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 100%;
+  overflow: hidden;
+}
+
+.about__band-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  height: 100%;
+  will-change: transform;
+}
+
+/* Logos : les masques du pong (blanc + transparence), remplis de noir (demande du DA ; d'abord en vert). */
+.about__logo {
+  flex: none;
+  background: var(--color-text);
+  -webkit-mask: var(--logo) center / contain no-repeat;
+  mask: var(--logo) center / contain no-repeat;
+}
+
+/* ---------- About 2 (maquette ABOUT 2 149:91) : le texte ; la montagne et les fleurs sont en 3D ---------- */
+
+.about__page2 {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.about__title2,
+.about__body2 {
+  position: absolute;
+  margin: 0;
+  translate: -50% 0;
+  text-align: center;
+  line-height: normal;
+  font-weight: var(--weight-bold);
+}
+
+.about__title2 {
+  font-size: calc(18.89 * var(--u));
+  white-space: nowrap;
+}
+
+/* Lignes de la maquette ; une ligne vide entre les paragraphes. */
+.about__body2 {
+  width: max-content;
+  font-size: calc(14 * var(--u));
+}
+
+.about__body2 p {
+  margin: 0;
+  white-space: pre;
+}
+
+.about__body2 p + p {
+  margin-top: 1em;
+}
+
+/* Mobile (hors maquette) : la frise est une bande qui défile au doigt, au-dessus de la pile (ses carrés verts
+   peuvent passer sur les photos). */
+@media (max-width: 767px) {
+  .about__rail {
+    z-index: 3;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    pointer-events: auto;
+    touch-action: pan-x;
+  }
+
+  .about__rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* About 2 : le texte se recoupe dans la largeur. */
+  .about__title2 {
+    font-size: calc(15 * var(--u));
+  }
+
+  .about__body2 {
+    font-size: calc(12 * var(--u));
+  }
+
+  .about__body2 p {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-step__dot,
+  .about-step__tick,
+  .about-step__title,
+  .about-step__desc,
+  .about-step__note,
+  .about__early {
+    transition: none;
+  }
+}

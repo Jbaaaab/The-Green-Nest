@@ -292,7 +292,7 @@ export class Magazines implements Updatable {
       this.root.add(mag.group);
     });
     this.root.visible = false;
-    stage.scene.add(this.root);
+    stage.site.add(this.root);
   }
 
   resize(vp: Viewport): void {

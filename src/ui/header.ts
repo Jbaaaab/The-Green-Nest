@@ -1,21 +1,25 @@
-import { config } from '../config';
 import { initLang } from '../i18n';
 import { nav } from '../nav';
+import { go, page } from '../router';
 import { initMailToast } from './mailToast';
 
 export function initHeader(root: ParentNode = document): void {
   // « FR » / « EN » : la langue du site (src/i18n.ts).
   initLang();
 
-  // Le logo ramène à l'accueil ; « About » (ex-Monstera) descend jusqu'aux photos du footer, la pile de cartes
-  // complète (sans recharger la page), en attendant la page About.
+  // Le logo ramène en haut de l'accueil (depuis About : directement, sans traverser les projets) ; « About »
+  // (ex-Monstera) ouvre la page About, à /about (src/router.ts), sans recharger : la musique continue.
   root.querySelector<HTMLAnchorElement>('.brand')?.addEventListener('click', (e) => {
     e.preventDefault();
-    nav.goTo(0);
+    if (page === 'about') {
+      nav.jumpTo(0);
+      go('home');
+    } else nav.goTo(0);
   });
   root.querySelector<HTMLAnchorElement>('.nav-about')?.addEventListener('click', (e) => {
     e.preventDefault();
-    nav.goTo(nav.count - 1, config.footer.cards.pause ?? 0.76);
+    if (page === 'about') window.dispatchEvent(new Event('about:top')); // déjà sur About : retour en haut
+    else go('about');
   });
 
   // « Mail » copie l'adresse (au lieu d'ouvrir la messagerie) : une enveloppe 3D tourne, « MAIL COPIED » dessous

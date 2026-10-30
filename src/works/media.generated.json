@@ -744,5 +744,42 @@
         "/work/magazine/3d/dpp/spread-3.webp"
       ]
     }
-  ]
+  ],
+  "about": {
+    "rouen": {
+      "image": "/about/rouen.webp"
+    },
+    "cambodia": {
+      "video": "/about/cambodia.mp4",
+      "poster": "/about/cambodia.webp"
+    },
+    "freelanceStudying": {
+      "video": "/about/freelance-studying.mp4",
+      "poster": "/about/freelance-studying.webp"
+    },
+    "blackDuck": {
+      "video": "/about/black-duck.mp4",
+      "poster": "/about/black-duck.webp"
+    },
+    "gust": {
+      "video": "/about/gust.mp4",
+      "poster": "/about/gust.webp"
+    },
+    "jenesis": {
+      "video": "/about/jenesis.mp4",
+      "poster": "/about/jenesis.webp"
+    },
+    "idk": {
+      "video": "/about/idk.mp4",
+      "poster": "/about/idk.webp"
+    },
+    "hours": {
+      "video": "/about/hours.mp4",
+      "poster": "/about/hours.webp"
+    },
+    "freelanceEra": {
+      "video": "/about/freelance-era.mp4",
+      "poster": "/about/freelance-era.webp"
+    }
+  }
 }

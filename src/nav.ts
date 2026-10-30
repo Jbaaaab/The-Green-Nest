@@ -160,6 +160,15 @@ class Nav {
     fn(this.section);
   }
 
+  /** Saute (sans animation) à l'arrêt d'une section : retour de la page About par le logo. */
+  jumpTo(section: number): void {
+    this.scroll = this.target = this.stopOf(Math.max(0, Math.min(this.count - 1, Math.round(section))));
+    this.velocity = 0;
+    const s = Math.min(this.count - 1, Math.round(this.position()));
+    if (s !== this.section) this.setSection(s);
+    this.emit();
+  }
+
   /** Va (en douceur) jusqu'à l'arrêt d'une section. */
   goTo(section: number, hold = 0): void {
     const s = Math.max(0, Math.round(section));
@@ -224,10 +233,12 @@ class Nav {
 
   /** Scroll bloqué (popup « Brands » ouverte : la molette, le doigt et les flèches servent au jeu). */
   locked = false;
+  /** Page About ouverte (src/router.ts) : le scroll de l'accueil ne bouge plus et ne touche plus à l'adresse. */
+  suspended = false;
 
   private onWheel = (e: WheelEvent) => {
     e.preventDefault();
-    if (this.locked) return;
+    if (this.locked || this.suspended) return;
     const now = performance.now();
     if (now - this.lastInput > config.works.gestureQuietMs) this.startGesture();
     this.lastInput = now;
@@ -237,7 +248,7 @@ class Nav {
   };
 
   private onTouchStart = (e: TouchEvent) => {
-    if (this.locked) return;
+    if (this.locked || this.suspended) return;
     this.touchY = e.touches[0].clientY;
     this.touchX = e.touches[0].clientX;
     this.touchV = 0;
@@ -269,7 +280,7 @@ class Nav {
   };
 
   private onKey = (e: KeyboardEvent) => {
-    if (this.locked) return;
+    if (this.locked || this.suspended) return;
     const t = e.target as HTMLElement | null;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     const page = () => Math.round(this.position(this.target));
@@ -314,7 +325,7 @@ class Nav {
   private setSection(s: number): void {
     this.section = s;
     const id = SECTION_IDS[s];
-    history.replaceState(null, '', id ? `#${id}` : location.pathname + location.search);
+    if (!this.suspended) history.replaceState(null, '', id ? `#${id}` : location.pathname + location.search);
     for (const fn of this.sectionListeners) fn(s);
   }
 

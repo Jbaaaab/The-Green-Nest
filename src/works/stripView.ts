@@ -321,7 +321,7 @@ export class StripView {
       for (const img of this.images) img.src = img.dataset.src!;
       for (const v of videos) loadVideo(v);
     }
-    const active = d < 0.5 && !document.hidden;
+    const active = d < 0.5 && !document.hidden && !nav.suspended;
     for (const v of videos) {
       if (active && v.paused && v.src) v.play().catch(() => undefined);
       if (!active && !v.paused) v.pause();

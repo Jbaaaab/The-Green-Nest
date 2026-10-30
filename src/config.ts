@@ -433,6 +433,9 @@ export const config = {
       textGap: 36, // marge entre le haut des plantes du centre et le bas du texte
       top: 150, // les plus hautes s'arrêtent à cette distance du haut de l'écran
       start: 0.5, // elles commencent à pousser quand le footer est à moitié arrivé (fraction de la hauteur d'écran restant à monter)
+      // Déjà poussées aux trois quarts quand on arrive dessus la première fois (demande du DA) : elles finissent de
+      // pousser sous nos yeux. Footer et About 2 (0 : elles partent de rien).
+      headStart: 0.75,
       grow: [7, 12] as [number, number], // durée de pousse d'une tige (tirée au hasard ; les grandes poussent plus longtemps)
       delay: [0, 2.5] as [number, number], // départs échelonnés
       leaves: [3, 6] as [number, number], // feuilles par tige
@@ -444,6 +447,85 @@ export const config = {
       sway: { deg: 2.2, period: 6 }, // balancement autour du pied (on twos)
       // Laque éclairée par le même HDRI que les curseurs et la pluie (reflets vert-bleu).
       look: { ambience: 'chrome', key: [-0.4, 0.6, 1], ambient: 0.45, f0: 0.25, reflection: 1.4 },
+    },
+  },
+
+  // Page About (src/about/aboutView.ts, à l'adresse /about ; maquette ABOUT 148:58, frame 1440×1024). À
+  // l'ouverture, les 4 photos du footer montent et s'empilent au centre (sans réagir au scroll), puis le trait
+  // de la frise se dessine de gauche à droite : points, traits verts et textes apparaissent à son passage.
+  // Au survol d'une étape, son minicase remplace la photo de devant ; les étapes du haut (sans description)
+  // ouvrent aussi un carré vert qui les explique. Positions en px de maquette depuis le centre de l'écran
+  // (frame : x 720, y 512) ; durées en secondes.
+  about: {
+    cards: {
+      w: 315,
+      h: 442,
+      tops: [-206, -217, -226, -235], // haut des cartes, de celle de devant à celle du fond (maquette : 306, 295, 286, 277)
+      dx: 0.5,
+      start: 0.15, // arrivée de la première carte
+      stagger: 0.22, // écart entre deux cartes
+      duration: 0.9, // montée d'une carte
+      enter: 1.1, // elles arrivent d'en bas (hauteurs d'écran)
+      rotateDeg: 8, // petite rotation en arrivant (alternée), comme au footer
+    },
+    early: 244, // « YOU’RE HERE EARLY » : haut du texte (maquette : 756), centré sous la pile, en ExtraBold (DA)
+    // Le trait part un peu après la dernière carte et traverse l'écran ; chaque étape apparaît à son passage.
+    line: { delay: 0.1, duration: 1.8 },
+    caseFade: 0.15, // fondu du minicase sur la photo de devant
+    // Carré vert des étapes du haut (capture du DA, sans échelle : ramenée à un texte de 12 px, comme leurs
+    // titres) : coin bas-droit sur le coin haut-gauche du titre, texte centré en hauteur.
+    note: { w: 120, h: 98, padX: 7, size: 12, leading: 0.91 },
+    // Mobile (hors maquette) : la pile en haut, réduite pour tenir ; la frise en bande qui défile au doigt, sans
+    // le trou de la pile (les étapes de droite se rapprochent de stackGap px).
+    mobile: { top: 64, lineFromBottom: 210, stackGap: 359 },
+
+    // Scroll de la page (src/about/aboutScroll.ts) : About 1 en haut, About 2 en bas (les deux arrêts), la frise
+    // des logos passe entre les deux. Même inertie que l'accueil (works.smooth), libre entre les deux.
+    // Distance de About 1 à About 2 : au plus juste (demande du DA : moins de blanc entre les pages et la frise) ;
+    // la frise reste juste hors de l'écran sur l'une et l'autre, à bandGap px du bord, et n'apparaît qu'en passant.
+    bandGap: 24,
+
+    // Frise des logos (demande du DA) : toutes les marques du pong, en noir (DA ; d'abord en vert), qui défilent toutes seules vers la
+    // gauche et accélèrent quand on scrolle. Même surface d'encre pour tous (comme la balle du pong : un logo fin
+    // a un cadre plus grand qu'un aplat plein), dans les limites de taille. Px de maquette.
+    band: {
+      ink: 2600, // surface d'encre d'un logo (px²)
+      inkPow: 0.85,
+      max: [230, 58] as [number, number], // largeur et hauteur max d'un logo
+      gap: 110, // écart entre deux logos
+      speed: 55, // défilement tout seul (px/s)
+      boost: 0.8, // en plus, par px/s de scroll vertical (dans un sens comme dans l'autre)
+      mobileScale: 0.7, // logos et écarts sur mobile (hors maquette)
+    },
+
+    // About 2 (maquette ABOUT 2 149:91) : le texte, centré (haut du titre et du texte depuis le centre de l'écran :
+    // maquette 322 et 350), lignes de la maquette.
+    text2: { title: -190, body: -162 },
+
+    // Montagne 3D (src/scene/aboutScene.ts ; demande du DA : « le mont Fuji… dans le même style que les fleurs », à
+    // la place du croquis rouge) : laque vert flash, sommet enneigé rose poison, comme les tiges et les fleurs ; elle
+    // tourne doucement sur elle-même (on twos). Silhouette du croquis : plateau du sommet 68 px sous le texte, de
+    // 221 px de large ; pentes creusées jusqu'aux coins du bas de l'écran. Les fleurs du footer y poussent. Le dock
+    // s'efface sur About 2, comme au footer (la pente passerait dessus).
+    fuji: {
+      gap: 68, // du bas du texte au plateau du sommet (maquette : 531 → 599)
+      top: 110, // demi-largeur du plateau (maquette : 605 → 826)
+      base: 1, // demi-largeur de la base au bas de l'écran (× la demi-largeur de l'écran) : les coins, comme le croquis
+      curve: 1.5, // creux des pentes : profil exponentiel relevé sur le croquis (moyenne de ses deux pentes)
+      crater: 10, // creux du cratère (px)
+      depth: 0.45, // aplatie en profondeur (vue de face, la silhouette reste celle du croquis)
+      ridges: 26, // ravines autour du cône
+      ridgeDepth: 0.06, // profondeur des ravines (part du rayon)
+      snow: 0.7, // la neige (rose) commence à cette hauteur (part de la montagne), plus bas dans les ravines
+      snowStreak: 0.16, // de combien elle descend dans les ravines
+      spinPeriod: 120, // un tour (s)
+      green: '#41f373',
+      pink: '#ff1fb4',
+      look: { ambience: 'chrome', key: [-0.4, 0.6, 1], ambient: 0.45, f0: 0.25, reflection: 1.4 },
+      plants: { seed: 47, sink: 14, clear: 60 }, // fleurs : pieds cachés sous la crête ; pas sur le plateau (± clear px)
+      // Mobile (hors maquette) : mêmes proportions que le croquis (hauteur = 0,59 × demi-largeur de la base), plus
+      // large que l'écran ; plateau plus étroit.
+      mobile: { top: 66, base: 0.95, aspect: 0.59 },
     },
   },
 

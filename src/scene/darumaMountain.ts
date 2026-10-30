@@ -126,7 +126,7 @@ export class DarumaMountain implements Updatable {
       this.group.add(mesh);
     });
 
-    stage.scene.add(this.group);
+    stage.site.add(this.group);
   }
 
   resize(vp: Viewport): void {

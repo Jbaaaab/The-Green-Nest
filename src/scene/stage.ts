@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
+import { Group, PerspectiveCamera, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
 import { config } from '../config';
 import { readUnit } from '../ui/unit';
 
@@ -18,6 +18,10 @@ export const steppedFrame = () => !config.stepped.enabled || frameCount % config
 export class Stage {
   readonly renderer: WebGLRenderer;
   readonly scene = new Scene();
+  /** 3D de l'accueil, des projets et du footer (bague, magazines, daruma, plantes) : masquée sur la page About. */
+  readonly site = new Group();
+  /** 3D de la page About (la montagne et ses fleurs) : seulement sur la page About. */
+  readonly about = new Group();
   readonly overlay = new Scene();
   readonly camera: PerspectiveCamera;
   viewport: Viewport;
@@ -36,6 +40,7 @@ export class Stage {
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.autoClear = false;
 
+    this.scene.add(this.site, this.about);
     this.camera = new PerspectiveCamera(config.stage.fov, 1, 1, 10000);
     this.viewport = this.measure();
     this.applySize();
@@ -100,6 +105,8 @@ export class Stage {
     // Popup « Brands » ouverte (elle est sous ce canvas) ou animation du Mail (la scène est figée sous son
     // voile) : seule la couche overlay (le curseur, l'enveloppe) est dessinée.
     const page = document.documentElement.classList;
+    this.site.visible = !page.contains('is-about'); // page About : sa 3D et la pluie Insta, pas celle de l'accueil
+    this.about.visible = !this.site.visible;
     if (!page.contains('is-brands') && !page.contains('is-mail')) this.renderer.render(this.scene, this.camera);
     if (this.overlay.children.length) {
       this.renderer.clearDepth();

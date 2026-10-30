@@ -2,6 +2,7 @@ import { config } from '../config';
 import { WorkTrail } from '../ui/workTrail';
 import { nav } from '../nav';
 import { PROJECTS } from '../works/projects';
+import { AboutScene } from './aboutScene';
 import { Cursor3D } from './cursor';
 import { DarumaMountain } from './darumaMountain';
 import { Digits3D } from './digits';
@@ -21,7 +22,7 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
   const stage = new Stage(canvas);
   await yieldToMain();
   const ring = await Ring.load();
-  stage.scene.add(ring.root);
+  stage.site.add(ring.root);
   stage.add(ring);
   // Compile les shaders sans bloquer (KHR_parallel_shader_compile quand le navigateur le permet).
   await stage.renderer.compileAsync(stage.scene, stage.camera);
@@ -39,7 +40,7 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
     },
     update: (time) => {
       // (seulement sur l'accueil : coupées dès qu'on scrolle vers les projets)
-      if (!vp.mobile && !coarse.matches && !reduced.matches && nav.scroll < nav.sectionHeight * 0.3) trail.update(time);
+      if (!vp.mobile && !coarse.matches && !reduced.matches && !nav.suspended && nav.scroll < nav.sectionHeight * 0.3) trail.update(time);
     },
   });
 
@@ -68,6 +69,9 @@ export async function initLanding3D(canvas: HTMLCanvasElement): Promise<void> {
   // Montagne de daruma du footer : chargée seulement à l'approche du footer.
   DarumaMountain.watch(stage);
   FooterPlants.watch(stage); // et ses plantes, qui poussent quand on y arrive
+
+  // Montagne et fleurs de la page About (About 2) : construites à sa première ouverture.
+  AboutScene.watch(stage);
 
   // Enveloppe 3D du « MAIL COPIED » (clic sur Mail).
   stage.add(new MailEnvelope(stage));

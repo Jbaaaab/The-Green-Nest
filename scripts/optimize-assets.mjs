@@ -450,6 +450,28 @@ async function optimizeMagazines() {
   return list;
 }
 
+// Page About (src/about/aboutView.ts) : au survol d'une étape de la frise, son minicase remplace la photo de
+// devant de la pile (carte de 315×442 px). Recadrés au centre au format de la carte, 2x (630 px de large, sans
+// agrandir : les minicases font 600×1000), MP4 muet + image d'attente WebP (la 1re image). Ajouté à
+// media.generated.json sous { about: { <étape>: { video, poster } | { image } } }.
+const ABOUT = {
+  to: 'about',
+  card: [315, 442],
+  width: 630,
+  crf: 28,
+  cases: {
+    rouen: 'about/DIOCESE.png',
+    cambodia: 'about/mini case cambodia.mov',
+    freelanceStudying: 'about/MINICASE FREELANCE WHILE STUDYING.mov',
+    blackDuck: 'about/minicase black duck.mov',
+    gust: 'about/MINICASE GUST.mov',
+    jenesis: 'about/minicase jenesis.mov',
+    idk: 'about/minicase after.mov',
+    hours: 'work/longtemps/precase-longtemps.mov', // le projet 1092 heures : Longtemps (le précase)
+    freelanceEra: { from: 'work/videos/VIDEO CASE.mov', crf: 30 }, // le showreel recadré (source locale seulement)
+  },
+};
+
 const run = promisify(execFile);
 const isVideo = (f) => /\.(mp4|mov|webm)$/i.test(f);
 const base = (f) => f.replace(/\.[^.]+$/, '');
@@ -577,6 +599,48 @@ async function optimizeSocial() {
   };
 }
 
+async function optimizeAbout() {
+  const [cw, ch] = ABOUT.card;
+  await mkdir(out(ABOUT.to), { recursive: true });
+  // Recadrage centré au format de la carte, puis largeur max ABOUT.width.
+  const crop = `crop=w='min(iw,ih*${cw}/${ch})':h='min(ih,iw*${ch}/${cw})',scale=w='min(${ABOUT.width},iw)':h=-2:flags=lanczos`;
+  const cases = {};
+  let total = 0;
+  for (const [key, entry] of Object.entries(ABOUT.cases)) {
+    const { from, crf = ABOUT.crf } = typeof entry === 'string' ? { from: entry } : entry;
+    const input = src(from);
+    const name = key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`); // blackDuck → black-duck
+    const url = (ext) => `/${ABOUT.to}/${name}.${ext}`;
+    const file = (ext) => out(`${ABOUT.to}/${name}.${ext}`);
+    if (isVideo(from)) {
+      if (!(await newer(file('mp4'), input))) {
+        await run('ffmpeg', [
+          '-y', '-loglevel', 'error', '-i', input, '-an', '-vf', crop,
+          '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+          file('mp4'),
+        ]);
+      }
+      if (!(await newer(file('webp'), input))) {
+        const tmp = file('tmp.png');
+        await run('ffmpeg', ['-y', '-loglevel', 'error', '-i', input, '-frames:v', '1', '-vf', crop, tmp]);
+        await sharp(tmp).webp({ quality: 80 }).toFile(file('webp'));
+        await rm(tmp);
+      }
+      cases[key] = { video: url('mp4'), poster: url('webp') };
+      total += (await stat(file('mp4'))).size + (await stat(file('webp'))).size;
+    } else {
+      if (!(await newer(file('webp'), input))) {
+        const w = Math.min(ABOUT.width, (await sharp(input).metadata()).width);
+        await sharp(input).resize(w, Math.round((w * ch) / cw), { fit: 'cover' }).webp({ quality: 82 }).toFile(file('webp'));
+      }
+      cases[key] = { image: url('webp') };
+      total += (await stat(file('webp'))).size;
+    }
+  }
+  console.log(`${ABOUT.to}`.padEnd(28), `${Object.keys(cases).length} minicases, ${kb(total)}`);
+  return cases;
+}
+
 async function optimizeProjects() {
   try {
     await run('ffmpeg', ['-version']);
@@ -634,6 +698,7 @@ async function optimizeProjects() {
   media.socialMedia = await optimizeSocial();
   media.musicCulture = await optimizeMusicCulture();
   media.magazines = await optimizeMagazines();
+  media.about = await optimizeAbout();
 
   await writeFile(path.join(root, 'src/works/media.generated.json'), JSON.stringify(media, null, 2) + '\n');
 }

@@ -3,6 +3,7 @@ import endIcon from '../assets/icons/works-end.svg';
 import { config } from '../config';
 import { onLang, tr } from '../i18n';
 import { nav } from '../nav';
+import { onPage } from '../router';
 import { tint } from '../ui/tint';
 import { readUnit } from '../ui/unit';
 import { Glow } from './glow';
@@ -159,6 +160,7 @@ export class WorksView {
 
     window.addEventListener('resize', () => this.layout());
     document.addEventListener('visibilitychange', () => this.syncVideos(nav.scroll));
+    onPage(() => this.syncVideos(nav.scroll)); // page About ouverte : les vidéos des projets s'arrêtent
     // Changement de langue (src/i18n.ts) : textes, largeurs des blocs, bouton vert et libellés.
     onLang(() => {
       for (const section of this.sections) {
@@ -586,7 +588,7 @@ export class WorksView {
         for (const v of videos) loadVideo(v);
       }
 
-      const active = d < 0.5 && !document.hidden;
+      const active = d < 0.5 && !document.hidden && !nav.suspended;
       for (const v of videos) {
         if (active && v.paused && v.src) v.play().catch(() => undefined);
         if (!active && !v.paused) v.pause();

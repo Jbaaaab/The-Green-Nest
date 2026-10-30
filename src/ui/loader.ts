@@ -198,6 +198,7 @@ export function startLoader(): void {
       finished = true;
       root.classList.add('is-done');
       document.documentElement.classList.add('is-loaded');
+      window.dispatchEvent(new Event('loader:done')); // la page About attend ce moment pour lancer son intro
       window.removeEventListener('resize', resize);
       setTimeout(() => {
         stop3d?.();

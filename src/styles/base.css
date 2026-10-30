@@ -272,6 +272,25 @@ button {
   visibility: hidden;
 }
 
+/* Page About (src/router.ts) : les pages de l'accueil restent en place mais invisibles (le scroll ne bouge pas),
+   le dock revient (il est sur la maquette About). */
+.is-about :is(.landing, .works, .works-texts, .works-nav, .project-btn, .footer, .trail) {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.is-about .dock {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Sur About 2, il s'efface comme au footer (la montagne 3D passerait dessus). */
+.is-about.is-about2 .dock {
+  opacity: 0;
+  visibility: hidden;
+}
+
 .clock {
   position: absolute;
   left: var(--clock-offset-x);

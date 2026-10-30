@@ -166,6 +166,7 @@ export type BedOptions = {
   ground: (x: number, rand: () => number) => number; // pied de la plante à l'abscisse x
   textBottom: number; // bas du texte à ne pas recouvrir (au centre, les plantes restent dessous)
   depth: (rand: () => number) => number; // profondeur (z) du pied
+  skip?: (x: number) => boolean; // pas de plante à cette abscisse (About 2 : le plateau du sommet)
 };
 
 /**
@@ -173,7 +174,8 @@ export type BedOptions = {
  * déplient au passage du bourgeon, une fleur qui éclot au bout (ou une vrille), quelques petites fleurs le
  * long des tiges, puis un léger balancement. Hautes sur les côtés, basses sous le texte. Rien à charger :
  * tout est calculé (laque en matcap). Une tige = un appel de dessin ; feuilles, pétales et bourgeons
- * instanciés. Utilisé par le footer (FooterPlants) et l'écran de chargement (loaderPlants.ts).
+ * instanciés. Utilisé par le footer (FooterPlants), l'écran de chargement (loaderPlants.ts) et la montagne de
+ * About 2 (aboutScene.ts).
  */
 export class PlantBed {
   readonly group = new Group();
@@ -227,6 +229,7 @@ export class PlantBed {
     for (let i = 0; i < count; i++) {
       // Réparties sur la largeur, un peu en désordre.
       const x = -W / 2 + W * ((i + 0.15 + 0.7 * rand()) / count);
+      if (o.skip?.(x)) continue;
       const ground = o.ground(x, rand);
       // Place disponible : sous le texte au centre, jusqu'en haut de l'écran sur les côtés (sur mobile, le
       // texte prend toute la largeur : toutes restent dessous).
@@ -483,7 +486,7 @@ export class FooterPlants implements Updatable {
   private constructor(stage: Stage) {
     this.viewport = stage.viewport;
     this.bed.group.visible = false;
-    stage.scene.add(this.bed.group);
+    stage.site.add(this.bed.group);
     onLang(() => (this.dirty = true)); // le texte du footer change de hauteur : les plantes restent dessous
   }
 
@@ -521,7 +524,8 @@ export class FooterPlants implements Updatable {
     // tout de suite si le mouvement est réduit.
     if (this.start < 0 && pageY <= this.viewport.height * config.footer.plants.start) this.start = time;
     const reduced = this.reduced.matches;
-    const age = reduced ? 1e6 : this.start < 0 ? 0 : time - this.start;
+    // Déjà poussées aux trois quarts (config : headStart, demande du DA) : elles finissent de pousser.
+    const age = reduced ? 1e6 : config.footer.plants.headStart * this.bed.duration + (this.start < 0 ? 0 : time - this.start);
     group.position.y = -pageY;
 
     const swayNow = steppedFrame() && !reduced;

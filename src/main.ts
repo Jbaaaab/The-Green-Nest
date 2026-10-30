@@ -8,6 +8,7 @@ import './styles/footer.css';
 import { config } from './config';
 import { FooterView } from './footer/footerView';
 import { nav } from './nav';
+import { initRouter, onPage, page } from './router';
 import { initHeader } from './ui/header';
 import { initClock } from './ui/clock';
 import { startLoader } from './ui/loader';
@@ -26,6 +27,17 @@ initMusicPlayer(document.querySelector<HTMLElement>('.music'));
 nav.init();
 if (import.meta.env.DEV) Object.assign(window, { __nav: nav }); // pour les tests
 const main = document.querySelector('main')!;
+
+// Page About (/about, src/router.ts) : construite à sa première ouverture (module chargé à ce moment-là).
+initRouter();
+let about: Promise<unknown> | null = null;
+const openAbout = () => {
+  about ??= import('./about/aboutView')
+    .then(({ AboutView }) => new AboutView(document.querySelector('.page')!))
+    .catch((err) => console.error('About indisponible :', err));
+};
+if (page === 'about') openAbout();
+onPage((p) => p === 'about' && openAbout());
 
 // La bague derrière la bio, en négatif au-dessus du canvas : sur mobile seulement (choix du DA,
 // config.ring.behindText). Les jumeaux en négatif existent partout, mais ne s'affichent qu'avec la classe.
