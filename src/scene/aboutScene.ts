@@ -231,7 +231,7 @@ export class AboutScene implements Updatable {
     // Les fleurs sont déjà poussées aux trois quarts (demande du DA) ; à l'arrivée sur About 2 (à moitié à
     // l'écran, elles encore dessous), elles finissent de pousser. Une seule fois : ensuite, elles restent poussées.
     if (this.start < 0 && y2 < H * 0.5) this.start = time;
-    const head = config.footer.plants.headStart * this.bed.duration;
+    const head = f.plants.headStart * this.bed.duration;
     const age = reduced ? 1e6 : head + (this.start < 0 ? 0 : time - this.start);
     if (!reduced) this.angle += (TAU * delta) / f.spinPeriod;
     const stepped = steppedFrame();

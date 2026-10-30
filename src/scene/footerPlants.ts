@@ -524,8 +524,7 @@ export class FooterPlants implements Updatable {
     // tout de suite si le mouvement est réduit.
     if (this.start < 0 && pageY <= this.viewport.height * config.footer.plants.start) this.start = time;
     const reduced = this.reduced.matches;
-    // Déjà poussées aux trois quarts (config : headStart, demande du DA) : elles finissent de pousser.
-    const age = reduced ? 1e6 : config.footer.plants.headStart * this.bed.duration + (this.start < 0 ? 0 : time - this.start);
+    const age = reduced ? 1e6 : this.start < 0 ? 0 : time - this.start;
     group.position.y = -pageY;
 
     const swayNow = steppedFrame() && !reduced;

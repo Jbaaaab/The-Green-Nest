@@ -15,8 +15,6 @@ const EARLY: Localized = { en: 'YOU’RE HERE EARLY', fr: 'T’ES EN AVANCE' };
 
 // Milieu de la frame de la maquette (1440 px de large) : les abscisses de la maquette se comptent depuis lui.
 const FX = 720;
-// Bords de la frise sur la maquette : le bord gauche de STUDIES AT ISCOM et le bord droit de IDK GLORY I GUESS.
-const EDGES = [40, 1397];
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -174,9 +172,9 @@ export class AboutView {
   }
 
   // Positions de la maquette (px de maquette depuis le centre de l'écran, à l'échelle --u), sauf la frise : sur
-  // toute la largeur (demande du DA), de STUDIES AT ISCOM calé sur le bord gauche du logo à IDK GLORY I GUESS calé
-  // sur le bord droit d'Instagram / Mail ; les étapes se répartissent entre les deux, de part et d'autre de la pile
-  // (points, traits verts et textes gardent leurs écarts de la maquette). Mobile (hors maquette) : la pile en haut,
+  // toute la largeur et centrée (demandes du DA), IDK GLORY I GUESS calé sur le bord droit d'Instagram / Mail et
+  // STUDIES AT ISCOM à la même distance du bord gauche. Les points et traits verts s'écartent du centre (ils sont
+  // symétriques sur la maquette), chaque texte garde son écart avec son point. Mobile (hors maquette) : la pile en haut,
   // réduite pour tenir au-dessus de la frise ; la frise en bande qui défile au doigt.
   private layout(): void {
     const W = window.innerWidth;
@@ -201,7 +199,7 @@ export class AboutView {
     this.root.style.setProperty('--case-fade', `${c.caseFade}s`);
     this.root.style.setProperty('--persp', `${perspectiveFor(H)}px`);
 
-    // Frise : position du trait, et abscisse (dans la bande) d'un x de la maquette.
+    // Frise : position du trait, et abscisse (dans la bande) d'un point ou trait vert de la maquette.
     let lineY: number;
     let X: (x: number) => number;
     let trackW: number;
@@ -225,10 +223,16 @@ export class AboutView {
       s = Math.min(1, room / full);
       oy = top + (room - full * s) / 2 - tops[tops.length - 1] * s * u;
     } else {
-      const left = document.querySelector('.brand')?.getBoundingClientRect().left ?? 61 * u;
+      // Même marge des deux côtés : celle d'Instagram / Mail (le header, lui, n'est pas symétrique : le logo est à
+      // 61 px du bord quelle que soit la largeur, Instagram / Mail à 87,5 % + 120 px). Écartement des points de
+      // chaque côté choisi pour que le texte du bout (STUDIES, IDK GLORY) arrive pile à cette marge.
       const right = document.querySelector('.contact')?.getBoundingClientRect().right ?? W * 0.875 + 120 * u;
-      const [x0, x1] = EDGES;
-      X = (x) => (x < FX ? cx - ((FX - x) / (FX - x0)) * (cx - left) : cx + ((x - FX) / (x1 - FX)) * (right - cx));
+      const margin = W - right;
+      const first = STEPS[0];
+      const last = STEPS[STEPS.length - 1];
+      const kL = (cx - margin - (first.x - first.textX) * u) / (FX - first.x);
+      const kR = (right - (last.textX - last.x) * u - cx) / (last.x - FX);
+      X = (x) => (x < FX ? cx - (FX - x) * kL : cx + (x - FX) * kR);
       trackW = W;
       lineY = H / 2;
       place(this.rail, 0, 0, undefined, H);
@@ -253,7 +257,8 @@ export class AboutView {
 
     for (const v of this.steps) {
       const { step, el } = v;
-      const tx = X(step.textX);
+      const markX = X(step.x); // le point ou le trait vert
+      const tx = markX + (step.textX - step.x) * u; // le texte, à son écart de la maquette
       el.style.top = `${step.side === 'below' ? lineY - 4 * u : lineY}px`; // points : 8 px centrés sur le trait
       if (step.align === 'right') {
         el.style.left = '';
@@ -268,7 +273,6 @@ export class AboutView {
         mark.style.left = step.align === 'right' ? '' : `${off * u}px`;
         mark.style.right = step.align === 'right' ? `${off * u}px` : '';
       }
-      const markX = tx + (step.x - step.textX) * u; // le point ou le trait vert, à son écart du texte
       v.at = clamp01((markX - lineLeft) / (lineRight - lineLeft));
     }
 

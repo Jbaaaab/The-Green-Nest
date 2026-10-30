@@ -433,9 +433,6 @@ export const config = {
       textGap: 36, // marge entre le haut des plantes du centre et le bas du texte
       top: 150, // les plus hautes s'arrêtent à cette distance du haut de l'écran
       start: 0.5, // elles commencent à pousser quand le footer est à moitié arrivé (fraction de la hauteur d'écran restant à monter)
-      // Déjà poussées aux trois quarts quand on arrive dessus la première fois (demande du DA) : elles finissent de
-      // pousser sous nos yeux. Footer et About 2 (0 : elles partent de rien).
-      headStart: 0.75,
       grow: [7, 12] as [number, number], // durée de pousse d'une tige (tirée au hasard ; les grandes poussent plus longtemps)
       delay: [0, 2.5] as [number, number], // départs échelonnés
       leaves: [3, 6] as [number, number], // feuilles par tige
@@ -522,7 +519,9 @@ export const config = {
       green: '#41f373',
       pink: '#ff1fb4',
       look: { ambience: 'chrome', key: [-0.4, 0.6, 1], ambient: 0.45, f0: 0.25, reflection: 1.4 },
-      plants: { seed: 47, sink: 14, clear: 60 }, // fleurs : pieds cachés sous la crête ; pas sur le plateau (± clear px)
+      // Fleurs : pieds cachés sous la crête ; pas sur le plateau (± clear px). Déjà poussées aux trois quarts à la
+      // première arrivée (headStart, demande du DA : sur About seulement, pas au footer) : elles finissent de pousser.
+      plants: { seed: 47, sink: 14, clear: 60, headStart: 0.75 },
       // Mobile (hors maquette) : mêmes proportions que le croquis (hauteur = 0,59 × demi-largeur de la base), plus
       // large que l'écran ; plateau plus étroit.
       mobile: { top: 66, base: 0.95, aspect: 0.59 },
