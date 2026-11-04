@@ -5,6 +5,7 @@ import './styles/base.css';
 import './styles/works.css';
 import './styles/footer.css';
 
+import { inject } from '@vercel/analytics';
 import { config } from './config';
 import { FooterView } from './footer/footerView';
 import { nav } from './nav';
@@ -15,6 +16,9 @@ import { startLoader } from './ui/loader';
 import { initMusicPlayer } from './ui/musicPlayer';
 import { tint } from './ui/tint';
 import { WorksView } from './works/worksView';
+
+// Initialize Vercel Web Analytics
+inject();
 
 // Écran de chargement : il suit les étapes (événements stage:module et stage:ready, plus bas et dans landing.ts).
 startLoader();
